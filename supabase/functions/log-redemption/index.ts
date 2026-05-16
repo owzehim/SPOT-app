@@ -93,7 +93,7 @@ serve(async (req) => {
     // ── Fetch partnership ──────────────────────────────────────────────────
     const { data: partnership, error: partnershipError } = await admin
       .from('partnerships')
-      .select('name, sheet_name, partner_apps_script_url')
+      .select('name, sheet_name, master_apps_script_url, partner_apps_script_url')
       .eq('id', storeId)
       .single()
 
@@ -115,8 +115,6 @@ serve(async (req) => {
 
     // ── Safe field helpers (blank if missing) ──────────────────────────────
     const safe = (v: unknown) => (v != null && v !== '' ? String(v) : '')
-
-    const masterSheetUrl = Deno.env.get('MASTER_SHEET_APPS_SCRIPT_URL')!
 
     // ── Master sheet payload (All Scans tab) ───────────────────────────────
     const masterPayload = {
@@ -150,7 +148,7 @@ serve(async (req) => {
     }
 
     const [masterRes, storeRes] = await Promise.all([
-      fetch(masterSheetUrl, {
+      fetch(partnership.master_apps_script_url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(masterPayload),
