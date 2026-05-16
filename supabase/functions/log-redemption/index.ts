@@ -93,7 +93,7 @@ serve(async (req) => {
     // ── Fetch partnership ──────────────────────────────────────────────────
     const { data: partnership, error: partnershipError } = await admin
       .from('partnerships')
-      .select('name, sheet_name, apps_script_url')
+      .select('name, sheet_name, partner_apps_script_url')
       .eq('id', storeId)
       .single()
 
@@ -155,7 +155,7 @@ serve(async (req) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(masterPayload),
       }),
-      fetch(partnership.apps_script_url, {
+      fetch(partnership.partner_apps_script_url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(storePayload),
