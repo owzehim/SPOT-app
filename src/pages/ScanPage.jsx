@@ -148,97 +148,85 @@ export default function ScanPage() {
         )}
 
         {state === STATE.SUCCESS && (
-  <>
-    {/* Blinking orange dot (anti-screenshot indicator) */}
-    <style>{`
-      @keyframes qrBlinkDot {
-        0%   { opacity: 0.2; transform: scale(0.9); }
-        50%  { opacity: 1;   transform: scale(1); }
-        100% { opacity: 0.2; transform: scale(0.9); }
-      }
-    `}</style>
-    <div
-      className="fixed"
-      style={{
-        top: 12,
-        left: 12,
-        zIndex: 2000,
-        pointerEvents: 'none',
-      }}
-    >
+  <div className="relative flex flex-col items-center gap-4 mt-10 text-center max-w-sm w-full">
+    {/* Orange recording-style dot inside the success box (top-left) */}
+    <div className="absolute left-0 top-0 pl-1 pt-1">
       <span
         style={{
           display: 'inline-block',
-          width: 10,
-          height: 10,
+          width: 9,
+          height: 9,
           borderRadius: 9999,
           backgroundColor: '#f97316', // orange-500
           boxShadow: '0 0 0 3px rgba(249,115,22,0.25)',
-          animation: 'qrBlinkDot 1s ease-in-out infinite',
         }}
       />
     </div>
 
-    <div className="flex flex-col items-center gap-4 mt-10 text-center max-w-sm w-full">
-      <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
-        <span className="text-green-600 text-4xl">✓</span>
-      </div>
-      <h2 className="font-bold text-gray-900 text-xl">Check-In 완료!</h2>
-      <p className="text-gray-500 text-sm">
-        <strong>{storeName}</strong>에서의 Check-In이 기록되었습니다.
-        <br />
-        이 화면을 직원에게 보여주세요.
-      </p>
-
-      {/* Security profile card */}
-      <div className="w-full mt-4 p-4 bg-white rounded-2xl border border-gray-200 shadow-sm text-left space-y-3">
-        <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-          <span className="text-xs font-medium text-gray-500">스캔 시간</span>
-          <span className="text-sm font-semibold text-gray-900">
-            {formatScanTime(scanTime)}
-          </span>
-        </div>
-
-        <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-          <span className="text-xs font-medium text-gray-500">이름</span>
-          <span className="text-sm font-semibold text-gray-900">
-            {fullName || 'N/A'}
-          </span>
-        </div>
-
-        <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-          <span className="text-xs font-medium text-gray-500">학번</span>
-          <span className="text-sm font-semibold text-gray-900">
-            {member?.student_number || 'N/A'}
-          </span>
-        </div>
-
-        <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-          <span className="text-xs font-medium text-gray-500">대학</span>
-          <span className="text-sm font-semibold text-gray-900">
-            {member?.University || 'N/A'}
-          </span>
-        </div>
-
-        <div className="flex justify-between items-center">
-          <span className="text-xs font-medium text-gray-500">
-            멤버십 유효기간
-          </span>
-          <span className="text-sm font-semibold text-gray-900">
-            {formatMembershipDate(member?.membership_valid_until)}
-          </span>
-        </div>
-      </div>
-
-      {/* Only home button on success */}
-      <button
-        onClick={() => navigate('/member')}
-        className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-2xl text-sm hover:bg-gray-200 transition-colors"
-      >
-        홈으로 돌아가기
-      </button>
+    <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
+      <span className="text-green-600 text-4xl">✓</span>
     </div>
-  </>
+
+    <h2 className="font-bold text-gray-900 text-xl">Check-In 완료!</h2>
+
+    {/* Normal description line */}
+    <p className="text-gray-500 text-sm">
+      <strong>{storeName}</strong>에서의 Check-In이 기록되었습니다.
+    </p>
+
+    {/* Emphasized staff instruction */}
+    <p className="text-base font-bold text-orange-500">
+      이 화면을 직원에게 보여주세요.
+    </p>
+
+    {/* Security profile card */}
+    <div className="w-full mt-4 p-4 bg-white rounded-2xl border border-gray-200 shadow-sm text-left space-y-3">
+      <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+        <span className="text-xs font-medium text-gray-500">Scan Time</span>
+        <span className="text-sm font-semibold text-gray-900">
+          {formatScanTime(scanTime)}
+        </span>
+      </div>
+
+      <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+        <span className="text-xs font-medium text-gray-500">Full Name</span>
+        <span className="text-sm font-semibold text-gray-900">
+          {fullName || 'N/A'}
+        </span>
+      </div>
+
+      <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+        <span className="text-xs font-medium text-gray-500">Student ID</span>
+        <span className="text-sm font-semibold text-gray-900">
+          {member?.student_number || 'N/A'}
+        </span>
+      </div>
+
+      <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+        <span className="text-xs font-medium text-gray-500">University</span>
+        <span className="text-sm font-semibold text-gray-900">
+          {member?.University || 'N/A'}
+        </span>
+      </div>
+
+      <div className="flex justify-between items-center">
+        <span className="text-xs font-medium text-gray-500">
+          Membership Valid Until
+        </span>
+        <span className="text-sm font-semibold text-gray-900">
+          {formatMembershipDate(member?.membership_valid_until)}
+        </span>
+      </div>
+    </div>
+
+    {/* Only home button on success */}
+    <button
+      onClick={() => navigate('/member')}
+      className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-2xl text-sm hover:bg-gray-200 transition-colors"
+    >
+      홈으로 돌아가기
+    </button>
+  </div>
 )}
 
         {state === STATE.ERROR && (
