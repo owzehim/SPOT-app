@@ -84,17 +84,45 @@ function TagBarChart({ tagCounts, reviewCount }) {
 // ── Lightbox ──────────────────────────────────────────────────
 function Lightbox({ imgs, startIndex, onClose }) {
   const [index, setIndex] = useState(startIndex)
+  const [visible, setVisible] = useState(false)
+  const [slideDir, setSlideDir] = useState(null) // 'left' | 'right' | null
+  const [animating, setAnimating] = useState(false)
   const touchStartX = useRef(null)
+
+  // Trigger zoom-in on mount
+  useEffect(() => {
+    requestAnimationFrame(() => setVisible(true))
+  }, [])
 
   useEffect(() => {
     const handler = (e) => {
-      if (e.key === 'Escape') onClose()
-      if (e.key === 'ArrowRight') setIndex((i) => Math.min(i + 1, imgs.length - 1))
-      if (e.key === 'ArrowLeft') setIndex((i) => Math.max(i - 1, 0))
+      if (e.key === 'Escape') handleClose()
+      if (e.key === 'ArrowRight') goTo('left')
+      if (e.key === 'ArrowLeft') goTo('right')
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [imgs.length, onClose])
+  }, [imgs.length, index])
+
+  const handleClose = () => {
+    setVisible(false)
+    setTimeout(() => onClose(), 280)
+  }
+
+  const goTo = (dir) => {
+    if (animating) return
+    const next = dir === 'left'
+      ? Math.min(index + 1, imgs.length - 1)
+      : Math.max(index - 1, 0)
+    if (next === index) return
+    setAnimating(true)
+    setSlideDir(dir)
+    setTimeout(() => {
+      setIndex(next)
+      setSlideDir(null)
+      setAnimating(false)
+    }, 260)
+  }
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX
@@ -104,91 +132,134 @@ function Lightbox({ imgs, startIndex, onClose }) {
     if (touchStartX.current === null) return
     const dx = e.changedTouches[0].clientX - touchStartX.current
     touchStartX.current = null
-    if (dx < -50) setIndex((i) => Math.min(i + 1, imgs.length - 1))  // swipe left → next
-    else if (dx > 50) setIndex((i) => Math.max(i - 1, 0))             // swipe right → prev
+    if (dx < -50) goTo('left')
+    else if (dx > 50) goTo('right')
+  }
+
+  // Slide animation styles
+  const getImgStyle = () => {
+    const base = {
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      objectFit: 'contain',
+      borderRadius: '12px',
+      boxShadow: '0 8px 40px rgba(0,0,0,0.6)',
+      userSelect: 'none',
+      WebkitUserSelect: 'none',
+      transition: slideDir ? 'transform 0.26s cubic-bezier(0.4,0,0.2,1), opacity 0.26s ease' : 'none',
+    }
+    if (slideDir === 'left')  return { ...base, transform: 'translateX(-60px)', opacity: 0 }
+    if (slideDir === 'right') return { ...base, transform: 'translateX(60px)',  opacity: 0 }
+    return { ...base, transform: 'translateX(0)', opacity: 1 }
   }
 
   return (
-    <div
-      onClick={onClose}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'rgba(0,0,0,0.92)', display: 'flex',
-        alignItems: 'center', justifyContent: 'center',
-      }}
-    >
-      <button
-        onClick={onClose}
+    <>
+      <style>{`
+        @keyframes spotLightboxIn {
+          from { transform: scale(0.82); opacity: 0; }
+          to   { transform: scale(1);    opacity: 1; }
+        }
+        @keyframes spotLightboxOut {
+          from { transform: scale(1);    opacity: 1; }
+          to   { transform: scale(0.82); opacity: 0; }
+        }
+        .spot-lightbox-img-enter {
+          animation: spotLightboxIn 0.28s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+        .spot-lightbox-img-exit {
+          animation: spotLightboxOut 0.28s ease forwards;
+        }
+      `}</style>
+
+      {/* Backdrop — fades in/out */}
+      <div
+        onClick={handleClose}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         style={{
-          position: 'absolute', top: '16px', right: '20px',
-          background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff',
-          borderRadius: '999px', width: '36px', height: '36px',
-          fontSize: '20px', cursor: 'pointer', display: 'flex',
-          alignItems: 'center', justifyContent: 'center', zIndex: 10000,
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.92)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 0.28s ease',
         }}
-      >×</button>
-
-      {index > 0 && (
+      >
+        {/* Close button */}
         <button
-          onClick={(e) => { e.stopPropagation(); setIndex((i) => i - 1) }}
+          onClick={(e) => { e.stopPropagation(); handleClose() }}
           style={{
-            position: 'absolute', left: '20px', top: '50%',
-            transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.15)',
-            border: 'none', color: '#fff', borderRadius: '999px',
-            width: '44px', height: '44px', fontSize: '24px', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000,
+            position: 'absolute', top: '16px', right: '20px',
+            background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff',
+            borderRadius: '999px', width: '36px', height: '36px',
+            fontSize: '20px', cursor: 'pointer', display: 'flex',
+            alignItems: 'center', justifyContent: 'center', zIndex: 10000,
+            opacity: visible ? 1 : 0,
+            transition: 'opacity 0.2s ease 0.1s',
           }}
-        >‹</button>
-      )}
+        >×</button>
 
-      <img
-        src={imgs[index]}
-        alt={'사진 ' + (index + 1)}
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain',
-          borderRadius: '12px', boxShadow: '0 8px 40px rgba(0,0,0,0.6)',
-          userSelect: 'none',
-          WebkitUserSelect: 'none',
-        }}
-      />
+        {/* Prev button */}
+        {index > 0 && (
+          <button
+            onClick={(e) => { e.stopPropagation(); goTo('right') }}
+            style={{
+              position: 'absolute', left: '20px', top: '50%',
+              transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.15)',
+              border: 'none', color: '#fff', borderRadius: '999px',
+              width: '44px', height: '44px', fontSize: '24px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000,
+            }}
+          >‹</button>
+        )}
 
-      {index < imgs.length - 1 && (
-        <button
-          onClick={(e) => { e.stopPropagation(); setIndex((i) => i + 1) }}
-          style={{
-            position: 'absolute', right: '20px', top: '50%',
-            transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.15)',
-            border: 'none', color: '#fff', borderRadius: '999px',
-            width: '44px', height: '44px', fontSize: '24px', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000,
-          }}
-        >›</button>
-      )}
+        {/* Image — zoom in on open, slide on swipe */}
+        <img
+          key={index}
+          src={imgs[index]}
+          alt={'사진 ' + (index + 1)}
+          onClick={(e) => e.stopPropagation()}
+          className={visible ? 'spot-lightbox-img-enter' : 'spot-lightbox-img-exit'}
+          style={getImgStyle()}
+        />
 
-      {imgs.length > 1 && (
-        <div style={{
-          position: 'absolute', bottom: '20px', left: 0, right: 0,
-          display: 'flex', justifyContent: 'center', gap: '6px',
-        }}>
-          {imgs.map((_, i) => (
-            <div
-              key={i}
-              onClick={(e) => { e.stopPropagation(); setIndex(i) }}
-              style={{
-                width: i === index ? '8px' : '6px',
-                height: i === index ? '8px' : '6px',
-                borderRadius: '999px',
-                background: i === index ? '#fff' : 'rgba(255,255,255,0.4)',
-                cursor: 'pointer', transition: 'all 0.2s',
-              }}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+        {/* Next button */}
+        {index < imgs.length - 1 && (
+          <button
+            onClick={(e) => { e.stopPropagation(); goTo('left') }}
+            style={{
+              position: 'absolute', right: '20px', top: '50%',
+              transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.15)',
+              border: 'none', color: '#fff', borderRadius: '999px',
+              width: '44px', height: '44px', fontSize: '24px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000,
+            }}
+          >›</button>
+        )}
+
+        {/* Dot indicators */}
+        {imgs.length > 1 && (
+          <div style={{
+            position: 'absolute', bottom: '20px', left: 0, right: 0,
+            display: 'flex', justifyContent: 'center', gap: '6px',
+          }}>
+            {imgs.map((_, i) => (
+              <div
+                key={i}
+                onClick={(e) => { e.stopPropagation(); goTo(i > index ? 'left' : 'right') }}
+                style={{
+                  width: i === index ? '8px' : '6px',
+                  height: i === index ? '8px' : '6px',
+                  borderRadius: '999px',
+                  background: i === index ? '#fff' : 'rgba(255,255,255,0.4)',
+                  cursor: 'pointer', transition: 'all 0.2s',
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </>
   )
 }
 
@@ -422,11 +493,11 @@ export function SpotCard({ selected, onClose }) {
                 <RichText text={selected.discount_info} />
               </p>
             )}
-            {selected.discount_terms && (
-              <p className="text-xs text-gray-800 mt-0.5">
-                ※ <RichText text={selected.discount_terms} />
-              </p>
-            )}
+            {selected.discount_terms?.trim() && (
+  <p className="text-xs text-gray-800 mt-0.5">
+    ※ <RichText text={selected.discount_terms} />
+  </p>
+)}
           </div>
 
           {/* ── Images: same thumbnail grid on mobile + desktop ── */}
