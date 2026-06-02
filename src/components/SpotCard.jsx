@@ -38,12 +38,11 @@ function StarDisplay({ averageRating }) {
   )
 }
 
-// ── Tag bar chart section ─────────────────────────────────────
+// ── Tag bar chart ─────────────────────────────────────────────
 function TagBarChart({ tagCounts, reviewCount }) {
   const sorted = getSortedTagsForDisplay(tagCounts)
   if (sorted.length === 0) return null
-
-  const maxCount = sorted[0].count  // highest count = 100% bar width
+  const maxCount = sorted[0].count
 
   return (
     <div className="px-4 pb-4">
@@ -58,21 +57,18 @@ function TagBarChart({ tagCounts, reviewCount }) {
             const pct = maxCount > 0 ? Math.round((tag.count / maxCount) * 100) : 0
             return (
               <div key={tag.key} className="flex items-center gap-2">
-                {/* Icon + label */}
                 <div className="flex items-center gap-1 w-28 flex-shrink-0">
                   {IconComponent && (
                     <IconComponent size={13} weight="fill" color="#f97316" />
                   )}
                   <span className="text-xs text-gray-600 truncate">{tag.label}</span>
                 </div>
-                {/* Bar */}
                 <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-orange-400 rounded-full transition-all duration-500"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
-                {/* Count */}
                 <span className="text-xs text-gray-400 font-medium w-4 text-right flex-shrink-0">
                   {tag.count}
                 </span>
@@ -85,6 +81,7 @@ function TagBarChart({ tagCounts, reviewCount }) {
   )
 }
 
+// ── Lightbox ──────────────────────────────────────────────────
 function Lightbox({ imgs, startIndex, onClose }) {
   const [index, setIndex] = useState(startIndex)
 
@@ -178,10 +175,44 @@ function Lightbox({ imgs, startIndex, onClose }) {
   )
 }
 
+// ── Thumbnail grid (same on mobile + desktop) ─────────────────
+function ImageThumbnails({ imgs, onTap }) {
+  return (
+    <div
+      className="flex gap-2 px-4 overflow-x-auto"
+      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+    >
+      {imgs.map((url, i) => (
+        <div
+          key={i}
+          onClick={() => onTap(i)}
+          className="flex-shrink-0 rounded-xl overflow-hidden bg-gray-100"
+          style={{
+            width: '100px',
+            height: '125px',   // 4:5 ratio
+            cursor: 'zoom-in',
+          }}
+        >
+          <img
+            src={url}
+            alt={'사진 ' + (i + 1)}
+            loading={i === 0 ? 'eager' : 'lazy'}
+            style={{
+              width: '100px',
+              height: '125px',
+              objectFit: 'cover',
+              display: 'block',
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function SpotCard({ selected, onClose }) {
   const [cardHeight, setCardHeight] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
-  const [slideIndex, setSlideIndex] = useState(0)
   const [closing, setClosing] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(null)
   const startYRef = useRef(0)
@@ -192,8 +223,7 @@ export function SpotCard({ selected, onClose }) {
   const imgs = selected['image_urls'] || []
   const hasImages = imgs.length > 0
 
-  // Live review summary for this store
-const { summary, loading: summaryLoading } = useStoreReviewSummary(selected?.partnership_id)
+  const { summary, loading: summaryLoading } = useStoreReviewSummary(selected?.partnership_id)
 
   const { WIN_H, WIN_W } = useMemo(() => ({
     WIN_H: typeof window !== 'undefined' ? window.innerHeight : 700,
@@ -206,7 +236,6 @@ const { summary, loading: summaryLoading } = useStoreReviewSummary(selected?.par
 
   useEffect(() => {
     setCardHeight(MIN_HEIGHT)
-    setSlideIndex(0)
     setClosing(false)
   }, [selected])
 
@@ -262,6 +291,7 @@ const { summary, loading: summaryLoading } = useStoreReviewSummary(selected?.par
 
   const isMax = cardHeight >= MAX_HEIGHT * 0.85
   const iconSvg = CATEGORY_ICONS[selected.category]
+  const hasReviews = summary && summary.review_count > 0
 
   const noImageStyle = {
     transform: closing ? 'translateY(110%)' : 'translateY(0)',
@@ -276,8 +306,6 @@ const { summary, loading: summaryLoading } = useStoreReviewSummary(selected?.par
       ? 'none'
       : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.32,0,0.67,0)',
   }
-
-  const hasReviews = summary && summary.review_count > 0
 
   return (
     <>
@@ -322,7 +350,7 @@ const { summary, loading: summaryLoading } = useStoreReviewSummary(selected?.par
 
         <div className="flex-1" style={{ overflowY: 'hidden' }}>
 
-          {/* ── SECTION 1: Place info ── */}
+          {/* ── Place info ── */}
           <div className="px-4 pt-1 pb-3">
             <div className="flex items-center gap-1.5 flex-wrap mb-1">
               <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -349,7 +377,6 @@ const { summary, loading: summaryLoading } = useStoreReviewSummary(selected?.par
               )}
             </div>
 
-            {/* Name + live star rating */}
             <div className="flex items-center gap-2 flex-wrap">
               <p className="font-semibold text-gray-900">{selected.name}</p>
               {hasReviews && (
@@ -385,141 +412,37 @@ const { summary, loading: summaryLoading } = useStoreReviewSummary(selected?.par
             )}
           </div>
 
-          {/* ── No-image layout ── */}
-          {!hasImages && (
-            <>
-              {hasReviews && (
-                <TagBarChart
-                  tagCounts={summary.tag_counts}
-                  reviewCount={summary.review_count}
-                />
-              )}
-              {(selected.review || selected.reviewer_name) && (
-                <div className="px-4 pb-4">
-                  <div className="pt-3 border-t border-gray-100">
-                    <p className="text-xs font-semibold text-gray-500 mb-1.5">임원들 리뷰</p>
-                    {selected.review && (
-                      <RichText text={selected.review} className="text-xs text-gray-600 block" />
-                    )}
-                    {selected.reviewer_name && (
-                      <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-              <div className="pb-16" />
-            </>
-          )}
-
-          {/* ── Image layout ── */}
+          {/* ── Images: same thumbnail grid on mobile + desktop ── */}
           {hasImages && (
-            <div className="pb-6">
-              {/* Mobile slider */}
-              <div
-                className="md:hidden px-4"
-                onTouchStart={(e) => { e.currentTarget._swipeStartX = e.touches[0].clientX }}
-                onTouchEnd={(e) => {
-                  const start = e.currentTarget._swipeStartX
-                  if (start == null) return
-                  const dx = e.changedTouches[0].clientX - start
-                  e.currentTarget._swipeStartX = null
-                  if (dx < -40 && slideIndex < imgs.length - 1) {
-                    e.stopPropagation()
-                    setSlideIndex((i) => i + 1)
-                  } else if (dx > 40 && slideIndex > 0) {
-                    e.stopPropagation()
-                    setSlideIndex((i) => i - 1)
-                  }
-                }}
-              >
-                <div
-                  className="relative rounded-2xl overflow-hidden bg-gray-100"
-                  style={{ aspectRatio: '4/5' }}
-                >
-                  <div
-                    className="flex h-full"
-                    style={{
-                      transform: 'translateX(-' + slideIndex * 100 + '%)',
-                      transition: 'transform 0.3s ease',
-                    }}
-                  >
-                    {imgs.map((url, i) => (
-                      <div
-                        key={i}
-                        className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-100"
-                      >
-                        <img
-                          src={url}
-                          alt={'사진 ' + (i + 1)}
-                          loading={i === slideIndex ? 'eager' : 'lazy'}
-                          style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
-                          draggable={false}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  {imgs.length > 1 && (
-                    <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
-                      {imgs.map((_, i) => (
-                        <div
-                          key={i}
-                          className={`rounded-full transition-all ${
-                            i === slideIndex ? 'bg-white w-2 h-2' : 'bg-white bg-opacity-50 w-1.5 h-1.5'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Desktop grid */}
-              <div
-                className="hidden md:flex gap-3 px-4 overflow-x-auto"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              >
-                {imgs.map((url, i) => (
-                  <div
-                    key={i}
-                    onClick={() => setLightboxIndex(i)}
-                    className="flex-shrink-0 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center"
-                    style={{ height: '220px', minWidth: '140px', maxWidth: '360px', cursor: 'zoom-in' }}
-                  >
-                    <img
-                      src={url}
-                      alt={'사진 ' + (i + 1)}
-                      loading={i === 0 ? 'eager' : 'lazy'}
-                      style={{ height: '220px', width: 'auto', maxWidth: '360px', objectFit: 'contain', display: 'block' }}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {/* Tag bar chart */}
-              {hasReviews && (
-                <TagBarChart
-                  tagCounts={summary.tag_counts}
-                  reviewCount={summary.review_count}
-                />
-              )}
-
-              {/* 임원들 리뷰 */}
-              {(selected.review || selected.reviewer_name) && (
-                <div className="px-4 pb-20">
-                  <div className="pt-3 border-t border-gray-100">
-                    <p className="text-xs font-semibold text-gray-500 mb-1.5">임원들 리뷰</p>
-                    {selected.review && (
-                      <RichText text={selected.review} className="text-xs text-gray-600 block" />
-                    )}
-                    {selected.reviewer_name && (
-                      <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-              {!selected.review && !selected.reviewer_name && <div className="pb-20" />}
+            <div className="mb-3">
+              <ImageThumbnails imgs={imgs} onTap={(i) => setLightboxIndex(i)} />
             </div>
           )}
+
+          {/* ── Member review bar chart ── */}
+          {hasReviews && (
+            <TagBarChart
+              tagCounts={summary.tag_counts}
+              reviewCount={summary.review_count}
+            />
+          )}
+
+          {/* ── 임원들 리뷰 ── */}
+          {(selected.review || selected.reviewer_name) && (
+            <div className="px-4 pb-4">
+              <div className="pt-3 border-t border-gray-100">
+                <p className="text-xs font-semibold text-gray-500 mb-1.5">임원들 리뷰</p>
+                {selected.review && (
+                  <RichText text={selected.review} className="text-xs text-gray-600 block" />
+                )}
+                {selected.reviewer_name && (
+                  <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="pb-16" />
         </div>
 
         {/* Bottom gradient + Google Maps button */}
