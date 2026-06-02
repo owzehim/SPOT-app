@@ -58,7 +58,7 @@ console.log('storeId parsed:', storeId)
         setState(STATE.SUCCESS)
       } else {
         setState(STATE.ERROR)
-        setErrorMsg(result.message || '할인을 적용할 수 없습니다. 다시 시도해주세요.')
+        setErrorMsg(result.message || 'Check-In을 기록할 수 없습니다. 다시 시도해주세요.')
       }
     } catch (err) {
       console.error('handleScan error:', err)
@@ -88,7 +88,7 @@ console.log('storeId parsed:', storeId)
         >
           ← 뒤로
         </button>
-        <h1 className="font-bold text-gray-900">할인 QR 스캔</h1>
+        <h1 className="font-bold text-gray-900">Check-In QR 스캔</h1>
       </div>
 
       {/* Body */}
@@ -110,9 +110,9 @@ console.log('storeId parsed:', storeId)
             <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
               <span className="text-green-600 text-4xl">✓</span>
             </div>
-            <h2 className="font-bold text-gray-900 text-xl">할인 적용 완료!</h2>
+            <h2 className="font-bold text-gray-900 text-xl">Check-In 완료!</h2>
             <p className="text-gray-500 text-sm">
-              <strong>{storeName}</strong>에서의 할인이 기록되었습니다.<br />
+              <strong>{storeName}</strong>에서의 Check-In이 기록되었습니다.<br />
               이 화면을 직원에게 보여주세요.
             </p>
             <button
@@ -135,7 +135,7 @@ console.log('storeId parsed:', storeId)
             <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center">
               <span className="text-red-500 text-4xl">✕</span>
             </div>
-            <h2 className="font-bold text-gray-900 text-xl">할인 적용 실패</h2>
+            <h2 className="font-bold text-gray-900 text-xl">Check-In 실패</h2>
             <p className="text-gray-500 text-sm">{errorMsg}</p>
             <button
               onClick={reset}
