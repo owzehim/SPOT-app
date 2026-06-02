@@ -193,7 +193,7 @@ export function SpotCard({ selected, onClose }) {
   const hasImages = imgs.length > 0
 
   // Live review summary for this store
-  const { summary, loading: summaryLoading } = useStoreReviewSummary(selected?.id)
+const { summary, loading: summaryLoading } = useStoreReviewSummary(selected?.partnership_id)
 
   const { WIN_H, WIN_W } = useMemo(() => ({
     WIN_H: typeof window !== 'undefined' ? window.innerHeight : 700,
