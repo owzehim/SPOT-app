@@ -82,7 +82,6 @@ function TagBarChart({ tagCounts, reviewCount }) {
 }
 
 // ── Lightbox ──────────────────────────────────────────────────
-// ── Lightbox ──────────────────────────────────────────────────
 function Lightbox({ imgs, startIndex, onClose }) {
   const [index, setIndex] = useState(startIndex)
   const [visible, setVisible] = useState(false)
@@ -123,17 +122,17 @@ function Lightbox({ imgs, startIndex, onClose }) {
     const absDx = Math.abs(dx)
     const absDy = Math.abs(dy)
 
-    // swipe down → close (vertical, downward)
-    if (absDy > absDx && dy > 60) {
+    // Vertical swipe (up or down) → close
+    if (absDy > absDx && absDy > 60) {
       handleClose()
     }
-    // horizontal swipe → next/prev
+    // Horizontal swipe → next / prev
     else if (absDx > absDy && absDx > 40) {
       if (dx < 0) {
-        // left → next
+        // swipe left → next
         setIndex((i) => Math.min(i + 1, imgs.length - 1))
       } else {
-        // right → prev
+        // swipe right → prev
         setIndex((i) => Math.max(i - 1, 0))
       }
     }
@@ -162,7 +161,8 @@ function Lightbox({ imgs, startIndex, onClose }) {
           position: 'fixed',
           inset: 0,
           zIndex: 9999,
-          background: 'rgba(0, 0, 0, 0.7)', // 70% transparent background
+          // 75% transparent background
+          background: 'rgba(0, 0, 0, 0.75)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -170,31 +170,22 @@ function Lightbox({ imgs, startIndex, onClose }) {
           transition: 'opacity 0.25s ease',
         }}
       >
-        {/* Close button */}
-        <button
-          onClick={(e) => { e.stopPropagation(); handleClose() }}
+        {/* Image — full opacity, no drag tracking */}
+        <img
+          src={imgs[index]}
+          alt={'사진 ' + (index + 1)}
+          onClick={(e) => e.stopPropagation()}
+          className={visible ? 'lightbox-zoom-enter' : ''}
           style={{
-            position: 'absolute',
-            top: 16,
-            right: 20,
-            background: 'rgba(255,255,255,0.15)',
-            border: 'none',
-            color: '#fff',
-            borderRadius: '999px',
-            width: 36,
-            height: 36,
-            fontSize: 20,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 10000,
-            opacity: visible ? 1 : 0,
-            transition: 'opacity 0.2s ease 0.05s',
+            maxWidth: '90vw',
+            maxHeight: '90vh',
+            objectFit: 'contain',
+            borderRadius: 12,
+            boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
           }}
-        >
-          ×
-        </button>
+        />
 
         {/* Prev button */}
         {index > 0 && (
@@ -222,23 +213,6 @@ function Lightbox({ imgs, startIndex, onClose }) {
             ‹
           </button>
         )}
-
-        {/* Image — full opacity, no drag tracking */}
-        <img
-          src={imgs[index]}
-          alt={'사진 ' + (index + 1)}
-          onClick={(e) => e.stopPropagation()}
-          className={visible ? 'lightbox-zoom-enter' : ''}
-          style={{
-            maxWidth: '90vw',
-            maxHeight: '90vh',
-            objectFit: 'contain',
-            borderRadius: 12,
-            boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
-            userSelect: 'none',
-            WebkitUserSelect: 'none',
-          }}
-        />
 
         {/* Next button */}
         {index < imgs.length - 1 && (
