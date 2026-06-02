@@ -39,6 +39,7 @@ export function useReviewPrompt() {
       // by passing a now that is 50 min in the future.
       // To revert: remove the override and use getPendingReviewPrompt() as-is.
       const { data: allPending, error } = await getPendingReviewPrompt({ testMode: true })
+console.log('prompt result:', allPending, error) 
 
       if (!error && allPending) {
         setPrompt(allPending)
