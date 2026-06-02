@@ -22,17 +22,36 @@ function StarDisplay({ averageRating }) {
   const formatted = formatAverageRating(averageRating)
   if (!formatted) return null
   const { filled, half, empty } = computeStarDisplay(averageRating)
+
   return (
     <div className="flex items-center gap-1">
       <div className="flex items-center gap-0.5">
+        {/* full orange stars */}
         {Array.from({ length: filled }).map((_, i) => (
           <Star key={'f' + i} size={12} weight="fill" color="#f97316" />
         ))}
-        {half && <StarHalf size={12} weight="fill" color="#f97316" />}
+
+        {/* half star: 50% orange, 50% grey */}
+        {half && (
+          <span key="half" className="relative inline-flex">
+            {/* grey full star underneath */}
+            <Star size={12} weight="fill" color="#d1d5db" />
+            {/* left half orange on top */}
+            <span
+              className="absolute inset-0 overflow-hidden"
+              style={{ width: '50%' }}
+            >
+              <Star size={12} weight="fill" color="#f97316" />
+            </span>
+          </span>
+        )}
+
+        {/* empty grey stars */}
         {Array.from({ length: empty }).map((_, i) => (
-          <Star key={'e' + i} size={12} weight="regular" color="#d1d5db" />
+          <Star key={'e' + i} size={12} weight="fill" color="#d1d5db" />
         ))}
       </div>
+
       <span className="text-xs text-amber-500 font-medium">{formatted}</span>
     </div>
   )

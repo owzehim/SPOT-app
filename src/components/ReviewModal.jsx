@@ -20,7 +20,7 @@ const TAG_ICONS = {
 function StarRow({ rating, onSelect, error }) {
   return (
     <div className="flex flex-col items-center gap-2">
-      <p className="text-sm font-medium text-gray-700">별점을 선택해주세요</p>
+      <p className="text-sm font-medium text-gray-700">별점을 선택해 주세요</p>
       <div className="flex gap-2">
         {[1, 2, 3, 4, 5].map((value) => (
           <button
