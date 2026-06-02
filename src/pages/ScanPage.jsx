@@ -15,7 +15,7 @@ export default function ScanPage() {
   const [state, setState] = useState(STATE.SCANNING)
   const [storeName, setStoreName] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
-  const [member, setMember] = useState(null)   // ← from members table
+  const [member, setMember] = useState(null)
   const [scanTime, setScanTime] = useState(null)
   const navigate = useNavigate()
   const handlingRef = useRef(false)
@@ -54,7 +54,7 @@ export default function ScanPage() {
         return
       }
 
-      // === 1) Load member row from members table ===
+      // Fetch user profile from members table
       const { data: memberRow, error: memberError } = await supabase
         .from('members')
         .select('first_name, last_name, student_number, "University", membership_valid_until')
@@ -65,7 +65,7 @@ export default function ScanPage() {
         console.warn('members fetch error:', memberError)
       }
 
-      // === 2) Log redemption ===
+      // Log the redemption
       const result = await logRedemption({ storeId })
 
       if (result.success) {
@@ -114,8 +114,9 @@ export default function ScanPage() {
     return `${y}-${m}-${day}`
   }
 
-  const fullName =
-    member ? `${member.first_name || ''} ${member.last_name || ''}`.trim() : ''
+  const fullName = member
+    ? `${member.first_name || ''} ${member.last_name || ''}`.trim()
+    : ''
 
   return (
     <div
@@ -137,7 +138,39 @@ export default function ScanPage() {
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4">
+      <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4 relative">
+        {/* Blinking orange dot – only on success, top-left of content area */}
+        {state === STATE.SUCCESS && (
+          <>
+            <style>{`
+              @keyframes recordingDot {
+                0%   { opacity: 0.2; }
+                50%  { opacity: 1; }
+                100% { opacity: 0.2; }
+              }
+            `}</style>
+            <div
+              className="absolute"
+              style={{
+                top: 4,
+                left: 10,
+                zIndex: 10,
+              }}
+            >
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: 8,
+                  height: 8,
+                  borderRadius: 9999,
+                  backgroundColor: '#f97316',
+                  animation: 'recordingDot 1s ease-in-out infinite',
+                }}
+              />
+            </div>
+          </>
+        )}
+
         {state === STATE.SCANNING && <QRScanner onScan={handleScan} />}
 
         {state === STATE.LOADING && (
@@ -148,93 +181,79 @@ export default function ScanPage() {
         )}
 
         {state === STATE.SUCCESS && (
-  <div className="relative flex flex-col items-center gap-4 mt-10 text-center max-w-sm w-full">
-    {/* Orange recording-style dot inside the success box (top-left) */}
-    <div className="absolute left-0 top-0 pl-1 pt-1">
-      <span
-        style={{
-          display: 'inline-block',
-          width: 9,
-          height: 9,
-          borderRadius: 9999,
-          backgroundColor: '#f97316', // orange-500
-          boxShadow: '0 0 0 3px rgba(249,115,22,0.25)',
-        }}
-      />
-    </div>
+          <div className="flex flex-col items-center gap-4 mt-10 text-center max-w-sm w-full">
+            <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
+              <span className="text-green-600 text-4xl">✓</span>
+            </div>
 
-    <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
-      <span className="text-green-600 text-4xl">✓</span>
-    </div>
+            <h2 className="font-bold text-gray-900 text-xl">Check-In 완료!</h2>
 
-    <h2 className="font-bold text-gray-900 text-xl">Check-In 완료!</h2>
+            <p className="text-gray-500 text-sm">
+              <strong>{storeName}</strong>에서의 Check-In이 기록되었습니다.
+            </p>
 
-    {/* Normal description line */}
-    <p className="text-gray-500 text-sm">
-      <strong>{storeName}</strong>에서의 Check-In이 기록되었습니다.
-    </p>
+            <p className="text-base font-bold text-orange-500">
+              이 화면을 직원에게 보여주세요.
+            </p>
 
-    {/* Emphasized staff instruction */}
-    <p className="text-base font-bold text-orange-500">
-      이 화면을 직원에게 보여주세요.
-    </p>
+            {/* Security profile card */}
+            <div className="w-full mt-4 p-4 bg-white rounded-2xl border border-gray-200 shadow-sm text-left space-y-3">
+              <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                <span className="text-xs font-medium text-gray-500">스캔 시간</span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {formatScanTime(scanTime)}
+                </span>
+              </div>
 
-    {/* Security profile card */}
-    <div className="w-full mt-4 p-4 bg-white rounded-2xl border border-gray-200 shadow-sm text-left space-y-3">
-      <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-        <span className="text-xs font-medium text-gray-500">Scan Time</span>
-        <span className="text-sm font-semibold text-gray-900">
-          {formatScanTime(scanTime)}
-        </span>
-      </div>
+              <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                <span className="text-xs font-medium text-gray-500">이름</span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {fullName || 'N/A'}
+                </span>
+              </div>
 
-      <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-        <span className="text-xs font-medium text-gray-500">Full Name</span>
-        <span className="text-sm font-semibold text-gray-900">
-          {fullName || 'N/A'}
-        </span>
-      </div>
+              <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                <span className="text-xs font-medium text-gray-500">학번</span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {member?.student_number || 'N/A'}
+                </span>
+              </div>
 
-      <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-        <span className="text-xs font-medium text-gray-500">Student ID</span>
-        <span className="text-sm font-semibold text-gray-900">
-          {member?.student_number || 'N/A'}
-        </span>
-      </div>
+              <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                <span className="text-xs font-medium text-gray-500">대학</span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {member?.University || 'N/A'}
+                </span>
+              </div>
 
-      <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-        <span className="text-xs font-medium text-gray-500">University</span>
-        <span className="text-sm font-semibold text-gray-900">
-          {member?.University || 'N/A'}
-        </span>
-      </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-medium text-gray-500">
+                  멤버십 유효기간
+                </span>
+                <span className="text-sm font-semibold text-gray-900">
+                  {formatMembershipDate(member?.membership_valid_until)}
+                </span>
+              </div>
+            </div>
 
-      <div className="flex justify-between items-center">
-        <span className="text-xs font-medium text-gray-500">
-          Membership Valid Until
-        </span>
-        <span className="text-sm font-semibold text-gray-900">
-          {formatMembershipDate(member?.membership_valid_until)}
-        </span>
-      </div>
-    </div>
-
-    {/* Only home button on success */}
-    <button
-      onClick={() => navigate('/member')}
-      className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-2xl text-sm hover:bg-gray-200 transition-colors"
-    >
-      홈으로 돌아가기
-    </button>
-  </div>
-)}
+            {/* Only home button on success */}
+            <button
+              onClick={() => navigate('/member')}
+              className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-2xl text-sm hover:bg-gray-200 transition-colors"
+            >
+              홈으로 돌아가기
+            </button>
+          </div>
+        )}
 
         {state === STATE.ERROR && (
           <div className="flex flex-col items-center gap-4 mt-10 text-center max-w-xs">
             <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center">
               <span className="text-red-500 text-4xl">✕</span>
             </div>
+
             <h2 className="font-bold text-gray-900 text-xl">Check-In 실패</h2>
+
             <p className="text-gray-500 text-sm">{errorMsg}</p>
 
             <button
@@ -243,6 +262,7 @@ export default function ScanPage() {
             >
               다시 시도하기
             </button>
+
             <button
               onClick={() => navigate('/member')}
               className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-2xl text-sm hover:bg-gray-200 transition-colors"
