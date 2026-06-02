@@ -84,6 +84,7 @@ function TagBarChart({ tagCounts, reviewCount }) {
 // ── Lightbox ──────────────────────────────────────────────────
 function Lightbox({ imgs, startIndex, onClose }) {
   const [index, setIndex] = useState(startIndex)
+  const touchStartX = useRef(null)
 
   useEffect(() => {
     const handler = (e) => {
@@ -95,9 +96,23 @@ function Lightbox({ imgs, startIndex, onClose }) {
     return () => window.removeEventListener('keydown', handler)
   }, [imgs.length, onClose])
 
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    touchStartX.current = null
+    if (dx < -50) setIndex((i) => Math.min(i + 1, imgs.length - 1))  // swipe left → next
+    else if (dx > 50) setIndex((i) => Math.max(i - 1, 0))             // swipe right → prev
+  }
+
   return (
     <div
       onClick={onClose}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
         background: 'rgba(0,0,0,0.92)', display: 'flex',
@@ -135,6 +150,8 @@ function Lightbox({ imgs, startIndex, onClose }) {
         style={{
           maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain',
           borderRadius: '12px', boxShadow: '0 8px 40px rgba(0,0,0,0.6)',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
         }}
       />
 
@@ -427,11 +444,11 @@ export function SpotCard({ selected, onClose }) {
             />
           )}
 
-          {/* ── 임원들 리뷰 ── */}
+          {/* ── 임원 리뷰 ── */}
           {(selected.review || selected.reviewer_name) && (
             <div className="px-4 pb-4">
               <div className="pt-3 border-t border-gray-100">
-                <p className="text-xs font-semibold text-gray-500 mb-1.5">임원들 리뷰</p>
+                <p className="text-xs font-semibold text-gray-500 mb-1.5">임원 리뷰</p>
                 {selected.review && (
                   <RichText text={selected.review} className="text-xs text-gray-600 block" />
                 )}
