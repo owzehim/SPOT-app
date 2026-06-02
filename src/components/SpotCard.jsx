@@ -1,18 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { MapPin, Ticket, Star, StarHalf } from '@phosphor-icons/react'
 import { CATEGORY_ICONS } from '../lib/mapCategories'
-// ── NEW ──────────────────────────────────────────────────────
 import { BowlSteam, HandHeart, Sparkle, CoinVertical } from '@phosphor-icons/react'
 import { useStoreReviewSummary } from '../hooks/useStoreReviewSummary'
 import { computeStarDisplay, getSortedTagsForDisplay, formatAverageRating } from '../domain/reviewDomain'
-// ─────────────────────────────────────────────────────────────
 
 export function RichText({ text, className = '' }) {
   if (!text) return null
   return <span className={className} dangerouslySetInnerHTML={{ __html: text }} />
 }
 
-// ── NEW: icon map for tag display in SpotCard ─────────────────
 const TAG_ICON_COMPONENTS = {
   BowlSteam,
   HandHeart,
@@ -20,13 +17,11 @@ const TAG_ICON_COMPONENTS = {
   CoinVertical,
 }
 
-// ── NEW: Star display row (read-only, for SpotCard) ───────────
+// ── Read-only star row ────────────────────────────────────────
 function StarDisplay({ averageRating }) {
   const formatted = formatAverageRating(averageRating)
   if (!formatted) return null
-
   const { filled, half, empty } = computeStarDisplay(averageRating)
-
   return (
     <div className="flex items-center gap-1">
       <div className="flex items-center gap-0.5">
@@ -43,31 +38,44 @@ function StarDisplay({ averageRating }) {
   )
 }
 
-// ── NEW: Tag breakdown section (section 3 of SpotCard) ────────
-function TagBreakdown({ tagCounts, reviewCount }) {
+// ── Tag bar chart section ─────────────────────────────────────
+function TagBarChart({ tagCounts, reviewCount }) {
   const sorted = getSortedTagsForDisplay(tagCounts)
   if (sorted.length === 0) return null
+
+  const maxCount = sorted[0].count  // highest count = 100% bar width
 
   return (
     <div className="px-4 pb-4">
       <div className="pt-3 border-t border-gray-100">
-        <p className="text-xs font-semibold text-gray-500 mb-2">
-          멤버 리뷰
-          <span className="text-gray-400 font-normal ml-1">({reviewCount}개)</span>
-        </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-semibold text-gray-500">멤버 리뷰</p>
+          <span className="text-xs text-gray-400">{reviewCount}개</span>
+        </div>
+        <div className="flex flex-col gap-2.5">
           {sorted.map((tag) => {
             const IconComponent = TAG_ICON_COMPONENTS[tag.icon]
+            const pct = maxCount > 0 ? Math.round((tag.count / maxCount) * 100) : 0
             return (
-              <div
-                key={tag.key}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-orange-50 rounded-2xl"
-              >
-                {IconComponent && (
-                  <IconComponent size={13} weight="fill" color="#f97316" />
-                )}
-                <span className="text-xs text-orange-700 font-medium">{tag.label}</span>
-                <span className="text-xs text-orange-400 font-semibold">{tag.count}</span>
+              <div key={tag.key} className="flex items-center gap-2">
+                {/* Icon + label */}
+                <div className="flex items-center gap-1 w-28 flex-shrink-0">
+                  {IconComponent && (
+                    <IconComponent size={13} weight="fill" color="#f97316" />
+                  )}
+                  <span className="text-xs text-gray-600 truncate">{tag.label}</span>
+                </div>
+                {/* Bar */}
+                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-orange-400 rounded-full transition-all duration-500"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                {/* Count */}
+                <span className="text-xs text-gray-400 font-medium w-4 text-right flex-shrink-0">
+                  {tag.count}
+                </span>
               </div>
             )
           })}
@@ -184,9 +192,8 @@ export function SpotCard({ selected, onClose }) {
   const imgs = selected['image_urls'] || []
   const hasImages = imgs.length > 0
 
-  // ── NEW: fetch live review summary for this store ─────────
-  const { summary } = useStoreReviewSummary(selected?.id)
-  // ─────────────────────────────────────────────────────────
+  // Live review summary for this store
+  const { summary, loading: summaryLoading } = useStoreReviewSummary(selected?.id)
 
   const { WIN_H, WIN_W } = useMemo(() => ({
     WIN_H: typeof window !== 'undefined' ? window.innerHeight : 700,
@@ -254,6 +261,7 @@ export function SpotCard({ selected, onClose }) {
   }
 
   const isMax = cardHeight >= MAX_HEIGHT * 0.85
+  const iconSvg = CATEGORY_ICONS[selected.category]
 
   const noImageStyle = {
     transform: closing ? 'translateY(110%)' : 'translateY(0)',
@@ -269,7 +277,7 @@ export function SpotCard({ selected, onClose }) {
       : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.32,0,0.67,0)',
   }
 
-  const iconSvg = CATEGORY_ICONS[selected.category]
+  const hasReviews = summary && summary.review_count > 0
 
   return (
     <>
@@ -316,7 +324,6 @@ export function SpotCard({ selected, onClose }) {
 
           {/* ── SECTION 1: Place info ── */}
           <div className="px-4 pt-1 pb-3">
-            {/* Category / badges */}
             <div className="flex items-center gap-1.5 flex-wrap mb-1">
               <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full flex items-center gap-1">
                 {iconSvg && (
@@ -345,12 +352,14 @@ export function SpotCard({ selected, onClose }) {
             {/* Name + live star rating */}
             <div className="flex items-center gap-2 flex-wrap">
               <p className="font-semibold text-gray-900">{selected.name}</p>
-              {/* ── NEW: live rating replaces selected.rating ── */}
-              {summary && summary.review_count > 0 && (
+              {hasReviews && (
                 <div className="flex items-center gap-1">
                   <StarDisplay averageRating={summary.average_rating} />
                   <span className="text-xs text-gray-400">({summary.review_count})</span>
                 </div>
+              )}
+              {summaryLoading && (
+                <span className="text-xs text-gray-300">로딩 중...</span>
               )}
             </div>
 
@@ -376,17 +385,15 @@ export function SpotCard({ selected, onClose }) {
             )}
           </div>
 
+          {/* ── No-image layout ── */}
           {!hasImages && (
             <>
-              {/* ── SECTION 3: Tag breakdown (no-image layout) ── */}
-              {summary && summary.review_count > 0 && (
-                <TagBreakdown
+              {hasReviews && (
+                <TagBarChart
                   tagCounts={summary.tag_counts}
                   reviewCount={summary.review_count}
                 />
               )}
-
-              {/* ── SECTION 4: 임원들 리뷰 (no-image layout) ── */}
               {(selected.review || selected.reviewer_name) && (
                 <div className="px-4 pb-4">
                   <div className="pt-3 border-t border-gray-100">
@@ -400,12 +407,11 @@ export function SpotCard({ selected, onClose }) {
                   </div>
                 </div>
               )}
-
               <div className="pb-16" />
             </>
           )}
 
-          {/* ── SECTION 2: Images ── */}
+          {/* ── Image layout ── */}
           {hasImages && (
             <div className="pb-6">
               {/* Mobile slider */}
@@ -446,10 +452,7 @@ export function SpotCard({ selected, onClose }) {
                           src={url}
                           alt={'사진 ' + (i + 1)}
                           loading={i === slideIndex ? 'eager' : 'lazy'}
-                          style={{
-                            width: '100%', height: '100%',
-                            objectFit: 'contain', display: 'block',
-                          }}
+                          style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
                           draggable={false}
                         />
                       </div>
@@ -486,24 +489,21 @@ export function SpotCard({ selected, onClose }) {
                       src={url}
                       alt={'사진 ' + (i + 1)}
                       loading={i === 0 ? 'eager' : 'lazy'}
-                      style={{
-                        height: '220px', width: 'auto',
-                        maxWidth: '360px', objectFit: 'contain', display: 'block',
-                      }}
+                      style={{ height: '220px', width: 'auto', maxWidth: '360px', objectFit: 'contain', display: 'block' }}
                     />
                   </div>
                 ))}
               </div>
 
-              {/* ── SECTION 3: Tag breakdown (image layout) ── */}
-              {summary && summary.review_count > 0 && (
-                <TagBreakdown
+              {/* Tag bar chart */}
+              {hasReviews && (
+                <TagBarChart
                   tagCounts={summary.tag_counts}
                   reviewCount={summary.review_count}
                 />
               )}
 
-              {/* ── SECTION 4: 임원들 리뷰 (image layout) ── */}
+              {/* 임원들 리뷰 */}
               {(selected.review || selected.reviewer_name) && (
                 <div className="px-4 pb-20">
                   <div className="pt-3 border-t border-gray-100">
@@ -517,8 +517,6 @@ export function SpotCard({ selected, onClose }) {
                   </div>
                 </div>
               )}
-
-              {/* Spacer when no 임원들 리뷰 */}
               {!selected.review && !selected.reviewer_name && <div className="pb-20" />}
             </div>
           )}
