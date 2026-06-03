@@ -1,11 +1,8 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { useQRToken } from '../hooks/useQRToken'
-import { QRCodeSVG } from 'qrcode.react'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
-import { broadcastQRExpiry } from '../lib/qrSync'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE } from '../lib/mapCategories'
 import { QrCode, Calendar, MapPin } from '@phosphor-icons/react'
 // ── NEW ──────────────────────────────────────────────────────
@@ -21,7 +18,6 @@ export default function MemberPage() {
   const [tabKey, setTabKey] = useState(0)
   const [events, setEvents] = useState([])
   const [restaurants, setRestaurants] = useState([])
-  const { token, secondsLeft } = useQRToken(member?.totp_secret)
 
   // ── NEW: review prompt hook ───────────────────────────────
   const {
@@ -92,9 +88,6 @@ export default function MemberPage() {
     )
   }
 
-  const qrValue = token
-    ? window.location.origin + '/verify/' + token + '_' + member?.student_number
-    : ''
   const isValid =
     member?.is_member &&
     member?.membership_valid_until &&
@@ -149,8 +142,8 @@ export default function MemberPage() {
       <div className="flex-1 overflow-hidden">
         <div key={tabKey} className="h-full animate-quick-fade-slide-up">
           {activeTab === 'qr' && (
-            <QRTab member={member} isValid={isValid} qrValue={qrValue} secondsLeft={secondsLeft} />
-          )}
+  <QRTab member={member} isValid={isValid} />
+)}
           {activeTab === 'events' && <EventsTab events={events} />}
           {activeTab === 'map' && <MapTab restaurants={restaurants} />}
         </div>
@@ -188,26 +181,19 @@ export default function MemberPage() {
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 
-function QRTab({ member, isValid, qrValue, secondsLeft }) {
+function QRTab({ member, isValid }) {
   const navigate = useNavigate()
-
-  useEffect(() => {
-    if (!member?.student_number) return
-    broadcastQRExpiry(member.student_number)
-  }, [qrValue, member?.student_number])
-
-  const totalSeconds = 15
-  const progressPercent = ((secondsLeft || 0) / totalSeconds) * 100
-  const displaySeconds = secondsLeft !== null && secondsLeft !== undefined ? secondsLeft : 0
 
   return (
     <div className="h-full overflow-y-auto">
       <div className="px-4 py-6 max-w-md mx-auto space-y-4">
 
-        {/* Member info card */}
+        {/* Member info card (profile) */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold text-gray-900">{member?.first_name} {member?.last_name}</h2>
+            <h2 className="font-semibold text-gray-900">
+              {member?.first_name} {member?.last_name}
+            </h2>
             <span
               className={
                 'text-xs font-medium px-2 py-1 rounded-full ' +
@@ -224,43 +210,15 @@ function QRTab({ member, isValid, qrValue, secondsLeft }) {
           </div>
         </div>
 
-        {/* QR code or expired message */}
-        {isValid ? (
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col items-center">
-            <p className="text-sm text-gray-500 mb-4">멤버십 QR 코드</p>
-            <div className="p-3 bg-white rounded-xl border-4 border-orange-500">
-              <QRCodeSVG value={qrValue} size={200} level="M" />
-            </div>
-            <div className="w-full mt-6">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm text-gray-600">QR 갱신까지</p>
-                <p className="text-sm font-semibold text-gray-700">{displaySeconds}초</p>
-              </div>
-              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-orange-500 transition-all duration-100"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-            </div>
-            <p className="text-xs text-gray-400 mt-4 text-center">15초마다 자동 갱신됩니다</p>
-          </div>
-        ) : (
-          <div className="bg-red-50 rounded-2xl border border-red-100 p-5 text-center">
-            <p className="text-red-600 font-medium">멤버십이 유효하지 않습니다</p>
-            <p className="text-sm text-red-400 mt-1">임원에게 문의하세요</p>
-          </div>
-        )}
-
+        {/* Check-in button only (no QR, no timer) */}
         {isValid && (
           <button
             onClick={() => navigate('/scan')}
             className="w-full py-3 bg-orange-500 text-white font-semibold rounded-2xl text-sm hover:bg-orange-600 transition-colors"
           >
-            멤버십 Check-In 하기
+            맴버십 check-in 하기
           </button>
         )}
-
       </div>
     </div>
   )
