@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ArrowLeft } from '@phosphor-icons/react'
 import { supabase } from '../lib/supabase'
 import { logRedemption } from '../lib/redemption'
 import QRScanner from '../components/QRScanner'
@@ -130,9 +131,9 @@ export default function ScanPage() {
       >
         <button
           onClick={() => navigate('/member')}
-          className="text-gray-500 hover:text-gray-800 text-lg px-2 py-1 rounded-lg hover:bg-gray-100"
+          className="text-gray-500 hover:text-gray-800 px-2 py-1 rounded-lg hover:bg-gray-100"
         >
-          &lt;
+          <ArrowLeft size={20} weight="fill" />
         </button>
       </div>
 
@@ -152,7 +153,7 @@ export default function ScanPage() {
               className="absolute"
               style={{
                 top: 4,
-                right: 4,
+                left: 4,
                 zIndex: 10,
               }}
             >
@@ -192,7 +193,7 @@ export default function ScanPage() {
             </p>
 
             <p className="text-base font-bold text-orange-500">
-              이 화면을 직원에게 보여주세요.
+              이 화면을 직원에게 보여주세요
             </p>
 
             {/* Security profile card */}
@@ -227,7 +228,7 @@ export default function ScanPage() {
 
               <div className="flex justify-between items-center">
                 <span className="text-xs font-medium text-gray-500">
-                  Membership Valid Until
+                  멤버십 유효기간
                 </span>
                 <span className="text-sm font-semibold text-gray-900">
                   {formatMembershipDate(member?.membership_valid_until)}
