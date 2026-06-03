@@ -119,35 +119,23 @@ export default function ScanPage() {
     ? `${member.first_name || ''} ${member.last_name || ''}`.trim()
     : ''
 
-  const isSuccessState = state === STATE.SUCCESS
-
   return (
     <div
       className="flex flex-col bg-gray-50 overflow-hidden"
       style={{ height: '100dvh' }}
     >
-      {/* Safe area + Header combined – orange on success, white otherwise */}
+      {/* Header – white */}
       <div
-        className={`flex-shrink-0 ${
-          isSuccessState
-            ? 'bg-orange-500 border-b border-orange-600'
-            : 'bg-white border-b border-gray-100'
-        }`}
-        style={{ paddingTop: `calc(env(safe-area-inset-top) + 12px)` }}
+        className="bg-white border-b border-gray-100 px-2 py-3 flex items-center flex-shrink-0"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
-        <div className="px-2 py-3 flex items-center">
-          <button
-            onClick={() => navigate('/member')}
-            className={`px-2 py-1 rounded-lg transition-colors ${
-              isSuccessState
-                ? 'text-white hover:text-orange-100 hover:bg-orange-600'
-                : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'
-            }`}
-            aria-label="뒤로"
-          >
-            <ArrowLeft size={20} weight="bold" />
-          </button>
-        </div>
+        <button
+          onClick={() => navigate('/member')}
+          className="text-gray-500 hover:text-gray-800 px-2 py-1 rounded-lg hover:bg-gray-100"
+          aria-label="뒤로"
+        >
+          <ArrowLeft size={20} weight="bold" />
+        </button>
       </div>
 
       {/* Body */}
