@@ -198,8 +198,8 @@ export default function ScanPage() {
               이 화면을 직원에게 보여주세요
             </p>
 
-            {/* Security profile card */}
-            <div className="w-full mt-4 p-4 bg-white rounded-2xl border border-gray-200 shadow-sm text-left space-y-3">
+            {/* Security profile card with orange outline */}
+            <div className="w-full mt-4 p-4 bg-white rounded-2xl border-2 border-orange-500 shadow-sm text-left space-y-3">
               <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                 <span className="text-xs font-medium text-gray-500">Scan Time</span>
                 <span className="text-sm font-semibold text-gray-900">
@@ -230,7 +230,7 @@ export default function ScanPage() {
 
               <div className="flex justify-between items-center">
                 <span className="text-xs font-medium text-gray-500">
-                  Membership Validi Until
+                  Membership Valid Until
                 </span>
                 <span className="text-sm font-semibold text-gray-900">
                   {formatMembershipDate(member?.membership_valid_until)}
@@ -238,13 +238,15 @@ export default function ScanPage() {
               </div>
             </div>
 
-            {/* Only home button on success */}
-            <button
-              onClick={() => navigate('/member')}
-              className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-2xl text-sm hover:bg-gray-200 transition-colors"
-            >
-              홈으로 돌아가기
-            </button>
+            {/* Only home button on success – with extra spacing */}
+            <div className="w-full mt-8">
+              <button
+                onClick={() => navigate('/member')}
+                className="w-full py-3 bg-gray-100 text-gray-600 font-medium rounded-2xl text-sm hover:bg-gray-200 transition-colors"
+              >
+                홈으로 돌아가기
+              </button>
+            </div>
           </div>
         )}
 
