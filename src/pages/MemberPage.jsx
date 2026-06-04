@@ -208,22 +208,15 @@ function MembershipCard({ member, isValid, onClick }) {
         width: '100%',
         paddingBottom: 'calc(100% / 1.586)',
         overflow: 'hidden',
-        boxShadow: '0 8px 32px rgba(249,115,22,0.35)',
         userSelect: 'none',
         cursor: isValid ? 'pointer' : 'default',
-        transition: 'opacity 0.15s',
       }}
-      onMouseDown={(e) => { if (isValid) e.currentTarget.style.opacity = '0.85' }}
-      onMouseUp={(e) => { e.currentTarget.style.opacity = '1' }}
-      onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
-      onTouchStart={(e) => { if (isValid) e.currentTarget.style.opacity = '0.85' }}
-      onTouchEnd={(e) => { e.currentTarget.style.opacity = '1' }}
     >
       <div style={{ position: 'absolute', inset: 0 }}>
 
         {/* TOP: label */}
         <div style={{ position: 'absolute', top: '8%', left: '7%' }}>
-          <span style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.08em' }}>UvA-IN MEMBERSHIP CARD</span>
+          <span style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.08em' }}>UvA-IN MEMBER</span>
         </div>
 
         {/* Card number */}
