@@ -119,7 +119,7 @@ export default function MemberPage() {
         className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
-        <h1 className="font-bold text-gray-900">SPOT</h1>
+        <h1 className="font-bold text-gray-900">UvA-IN</h1>
         <div className="flex gap-2">
           {isAdmin && (
             <button
@@ -196,63 +196,54 @@ function QRTab({ member, isValid }) {
         {/* ── Greeting card ── */}
         <div
           className="rounded-3xl p-6 relative overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)' }}
+          style={{
+            background: 'linear-gradient(160deg, #ff8c42 0%, #f97316 40%, #c2410c 100%)',
+          }}
         >
-          {/* Decorative background circles */}
-          <div
-            className="absolute -top-8 -right-8 rounded-full opacity-20"
-            style={{ width: 140, height: 140, background: 'white' }}
-          />
-          <div
-            className="absolute -bottom-10 -left-6 rounded-full opacity-10"
-            style={{ width: 100, height: 100, background: 'white' }}
-          />
-
-          {/* Content */}
-          <div className="relative flex items-start justify-between">
-
-            {/* Left: name + validity */}
-            <div className="flex-1">
-              <p className="text-orange-200 text-xs font-medium mb-1 tracking-wide uppercase">
-                SPOT Member
-              </p>
-              <h2 className="text-white font-bold leading-tight"
-                style={{ fontSize: '1.75rem' }}>
-                {member?.first_name}
-              </h2>
-              <h2 className="text-white font-bold leading-tight mb-3"
-                style={{ fontSize: '1.75rem' }}>
-                {member?.last_name}
-              </h2>
-
-              {/* Validity badge */}
-              <div className="flex items-center gap-1.5">
-                {isValid
-                  ? <CheckCircle size={15} weight="fill" color="white" />
-                  : <XCircle size={15} weight="fill" color="rgba(255,255,255,0.6)" />
-                }
-                <span className={
-                  'text-xs font-semibold ' +
-                  (isValid ? 'text-white' : 'text-orange-200')
-                }>
-                  {isValid
-                    ? `유효 · ${member?.membership_valid_until?.slice(0, 10) ?? ''}`
-                    : '멤버십 만료'}
-                </span>
-              </div>
-            </div>
-
-            {/* Right: avatar */}
+          {/* Top row: label + avatar */}
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-orange-200 text-xs font-semibold tracking-widest uppercase">
+              UvA-IN Member
+            </p>
             <div
-              className="flex items-center justify-center rounded-full bg-white flex-shrink-0"
-              style={{ width: 64, height: 64 }}
+              className="flex items-center justify-center rounded-full bg-white bg-opacity-20 flex-shrink-0"
+              style={{ width: 44, height: 44 }}
             >
               {initials ? (
-                <span className="text-orange-500 font-bold text-xl">{initials}</span>
+                <span className="text-white font-bold text-base">{initials}</span>
               ) : (
-                <UserCircle size={40} weight="fill" color="#f97316" />
+                <UserCircle size={28} weight="fill" color="white" />
               )}
             </div>
+          </div>
+
+          {/* Name — big and bold, hero element */}
+          <div className="mb-6">
+            <h2
+              className="text-white font-black leading-none tracking-tight"
+              style={{ fontSize: '2.6rem' }}
+            >
+              {member?.first_name}
+            </h2>
+            <h2
+              className="text-white font-black leading-none tracking-tight"
+              style={{ fontSize: '2.6rem', opacity: 0.75 }}
+            >
+              {member?.last_name}
+            </h2>
+          </div>
+
+          {/* Bottom row: validity */}
+          <div className="flex items-center gap-2">
+            {isValid
+              ? <CheckCircle size={14} weight="fill" color="white" />
+              : <XCircle size={14} weight="fill" color="rgba(255,255,255,0.5)" />
+            }
+            <span className="text-white text-xs font-medium opacity-80">
+              {isValid
+                ? `유효 · ${member?.membership_valid_until?.slice(0, 10) ?? ''}`
+                : '멤버십 만료'}
+            </span>
           </div>
         </div>
 
@@ -281,6 +272,7 @@ function QRTab({ member, isValid }) {
     </div>
   )
 }
+
 // ─── Nav Button ───────────────────────────────────────────────────────────────
 
 function NavBtn({ onClick, children, style = {} }) {
