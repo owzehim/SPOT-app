@@ -179,46 +179,42 @@ export default function MemberPage() {
 }
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
+// ─── QR Tab ───────────────────────────────────────────────────────────────────
 function QRTab({ member, isValid }) {
   const navigate = useNavigate()
 
-  const studentNum = String(member?.student_number ?? '00000000')
-  const seg1 = studentNum.slice(0, 4).padEnd(4, '0')
-  const seg2 = studentNum.slice(4, 8).padEnd(4, '0')
+  // 카드 번호: 앞 8자리 학번 + XXXX + 출생 연도
+  const rawStudent = String(member?.student_number ?? '').padEnd(8, '0').slice(0, 8)
+  const seg1 = rawStudent.slice(0, 4)
+  const seg2 = rawStudent.slice(4, 8)
   const seg3 = 'XXXX'
   const seg4 = member?.year_of_birth ? String(member.year_of_birth) : 'XXXX'
 
   const validUntil = member?.membership_valid_until
-    ? member.membership_valid_until.slice(0, 10)
-    : '—'
+    ? member.membership_valid_until.slice(0, 10) // YYYY-MM-DD
+    : '----.--.--'
 
   return (
     <div className="h-full overflow-y-auto">
       <div className="px-4 py-6 max-w-md mx-auto space-y-4">
 
+        {/* 크레딧 카드 버튼 */}
         <button
           onClick={() => isValid && navigate('/scan')}
           disabled={!isValid}
+          className="w-full relative rounded-2xl text-left shadow-lg overflow-hidden"
           style={{
-            width: '100%',
             background: isValid
               ? 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)'
               : 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)',
-            borderRadius: '20px',
-            padding: '20px 22px',
-            position: 'relative',
             aspectRatio: '1.586 / 1',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            cursor: isValid ? 'pointer' : 'default',
             border: 'none',
+            padding: '20px 22px',
+            cursor: isValid ? 'pointer' : 'default',
             boxShadow: isValid
               ? '0 8px 32px rgba(249,115,22,0.35)'
               : '0 4px 16px rgba(0,0,0,0.15)',
             transition: 'transform 0.15s, box-shadow 0.15s',
-            overflow: 'hidden',
-            textAlign: 'left',
           }}
           onMouseEnter={(e) => {
             if (!isValid) return
@@ -232,62 +228,164 @@ function QRTab({ member, isValid }) {
               : '0 4px 16px rgba(0,0,0,0.15)'
           }}
         >
-          {/* Row 1: profile circle + UvA-IN MEMBER */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              width: '48px', height: '48px', borderRadius: '50%',
-              background: 'rgba(255,255,255,0.95)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}>
-              <span style={{ fontSize: '10px', fontWeight: '700', color: '#374151', textAlign: 'center', lineHeight: 1.3 }}>
-                프로필
+          {/* 내부 레이아웃: 위/중간/아래 3줄 그리드 */}
+          <div className="grid h-full grid-rows-[auto,1fr,auto] gap-2">
+
+            {/* 1줄: 프로필 동그라미 + UvA-IN MEMBER */}
+            <div className="flex items-center gap-3">
+              <div
+                style={{
+                  width: '52px',
+                  height: '52px',
+                  borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.95)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    color: '#374151',
+                    textAlign: 'center',
+                    lineHeight: 1.3,
+                  }}
+                >
+                  프로필
+                </span>
+              </div>
+
+              <span
+                style={{
+                  color: 'white',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                UvA-IN MEMBER
               </span>
             </div>
-            <span style={{ color: 'white', fontSize: '13px', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-              UvA-IN MEMBER
-            </span>
+
+            {/* 2줄: 카드번호 + 유효날짜 (조금 위쪽에 배치됨) */}
+            <div className="flex flex-col justify-center">
+              <div
+                style={{
+                  color: 'white',
+                  fontSize: '22px',
+                  fontWeight: 600,
+                  letterSpacing: '0.22em',
+                  fontFamily: 'monospace',
+                  textShadow: '0 1px 4px rgba(0,0,0,0.15)',
+                  marginBottom: '6px',
+                }}
+              >
+                {seg1} {seg2} {seg3} {seg4}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span
+                  style={{
+                    color: 'rgba(255,255,255,0.75)',
+                    fontSize: '11px',
+                  }}
+                >
+                  유효 (check):
+                </span>
+                <span
+                  style={{
+                    color: 'white',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    fontFamily: 'monospace',
+                  }}
+                >
+                  {validUntil}
+                </span>
+              </div>
+            </div>
+
+            {/* 3줄: 왼쪽 이름, 오른쪽 로고 */}
+            <div className="flex items-end justify-between">
+              <p
+                style={{
+                  color: 'white',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  margin: 0,
+                }}
+              >
+                {member?.first_name} {member?.last_name}
+              </p>
+
+              {/* 협회 로고 (public/uvain logo.png) */}
+              <img
+                src="/uvain%20logo.png"
+                alt="UvA-IN"
+                style={{
+                  height: '54px',
+                  width: 'auto',
+                  objectFit: 'contain',
+                }}
+              />
+            </div>
           </div>
 
-          {/* Row 2: card number */}
-          <div style={{ color: 'white', fontSize: '20px', fontWeight: '600', letterSpacing: '0.2em', fontFamily: 'monospace', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
-            {seg1} {seg2} {seg3} {seg4}
-          </div>
-
-          {/* Row 3: 유효기간 */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '10px', letterSpacing: '0.08em' }}>유효</span>
-            <span style={{ color: 'white', fontSize: '11px', fontWeight: '600', fontFamily: 'monospace' }}>{validUntil}</span>
-          </div>
-
-          {/* Row 4: name (bottom-left) + logo (bottom-right) */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-            <p style={{ color: 'white', fontSize: '13px', fontWeight: '600', letterSpacing: '0.08em', textTransform: 'uppercase', margin: 0 }}>
-              {member?.first_name} {member?.last_name}
-            </p>
-            <img src="/uvain%20logo.png" alt="UvA-IN" style={{ height: '44px', width: 'auto', objectFit: 'contain' }} />
-          </div>
-
-          {/* Expired overlay */}
+          {/* 만료 오버레이 */}
           {!isValid && (
-            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.25)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ color: 'white', fontWeight: '700', fontSize: '14px', background: 'rgba(0,0,0,0.4)', padding: '6px 16px', borderRadius: '999px' }}>
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'rgba(0,0,0,0.25)',
+                borderRadius: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <span
+                style={{
+                  color: 'white',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  letterSpacing: '0.1em',
+                  background: 'rgba(0,0,0,0.4)',
+                  padding: '6px 16px',
+                  borderRadius: '999px',
+                }}
+              >
                 멤버십 만료
               </span>
             </div>
           )}
         </button>
 
+        {/* 카드 하단 안내 문구 */}
         {isValid && (
-          <p style={{ textAlign: 'center', fontSize: '12px', color: '#9ca3af', marginTop: '-4px' }}>
+          <p className="text-center text-xs text-gray-400 -mt-1">
             카드를 탭하여 Check-In 하기
           </p>
         )}
 
-        {/* Member info card */}
+        {/* 아래 기존 멤버 정보 카드 + 통계는 그대로 유지 */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold text-gray-900">{member?.first_name} {member?.last_name}</h2>
-            <span className={'text-xs font-medium px-2 py-1 rounded-full ' + (isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600')}>
+            <h2 className="font-semibold text-gray-900">
+              {member?.first_name} {member?.last_name}
+            </h2>
+            <span
+              className={
+                'text-xs font-medium px-2 py-1 rounded-full ' +
+                (isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600')
+              }
+            >
               {isValid ? '✓ 유효' : '✗ 만료'}
             </span>
           </div>
@@ -303,7 +401,6 @@ function QRTab({ member, isValid }) {
     </div>
   )
 }
-
 // ─── Nav Button ───────────────────────────────────────────────────────────────
 
 function NavBtn({ onClick, children, style = {} }) {
