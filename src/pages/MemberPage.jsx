@@ -180,29 +180,8 @@ export default function MemberPage() {
 }
 
 // ─── Membership Card ──────────────────────────────────────────────────────────
-import QRScanner from '../components/QRScanner'
-
 function MembershipCard({ member, isValid }) {
   const [flipped, setFlipped] = useState(false)
-  const swipeStartX = useRef(null)
-
-  const handleTouchStart = (e) => {
-    swipeStartX.current = e.touches[0].clientX
-  }
-
-  const handleTouchEnd = (e) => {
-    if (swipeStartX.current === null) return
-    const dx = e.changedTouches[0].clientX - swipeStartX.current
-    
-    // Swipe right to open, swipe left to close
-    if (dx > 40 && !flipped) {
-      setFlipped(true)
-    } else if (dx < -40 && flipped) {
-      setFlipped(false)
-    }
-    
-    swipeStartX.current = null
-  }
 
   const W = 'calc(100vw - 32px)'
   const cardW = W
@@ -226,8 +205,6 @@ function MembershipCard({ member, isValid }) {
         flexShrink: 0,
         perspective: '1200px',
       }}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
     >
       {/* Flip container */}
       <div
@@ -310,6 +287,7 @@ function MembershipCard({ member, isValid }) {
 
         {/* ── BACK ── (rotated 180deg on Y, then landscape rotate) */}
         <div
+          onClick={() => setFlipped(false)}
           style={{
             position: 'absolute',
             width: cardH,
