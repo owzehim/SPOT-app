@@ -206,7 +206,7 @@ function MembershipCard({ member, isValid, onClick }) {
     number: `calc(${W} * 0.075)`,
     valid:  `calc(${W} * 0.038)`,
     name:   `calc(${W} * 0.052)`,
-    logo:   `calc(${W} * 0.18)`,
+    logo:   `calc(${W} * 0.26)`,  // increased from 0.18
   }
 
   return (
@@ -263,7 +263,7 @@ function MembershipCard({ member, isValid, onClick }) {
           </div>
         </div>
 
-        {/* Logo — bottom-right, recolored to dark brown/orange via CSS filter */}
+        {/* Logo — bottom-right */}
         <div style={{
           position: 'absolute',
           bottom: '5%',
@@ -278,14 +278,7 @@ function MembershipCard({ member, isValid, onClick }) {
           <img
             src="/UvA-IN-logo-transparent.png"
             alt="UvA-IN logo"
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'contain',
-              display: 'block',
-              // Strip original colors → sepia → shift to orange-brown
-              filter: 'grayscale(1) sepia(1) saturate(2) hue-rotate(340deg) brightness(0.75)',
-            }}
+            style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
           />
         </div>
 
