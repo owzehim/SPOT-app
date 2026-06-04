@@ -187,6 +187,12 @@ function MembershipCard({ member, isValid }) {
   const part4 = member?.year_of_birth ? String(member.year_of_birth) : '????'
   const cardNumber = `${part1} ${part2} ${part3} ${part4}`
 
+  const validUntil = member?.membership_valid_until
+    ? new Date(member.membership_valid_until).toLocaleDateString('en-GB', {
+        day: '2-digit', month: 'short', year: 'numeric',
+      })
+    : 'N/A'
+
   return (
     <div
       style={{
@@ -205,23 +211,23 @@ function MembershipCard({ member, isValid }) {
       <div style={{ position: 'absolute', bottom: '-60px', left: '-30px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
 
       {/* Top row: label only */}
-      <div style={{ marginBottom: '40px' }}>
+      <div style={{ marginBottom: '48px' }}>
         <span style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.08em' }}>UvA-IN MEMBER</span>
       </div>
 
       {/* Card number */}
-      <div style={{ fontFamily: 'monospace', fontSize: '22px', fontWeight: 700, letterSpacing: '0.12em', marginBottom: '16px', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
+      <div style={{ fontFamily: 'monospace', fontSize: '22px', fontWeight: 700, letterSpacing: '0.12em', marginBottom: '8px', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
         {cardNumber}
       </div>
 
-      {/* Valid indicator */}
-      <div style={{ marginBottom: '16px' }}>
-        <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 10px', borderRadius: '999px', background: isValid ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)', color: '#fff', letterSpacing: '0.04em' }}>
-          {isValid ? '✓ VALID' : '✗ EXPIRED'}
+      {/* Valid indicator — sits under the XXXX segment */}
+      <div style={{ marginBottom: '20px' }}>
+        <span style={{ fontSize: '12px', fontWeight: 500, opacity: 0.9 }}>
+          Valid {isValid ? '✓' : '✗'}: {validUntil}
         </span>
       </div>
 
-      {/* Name */}
+      {/* Card holder name */}
       <div>
         <div style={{ fontSize: '10px', opacity: 0.7, marginBottom: '2px', letterSpacing: '0.06em' }}>CARD HOLDER</div>
         <div style={{ fontWeight: 600, fontSize: '15px', letterSpacing: '0.04em' }}>
