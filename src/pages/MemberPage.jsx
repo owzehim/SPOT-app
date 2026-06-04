@@ -196,9 +196,7 @@ function QRTab({ member, isValid }) {
         {/* ── Greeting card ── */}
         <div
           className="rounded-3xl p-6 relative overflow-hidden"
-          style={{
-            background: 'linear-gradient(160deg, #ff8c42 0%, #f97316 40%, #c2410c 100%)',
-          }}
+          style={{ background: '#f97316' }}
         >
           {/* Top row: label + avatar */}
           <div className="flex items-center justify-between mb-6">
