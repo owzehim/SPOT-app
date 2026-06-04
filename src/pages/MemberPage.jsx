@@ -180,19 +180,17 @@ export default function MemberPage() {
 }
 
 // ─── Membership Card ──────────────────────────────────────────────────────────
-function MembershipCard({ member, isValid }) {
+function MembershipCard({ member, isValid, onQRScanned }) {
   const [flipped, setFlipped] = useState(false)
-
   const W = 'calc(100vw - 32px)'
   const cardW = W
   const cardH = `calc(${W} * 1.586)`
-
   const fs = {
-    label:  `calc(${W} * 0.045)`,
+    label: `calc(${W} * 0.045)`,
     number: `calc(${W} * 0.075)`,
-    valid:  `calc(${W} * 0.038)`,
-    name:   `calc(${W} * 0.052)`,
-    logo:   `calc(${W} * 0.26)`,
+    valid: `calc(${W} * 0.038)`,
+    name: `calc(${W} * 0.052)`,
+    logo: `calc(${W} * 0.26)`,
   }
 
   return (
@@ -228,46 +226,108 @@ function MembershipCard({ member, isValid }) {
           >
             {/* Label */}
             <div style={{ position: 'absolute', top: '8%', left: '7%' }}>
-              <span style={{ fontWeight: 700, fontSize: fs.label, letterSpacing: '0.08em' }}>
+              <span
+                style={{
+                  fontWeight: 700,
+                  fontSize: fs.label,
+                  letterSpacing: '0.08em',
+                }}
+              >
                 UvA-IN BENEFITS
               </span>
             </div>
 
             {/* Card number */}
-            <div style={{ position: 'absolute', bottom: '24%', left: '7%', right: '7%' }}>
-              <div style={{ fontFamily: 'monospace', fontSize: fs.number, fontWeight: 700, letterSpacing: '0.12em', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
-                {`${String(member?.student_number ?? '00000000').slice(0,4)} ${String(member?.student_number ?? '00000000').slice(4,8)} XXXX ${member?.year_of_birth ?? '????'}`}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '24%',
+                left: '7%',
+                right: '7%',
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: 'monospace',
+                  fontSize: fs.number,
+                  fontWeight: 700,
+                  letterSpacing: '0.12em',
+                  textShadow: '0 1px 4px rgba(0,0,0,0.15)',
+                }}
+              >
+                {`${String(member?.student_number ?? '00000000').slice(0, 4)} ${String(member?.student_number ?? '00000000').slice(4, 8)} XXXX ${member?.year_of_birth ?? '????'}`}
               </div>
             </div>
 
             {/* Valid Until */}
-            <div style={{ position: 'absolute', bottom: '16%', left: 0, right: 0, textAlign: 'center' }}>
-              <div style={{ fontSize: fs.valid, fontWeight: 500, opacity: 0.9 }}>
-                Valid Until: {member?.membership_valid_until
-                  ? (() => { const d = new Date(member.membership_valid_until); return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(-2)}` })()
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '16%',
+                left: 0,
+                right: 0,
+                textAlign: 'center',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: fs.valid,
+                  fontWeight: 500,
+                  opacity: 0.9,
+                }}
+              >
+                Valid Until:{' '}
+                {member?.membership_valid_until
+                  ? (() => {
+                      const d = new Date(member.membership_valid_until)
+                      return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`
+                    })()
                   : 'N/A'}
               </div>
             </div>
 
             {/* Name */}
-            <div style={{ position: 'absolute', bottom: '8%', left: '7%' }}>
-              <div style={{ fontWeight: 600, fontSize: fs.name, letterSpacing: '0.04em' }}>
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '8%',
+                left: '7%',
+              }}
+            >
+              <div
+                style={{
+                  fontWeight: 600,
+                  fontSize: fs.name,
+                  letterSpacing: '0.04em',
+                }}
+              >
                 {member?.first_name} {member?.last_name}
               </div>
             </div>
 
             {/* Logo */}
-            <div style={{
-              position: 'absolute', bottom: '5%', right: '4%',
-              width: fs.logo, height: fs.logo,
-              borderRadius: '50%',
-              border: `calc(${W} * 0.007) solid rgba(255,255,255,0.85)`,
-              overflow: 'hidden', flexShrink: 0,
-            }}>
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '5%',
+                right: '4%',
+                width: fs.logo,
+                height: fs.logo,
+                borderRadius: '50%',
+                border: `calc(${W} * 0.007) solid rgba(255,255,255,0.85)`,
+                overflow: 'hidden',
+                flexShrink: 0,
+              }}
+            >
               <img
                 src="/UvA-IN-logo-transparent.png"
                 alt="UvA-IN logo"
-                style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  display: 'block',
+                }}
               />
             </div>
           </div>
@@ -297,16 +357,19 @@ function MembershipCard({ member, isValid }) {
           }}
         >
           {/* Scanner wrapper — centered and sized properly */}
-          <div style={{
-            width: '100%',
-            height: '100%',
-            overflow: 'hidden',
-            borderRadius: '10px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <QRScanner onScan={() => {}} />
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              overflow: 'hidden',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <QRScanner onScan={onQRScanned} />
           </div>
         </div>
       )}
@@ -354,11 +417,10 @@ function QRTab({ member, isValid }) {
     const raw = currentOffset.current + dy
     const max = getMaxLift()
     const shouldLift = raw > max * 0.3
-
     if (cardLayerRef.current) {
-      cardLayerRef.current.style.transition = 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
+      cardLayerRef.current.style.transition =
+        'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
     }
-
     setTranslate(shouldLift ? max : 0)
     liftedRef.current = shouldLift
     setLifted(shouldLift)
@@ -367,18 +429,32 @@ function QRTab({ member, isValid }) {
 
   useEffect(() => {
     if (cardLayerRef.current) {
-      cardLayerRef.current.style.transition = 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
+      cardLayerRef.current.style.transition =
+        'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
     }
     setTranslate(lifted ? getMaxLift() : 0)
   }, [lifted])
 
+  // Handle QR code scan
+  const handleQRScanned = (qrData) => {
+    console.log('QR Code scanned:', qrData)
+    navigate('/verify', { state: { qrData } })
+  }
+
   const W = 'calc(100vw - 32px)'
-  const fs = { guide: `calc(${W} * 0.032)` }
+  const fs = {
+    guide: `calc(${W} * 0.032)`,
+  }
 
   return (
     // overflow: hidden clips everything — activity is invisible until card moves up
-    <div style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
-
+    <div
+      style={{
+        position: 'relative',
+        height: '100%',
+        overflow: 'hidden',
+      }}
+    >
       {/* Activity stats — anchored to bottom, naturally hidden behind card */}
       <div
         ref={activityRef}
@@ -422,34 +498,47 @@ function QRTab({ member, isValid }) {
         {/* Spacer so card sits vertically centered */}
         <div style={{ flex: 1 }} />
 
+        {/* Pass the QR scan handler to MembershipCard */}
         <MembershipCard
           member={member}
           isValid={isValid}
-          onClick={() => navigate('/scan')}
+          onQRScanned={handleQRScanned}
         />
 
         {/* Guide text — right-aligned, fades out when lifted */}
-        <div style={{
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-end',
-          marginTop: '10px',
-          gap: '2px',
-          paddingRight: '4px',
-          opacity: lifted ? 0 : 1,
-          transition: 'opacity 0.25s ease',
-        }}>
-          <span style={{ fontSize: fs.guide, color: 'rgba(0,0,0,0.4)', fontWeight: 500 }}>
+        <div
+          style={{
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            marginTop: '10px',
+            gap: '2px',
+            paddingRight: '4px',
+            opacity: lifted ? 0 : 1,
+            transition: 'opacity 0.25s ease',
+          }}
+        >
+          <span
+            style={{
+              fontSize: fs.guide,
+              color: 'rgba(0,0,0,0.4)',
+              fontWeight: 500,
+            }}
+          >
             눌러서 Check-IN 하기
           </span>
-          <span style={{ fontSize: fs.guide, color: 'rgba(0,0,0,0.4)', fontWeight: 500 }}>
+          <span
+            style={{
+              fontSize: fs.guide,
+              color: 'rgba(0,0,0,0.4)',
+              fontWeight: 500,
+            }}
+          >
             위로 올려서 이번 달 활동 보기
           </span>
         </div>
-
       </div>
-
     </div>
   )
 }
