@@ -180,7 +180,7 @@ export default function MemberPage() {
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 
-export default function QRTab({ member, isValid }) {
+function QRTab({ member, isValid }) {
   const navigate = useNavigate()
   const [revealed, setRevealed] = useState(false)
   const touchStartY = useRef(null)
