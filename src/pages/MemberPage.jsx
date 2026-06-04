@@ -179,6 +179,8 @@ export default function MemberPage() {
 }
 
 // ─── Membership Card ──────────────────────────────────────────────────────────
+// ─── Membership Card ──────────────────────────────────────────────────────────
+// REPLACE the existing MembershipCard function with this
 function MembershipCard({ member, isValid }) {
   const studentNum = member?.student_number ? String(member.student_number) : '00000000'
   const part1 = studentNum.slice(0, 4)
@@ -198,44 +200,55 @@ function MembershipCard({ member, isValid }) {
       style={{
         background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
         borderRadius: '16px',
-        padding: '24px',
         color: '#fff',
         position: 'relative',
-        height: '200px',
+        // Credit card ratio: width / 1.586 = height
+        // We use padding-bottom trick so it scales with container width
+        width: '100%',
+        paddingBottom: 'calc(100% / 1.586)',
         overflow: 'hidden',
         boxShadow: '0 8px 32px rgba(249,115,22,0.35)',
         userSelect: 'none',
       }}
     >
-      {/* Decorative circles */}
-      <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '160px', height: '160px', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: '-60px', left: '-30px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
+      {/* Inner absolute fill — all content goes here */}
+      <div style={{ position: 'absolute', inset: 0, padding: '6% 7%' }}>
 
-      {/* TOP: label — anchored to top */}
-      <div style={{ position: 'absolute', top: '24px', left: '24px' }}>
-        <span style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.08em' }}>UvA-IN MEMBER</span>
-      </div>
+        {/* Decorative circles */}
+        <div style={{ position: 'absolute', top: '-15%', right: '-10%', width: '50%', height: '50%', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: '-25%', left: '-10%', width: '60%', height: '60%', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
 
-      {/* BOTTOM: card number + valid + name — anchored to bottom */}
-      <div style={{ position: 'absolute', bottom: '24px', left: '24px', right: '24px' }}>
-        {/* Card number */}
-        <div style={{ fontFamily: 'monospace', fontSize: '20px', fontWeight: 700, letterSpacing: '0.12em', marginBottom: '6px', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
-          {cardNumber}
+        {/* TOP: label */}
+        <div style={{ position: 'absolute', top: '8%', left: '7%' }}>
+          <span style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.08em' }}>UvA-IN MEMBER</span>
         </div>
 
-        {/* Valid indicator + name on same row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        {/* Card number — locked above bottom rows */}
+        <div style={{ position: 'absolute', bottom: '28%', left: '7%', right: '7%' }}>
+          <div style={{ fontFamily: 'monospace', fontSize: '20px', fontWeight: 700, letterSpacing: '0.12em', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
+            {cardNumber}
+          </div>
+        </div>
+
+        {/* Valid — starts at 50% (under XXXX), one row above name */}
+        <div style={{ position: 'absolute', bottom: '16%', left: '50%', right: '7%' }}>
           <div style={{ fontSize: '11px', fontWeight: 500, opacity: 0.9 }}>
             Valid {isValid ? '✓' : '✗'}: {validUntil}
           </div>
-          <div style={{ fontWeight: 600, fontSize: '14px', letterSpacing: '0.04em', textAlign: 'right' }}>
+        </div>
+
+        {/* Name — bottom-left */}
+        <div style={{ position: 'absolute', bottom: '8%', left: '7%' }}>
+          <div style={{ fontWeight: 600, fontSize: '14px', letterSpacing: '0.04em' }}>
             {member?.first_name} {member?.last_name}
           </div>
         </div>
+
       </div>
     </div>
   )
 }
+
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 
