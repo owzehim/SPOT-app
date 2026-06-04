@@ -183,11 +183,195 @@ export default function MemberPage() {
 function QRTab({ member, isValid }) {
   const navigate = useNavigate()
 
+  // Card number: [first 4 of student_number] [last 4 of student_number] XXXX [year_of_birth]
+  const studentNum = String(member?.student_number ?? '00000000')
+  const seg1 = studentNum.slice(0, 4).padEnd(4, '0')
+  const seg2 = studentNum.slice(4, 8).padEnd(4, '0')
+  const seg3 = 'XXXX'
+  const seg4 = member?.year_of_birth ? String(member.year_of_birth) : 'XXXX'
+
   return (
     <div className="h-full overflow-y-auto">
       <div className="px-4 py-6 max-w-md mx-auto space-y-4">
 
-        {/* Member info card (profile) */}
+        {/* ── Credit Card ── */}
+        <button
+          onClick={() => isValid && navigate('/scan')}
+          disabled={!isValid}
+          style={{
+            width: '100%',
+            background: isValid
+              ? 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)'
+              : 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)',
+            borderRadius: '20px',
+            padding: '28px 24px 24px 24px',
+            position: 'relative',
+            aspectRatio: '1.586 / 1',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            cursor: isValid ? 'pointer' : 'default',
+            border: 'none',
+            boxShadow: isValid
+              ? '0 8px 32px rgba(249,115,22,0.35)'
+              : '0 4px 16px rgba(0,0,0,0.15)',
+            transition: 'transform 0.15s, box-shadow 0.15s',
+            overflow: 'hidden',
+          }}
+          onMouseEnter={(e) => {
+            if (!isValid) return
+            e.currentTarget.style.transform = 'scale(1.02)'
+            e.currentTarget.style.boxShadow = '0 12px 40px rgba(249,115,22,0.45)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.boxShadow = isValid
+              ? '0 8px 32px rgba(249,115,22,0.35)'
+              : '0 4px 16px rgba(0,0,0,0.15)'
+          }}
+        >
+          {/* Row 1: profile circle (top-left) + UvA-IN MEMBER vertical (top-right) */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            {/* Profile placeholder — top-left */}
+            <div
+              style={{
+                width: '52px',
+                height: '52px',
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.95)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <span style={{ fontSize: '10px', fontWeight: '700', color: '#374151', textAlign: 'center', lineHeight: 1.3 }}>
+                프로필
+              </span>
+            </div>
+
+            {/* UvA-IN MEMBER — top-right, vertical */}
+            <div
+              style={{
+                writingMode: 'vertical-rl',
+                textOrientation: 'mixed',
+                color: 'rgba(255,255,255,0.9)',
+                fontSize: '11px',
+                fontWeight: '700',
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                marginTop: '4px',
+              }}
+            >
+              UvA-IN MEMBER
+            </div>
+          </div>
+
+          {/* Row 2: EMV chip + contactless icon */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* Gold chip */}
+            <div
+              style={{
+                width: '44px',
+                height: '34px',
+                borderRadius: '6px',
+                background: 'linear-gradient(135deg, #d4af37 0%, #f5e17a 40%, #c8a020 100%)',
+                border: '1px solid rgba(255,255,255,0.3)',
+                position: 'relative',
+                flexShrink: 0,
+              }}
+            >
+              <div style={{ position: 'absolute', inset: '5px', display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: '3px' }}>
+                {[0, 1, 2, 3].map((i) => (
+                  <div key={i} style={{ background: 'rgba(180,140,0,0.5)', borderRadius: '1px' }} />
+                ))}
+              </div>
+            </div>
+
+            {/* Contactless waves */}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.85 }}>
+              <path d="M12 4 Q18 8 18 12 Q18 16 12 20" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none" />
+              <path d="M12 7 Q16 9.5 16 12 Q16 14.5 12 17" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none" />
+              <path d="M12 10 Q14 11 14 12 Q14 13 12 14" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none" />
+            </svg>
+          </div>
+
+          {/* Row 3: card number */}
+          <div
+            style={{
+              color: 'white',
+              fontSize: '18px',
+              fontWeight: '600',
+              letterSpacing: '0.18em',
+              fontFamily: 'monospace',
+              textShadow: '0 1px 4px rgba(0,0,0,0.2)',
+            }}
+          >
+            {seg1} {seg2} {seg3} {seg4}
+          </div>
+
+          {/* Row 4: logo (bottom-left) + cardholder name (bottom-right) */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            {/* UvA-IN logo — white filtered */}
+            <img
+              src="/uvain%20logo.png"
+              alt="UvA-IN"
+              style={{
+                height: '40px',
+                width: 'auto',
+                objectFit: 'contain',
+                filter: 'brightness(0) invert(1)',
+                opacity: 0.9,
+              }}
+            />
+
+            {/* Cardholder name */}
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '2px' }}>
+                CARDHOLDER
+              </p>
+              <p style={{ color: 'white', fontSize: '13px', fontWeight: '600', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                {member?.first_name} {member?.last_name}
+              </p>
+            </div>
+          </div>
+
+          {/* Expired overlay */}
+          {!isValid && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'rgba(0,0,0,0.25)',
+                borderRadius: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <span style={{
+                color: 'white',
+                fontWeight: '700',
+                fontSize: '14px',
+                letterSpacing: '0.1em',
+                background: 'rgba(0,0,0,0.4)',
+                padding: '6px 16px',
+                borderRadius: '999px',
+              }}>
+                멤버십 만료
+              </span>
+            </div>
+          )}
+        </button>
+
+        {/* Tap hint */}
+        {isValid && (
+          <p style={{ textAlign: 'center', fontSize: '12px', color: '#9ca3af', marginTop: '-4px' }}>
+            카드를 탭하여 Check-In 하기
+          </p>
+        )}
+
+        {/* Member info card */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-gray-900">
@@ -209,18 +393,8 @@ function QRTab({ member, isValid }) {
           </div>
         </div>
 
-        {/* Activity stats — only shown to valid members */}
+        {/* Activity stats */}
         {isValid && <ActivityStatsCard userId={member?.user_id} />}
-
-        {/* Check-in button */}
-        {isValid && (
-          <button
-            onClick={() => navigate('/scan')}
-            className="w-full py-3 bg-orange-500 text-white font-semibold rounded-2xl text-sm hover:bg-orange-600 transition-colors"
-          >
-            맴버십 check-in 하기
-          </button>
-        )}
 
       </div>
     </div>
