@@ -197,13 +197,10 @@ function MembershipCard({ member, isValid, onClick }) {
       })()
     : 'N/A'
 
-  // Portrait card: width = 63vw (fits most phones), height = width * 1.586
-  // The landscape inner card is width * 1.586 wide and width tall, rotated 90deg
-  const cardW = 'min(63vw, 280px)'   // portrait width  (short side)
-  const cardH = `calc(${cardW} * 1.586)` // portrait height (long side)
+  const cardW = 'min(63vw, 280px)'
+  const cardH = `calc(${cardW} * 1.586)`
 
   return (
-    // Outer: reserves portrait space, centers the card
     <div style={{
       width: cardW,
       height: cardH,
@@ -211,13 +208,12 @@ function MembershipCard({ member, isValid, onClick }) {
       position: 'relative',
       flexShrink: 0,
     }}>
-      {/* Inner: landscape dimensions, rotated 90° clockwise */}
       <div
         onClick={isValid ? onClick : undefined}
         style={{
           position: 'absolute',
-          width: cardH,   // landscape width  = portrait height
-          height: cardW,  // landscape height = portrait width
+          width: cardH,
+          height: cardW,
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%) rotate(90deg)',
@@ -232,17 +228,17 @@ function MembershipCard({ member, isValid, onClick }) {
       >
         {/* TOP: label */}
         <div style={{ position: 'absolute', top: '8%', left: '7%' }}>
-          <span style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.08em' }}>UvA-IN MEMBER</span>
+          <span style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.08em' }}>UvA-IN Benefits</span>
         </div>
 
         {/* Card number */}
-        <div style={{ position: 'absolute', bottom: '28%', left: '7%', right: '7%' }}>
+        <div style={{ position: 'absolute', bottom: '24%', left: '7%', right: '7%' }}>
           <div style={{ fontFamily: 'monospace', fontSize: '20px', fontWeight: 700, letterSpacing: '0.12em', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
             {cardNumber}
           </div>
         </div>
 
-        {/* Valid Until — centered */}
+        {/* Valid Until — centered between card number and name, horizontally centered */}
         <div style={{ position: 'absolute', bottom: '16%', left: 0, right: 0, textAlign: 'center' }}>
           <div style={{ fontSize: '11px', fontWeight: 500, opacity: 0.9 }}>
             Valid Until: {validUntil}
@@ -256,21 +252,27 @@ function MembershipCard({ member, isValid, onClick }) {
           </div>
         </div>
 
-        {/* Logo — bottom-right with white circular outline */}
+        {/* Logo — bottom-right, fixed square size, no stretch */}
         <div style={{
           position: 'absolute',
-          bottom: '6%',
-          right: '5%',
-          width: '13%',
-          aspectRatio: '1/1',
+          bottom: '5%',
+          right: '4%',
+          width: '18%',
+          height: '18%',
           borderRadius: '50%',
           border: '2px solid rgba(255,255,255,0.85)',
           overflow: 'hidden',
+          flexShrink: 0,
         }}>
           <img
             src="/UvA-IN-logo-transparent.png"
             alt="UvA-IN logo"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              display: 'block',
+            }}
           />
         </div>
 
