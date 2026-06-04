@@ -5,10 +5,9 @@ import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE } from '../lib/mapCategories'
 import { QrCode, Calendar, MapPin } from '@phosphor-icons/react'
-// ── NEW ──────────────────────────────────────────────────────
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
-// ─────────────────────────────────────────────────────────────
+import ActivityStatsCard from '../components/ActivityStatsCard'
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)
@@ -210,7 +209,10 @@ function QRTab({ member, isValid }) {
           </div>
         </div>
 
-        {/* Check-in button only (no QR, no timer) */}
+        {/* Activity stats — only shown to valid members */}
+        {isValid && <ActivityStatsCard userId={member?.user_id} />}
+
+        {/* Check-in button */}
         {isValid && (
           <button
             onClick={() => navigate('/scan')}
@@ -219,6 +221,7 @@ function QRTab({ member, isValid }) {
             맴버십 check-in 하기
           </button>
         )}
+
       </div>
     </div>
   )
