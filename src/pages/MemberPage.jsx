@@ -235,32 +235,6 @@ function MembershipCard({ member, isValid, onClick }) {
           cursor: isValid ? 'pointer' : 'default',
         }}
       >
-        {/* Dark brown panel — right side, curved left edge */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          width: '36%',
-          height: '100%',
-          background: '#c2410c',
-          borderTopLeftRadius: '60% 50%',
-          borderBottomLeftRadius: '60% 50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <img
-            src="/UvA-IN-logo-transparent.png"
-            alt="UvA-IN logo"
-            style={{
-              width: '65%',
-              height: '65%',
-              objectFit: 'contain',
-              display: 'block',
-            }}
-          />
-        </div>
-
         {/* TOP: label */}
         <div style={{ position: 'absolute', top: '8%', left: '7%' }}>
           <span style={{ fontWeight: 700, fontSize: fs.label, letterSpacing: '0.08em' }}>
@@ -269,14 +243,14 @@ function MembershipCard({ member, isValid, onClick }) {
         </div>
 
         {/* Card number */}
-        <div style={{ position: 'absolute', bottom: '24%', left: '7%', right: '40%' }}>
+        <div style={{ position: 'absolute', bottom: '24%', left: '7%', right: '7%' }}>
           <div style={{ fontFamily: 'monospace', fontSize: fs.number, fontWeight: 700, letterSpacing: '0.12em', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
             {cardNumber}
           </div>
         </div>
 
         {/* Valid Until */}
-        <div style={{ position: 'absolute', bottom: '16%', left: '7%', right: '40%', textAlign: 'left' }}>
+        <div style={{ position: 'absolute', bottom: '16%', left: 0, right: 0, textAlign: 'center' }}>
           <div style={{ fontSize: fs.valid, fontWeight: 500, opacity: 0.9 }}>
             Valid Until: {validUntil}
           </div>
@@ -289,10 +263,37 @@ function MembershipCard({ member, isValid, onClick }) {
           </div>
         </div>
 
+        {/* Logo — bottom-right, recolored to dark brown/orange via CSS filter */}
+        <div style={{
+          position: 'absolute',
+          bottom: '5%',
+          right: '4%',
+          width: fs.logo,
+          height: fs.logo,
+          borderRadius: '50%',
+          border: `calc(${W} * 0.007) solid rgba(255,255,255,0.85)`,
+          overflow: 'hidden',
+          flexShrink: 0,
+        }}>
+          <img
+            src="/UvA-IN-logo-transparent.png"
+            alt="UvA-IN logo"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              display: 'block',
+              // Strip original colors → sepia → shift to orange-brown
+              filter: 'grayscale(1) sepia(1) saturate(2) hue-rotate(340deg) brightness(0.75)',
+            }}
+          />
+        </div>
+
       </div>
     </div>
   )
 }
+
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 
 function QRTab({ member, isValid }) {
