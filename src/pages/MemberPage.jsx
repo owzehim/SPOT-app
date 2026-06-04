@@ -214,32 +214,20 @@ function MembershipCard({ member, isValid }) {
     >
       <div style={{ position: 'absolute', inset: 0 }}>
 
-        {/* Decorative circles */}
-        <div style={{ position: 'absolute', top: '-15%', right: '-10%', width: '50%', height: '50%', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: '-25%', left: '-10%', width: '60%', height: '60%', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
-
-        {/* TOP-LEFT: label */}
+        {/* TOP: label */}
         <div style={{ position: 'absolute', top: '8%', left: '7%' }}>
           <span style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.08em' }}>UvA-IN MEMBER</span>
         </div>
 
-        {/* TOP-RIGHT: status dot */}
-        <div style={{
-          position: 'absolute', top: '8%', right: '7%',
-          width: '12px', height: '12px', borderRadius: '50%',
-          background: isValid ? '#22c55e' : '#ef4444',
-          boxShadow: isValid ? '0 0 6px rgba(34,197,94,0.7)' : '0 0 6px rgba(239,68,68,0.7)',
-        }} />
-
-        {/* Card number */}
+        {/* Card number — locked above bottom rows */}
         <div style={{ position: 'absolute', bottom: '28%', left: '7%', right: '7%' }}>
           <div style={{ fontFamily: 'monospace', fontSize: '20px', fontWeight: 700, letterSpacing: '0.12em', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
             {cardNumber}
           </div>
         </div>
 
-        {/* Valid Until — centred on the right half of the card */}
-        <div style={{ position: 'absolute', bottom: '16%', left: '50%', right: '7%', textAlign: 'center' }}>
+        {/* Valid Until — centered across full card width */}
+        <div style={{ position: 'absolute', bottom: '16%', left: 0, right: 0, textAlign: 'center' }}>
           <div style={{ fontSize: '11px', fontWeight: 500, opacity: 0.9 }}>
             Valid Until: {validUntil}
           </div>
