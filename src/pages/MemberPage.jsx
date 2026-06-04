@@ -118,7 +118,7 @@ export default function MemberPage() {
         className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
-        <h1 className="font-bold text-gray-900">UvA-IN</h1>
+        <h1 className="font-bold text-gray-900">SPOT</h1>
         <div className="flex gap-2">
           {isAdmin && (
             <button
@@ -179,202 +179,15 @@ export default function MemberPage() {
 }
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
-// ─── QR Tab ───────────────────────────────────────────────────────────────────
+
 function QRTab({ member, isValid }) {
   const navigate = useNavigate()
-
-  // 카드 번호: 앞 8자리 학번 + XXXX + 출생 연도
-  const rawStudent = String(member?.student_number ?? '').padEnd(8, '0').slice(0, 8)
-  const seg1 = rawStudent.slice(0, 4)
-  const seg2 = rawStudent.slice(4, 8)
-  const seg3 = 'XXXX'
-  const seg4 = member?.year_of_birth ? String(member.year_of_birth) : 'XXXX'
-
-  const validUntil = member?.membership_valid_until
-    ? member.membership_valid_until.slice(0, 10) // YYYY-MM-DD
-    : '----.--.--'
 
   return (
     <div className="h-full overflow-y-auto">
       <div className="px-4 py-6 max-w-md mx-auto space-y-4">
 
-        {/* 크레딧 카드 버튼 */}
-        <button
-          onClick={() => isValid && navigate('/scan')}
-          disabled={!isValid}
-          className="w-full relative rounded-2xl text-left shadow-lg overflow-hidden"
-          style={{
-            background: isValid
-              ? 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)'
-              : 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)',
-            aspectRatio: '1.586 / 1',
-            border: 'none',
-            padding: '20px 22px',
-            cursor: isValid ? 'pointer' : 'default',
-            boxShadow: isValid
-              ? '0 8px 32px rgba(249,115,22,0.35)'
-              : '0 4px 16px rgba(0,0,0,0.15)',
-            transition: 'transform 0.15s, box-shadow 0.15s',
-          }}
-          onMouseEnter={(e) => {
-            if (!isValid) return
-            e.currentTarget.style.transform = 'scale(1.02)'
-            e.currentTarget.style.boxShadow = '0 12px 40px rgba(249,115,22,0.45)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)'
-            e.currentTarget.style.boxShadow = isValid
-              ? '0 8px 32px rgba(249,115,22,0.35)'
-              : '0 4px 16px rgba(0,0,0,0.15)'
-          }}
-        >
-          {/* 내부 레이아웃: 위/중간/아래 3줄 그리드 */}
-          <div className="grid h-full grid-rows-[auto,1fr,auto] gap-2">
-
-            {/* 1줄: 프로필 동그라미 + UvA-IN MEMBER */}
-            <div className="flex items-center gap-3">
-              <div
-                style={{
-                  width: '52px',
-                  height: '52px',
-                  borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.95)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 700,
-                    color: '#374151',
-                    textAlign: 'center',
-                    lineHeight: 1.3,
-                  }}
-                >
-                  프로필
-                </span>
-              </div>
-
-              <span
-                style={{
-                  color: 'white',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                }}
-              >
-                UvA-IN MEMBER
-              </span>
-            </div>
-
-            {/* 2줄: 카드번호 + 유효날짜 (조금 위쪽에 배치됨) */}
-            <div className="flex flex-col justify-center">
-              <div
-                style={{
-                  color: 'white',
-                  fontSize: '22px',
-                  fontWeight: 600,
-                  letterSpacing: '0.22em',
-                  fontFamily: 'monospace',
-                  textShadow: '0 1px 4px rgba(0,0,0,0.15)',
-                  marginBottom: '6px',
-                }}
-              >
-                {seg1} {seg2} {seg3} {seg4}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span
-                  style={{
-                    color: 'rgba(255,255,255,0.75)',
-                    fontSize: '11px',
-                  }}
-                >
-                  유효 (check):
-                </span>
-                <span
-                  style={{
-                    color: 'white',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    fontFamily: 'monospace',
-                  }}
-                >
-                  {validUntil}
-                </span>
-              </div>
-            </div>
-
-            {/* 3줄: 왼쪽 이름, 오른쪽 로고 */}
-            <div className="flex items-end justify-between">
-              <p
-                style={{
-                  color: 'white',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase',
-                  margin: 0,
-                }}
-              >
-                {member?.first_name} {member?.last_name}
-              </p>
-
-              {/* 협회 로고 (public/uvain logo.png) */}
-              <img
-                src="/uvain%20logo.png"
-                alt="UvA-IN"
-                style={{
-                  height: '54px',
-                  width: 'auto',
-                  objectFit: 'contain',
-                }}
-              />
-            </div>
-          </div>
-
-          {/* 만료 오버레이 */}
-          {!isValid && (
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'rgba(0,0,0,0.25)',
-                borderRadius: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <span
-                style={{
-                  color: 'white',
-                  fontWeight: 700,
-                  fontSize: '14px',
-                  letterSpacing: '0.1em',
-                  background: 'rgba(0,0,0,0.4)',
-                  padding: '6px 16px',
-                  borderRadius: '999px',
-                }}
-              >
-                멤버십 만료
-              </span>
-            </div>
-          )}
-        </button>
-
-        {/* 카드 하단 안내 문구 */}
-        {isValid && (
-          <p className="text-center text-xs text-gray-400 -mt-1">
-            카드를 탭하여 Check-In 하기
-          </p>
-        )}
-
-        {/* 아래 기존 멤버 정보 카드 + 통계는 그대로 유지 */}
+        {/* Member info card (profile) */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-gray-900">
@@ -396,11 +209,24 @@ function QRTab({ member, isValid }) {
           </div>
         </div>
 
+        {/* Activity stats — only shown to valid members */}
         {isValid && <ActivityStatsCard userId={member?.user_id} />}
+
+        {/* Check-in button */}
+        {isValid && (
+          <button
+            onClick={() => navigate('/scan')}
+            className="w-full py-3 bg-orange-500 text-white font-semibold rounded-2xl text-sm hover:bg-orange-600 transition-colors"
+          >
+            맴버십 check-in 하기
+          </button>
+        )}
+
       </div>
     </div>
   )
 }
+
 // ─── Nav Button ───────────────────────────────────────────────────────────────
 
 function NavBtn({ onClick, children, style = {} }) {
