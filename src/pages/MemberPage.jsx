@@ -295,49 +295,70 @@ function MembershipCard({ member, isValid, onClick }) {
 function QRTab({ member, isValid }) {
   const navigate = useNavigate()
   const [lifted, setLifted] = useState(false)
-  const [dragging, setDragging] = useState(false)
-  const [dragOffset, setDragOffset] = useState(0)
-  const touchStartY = useRef(null)
-  const touchStartOffset = useRef(0)
-
-  // How far up the card travels when fully open (px)
-  // We use a ref to measure the activity card height dynamically
+  const cardLayerRef = useRef(null)
   const activityRef = useRef(null)
+  const touchStartY = useRef(null)
+  const currentOffset = useRef(0)  // tracks live drag offset without re-renders
+  const liftedRef = useRef(false)
 
   const getMaxLift = () => activityRef.current?.offsetHeight ?? 260
 
+  // Directly set transform on the DOM node — no setState, no re-render
+  const setTranslate = (offset) => {
+    if (cardLayerRef.current) {
+      cardLayerRef.current.style.transform = `translateY(${-offset}px)`
+    }
+  }
+
   const handleTouchStart = (e) => {
+    // Disable transition during drag for instant response
+    if (cardLayerRef.current) {
+      cardLayerRef.current.style.transition = 'none'
+    }
     touchStartY.current = e.touches[0].clientY
-    touchStartOffset.current = lifted ? getMaxLift() : 0
-    setDragging(true)
+    currentOffset.current = liftedRef.current ? getMaxLift() : 0
   }
 
   const handleTouchMove = (e) => {
     if (touchStartY.current === null) return
     const dy = touchStartY.current - e.touches[0].clientY
-    const raw = touchStartOffset.current + dy
-    // Clamp between 0 and maxLift
-    setDragOffset(Math.max(0, Math.min(raw, getMaxLift())))
+    const raw = currentOffset.current + dy
+    const clamped = Math.max(0, Math.min(raw, getMaxLift()))
+    setTranslate(clamped)
   }
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e) => {
+    const dy = touchStartY.current - e.changedTouches[0].clientY
+    const raw = currentOffset.current + dy
     const max = getMaxLift()
-    // Snap: if dragged more than 30% of the way, go to open state
-    if (dragOffset > max * 0.3) {
-      setLifted(true)
-      setDragOffset(max)
-    } else {
-      setLifted(false)
-      setDragOffset(0)
+    const shouldLift = raw > max * 0.3
+
+    // Re-enable transition for snap animation
+    if (cardLayerRef.current) {
+      cardLayerRef.current.style.transition = 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
     }
-    setDragging(false)
+
+    setTranslate(shouldLift ? max : 0)
+    liftedRef.current = shouldLift
+    setLifted(shouldLift)
     touchStartY.current = null
   }
 
-  const translateY = -(dragging ? dragOffset : lifted ? getMaxLift() : 0)
+  // Sync DOM on mount and lifted state change
+  useEffect(() => {
+    if (cardLayerRef.current) {
+      cardLayerRef.current.style.transition = 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
+    }
+    setTranslate(lifted ? getMaxLift() : 0)
+  }, [lifted])
+
+  const W = 'calc(100vw - 32px)'
+  const fs = {
+    guide: `calc(${W} * 0.032)`,
+  }
 
   return (
-    <div style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', height: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
 
       {/* Activity stats — sits behind/below the card */}
       <div
@@ -353,38 +374,52 @@ function QRTab({ member, isValid }) {
         {isValid && <ActivityStatsCard userId={member?.user_id} />}
       </div>
 
-      {/* Card layer — slides up on swipe */}
+      {/* Card layer — slides up on swipe, centered on screen */}
       <div
+        ref={cardLayerRef}
         style={{
           position: 'absolute',
           bottom: 0,
           left: 0,
           right: 0,
           padding: '16px 16px 24px',
-          transform: `translateY(${translateY}px)`,
-          transition: dragging ? 'none' : 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)',
           zIndex: 10,
           touchAction: 'none',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Drag handle */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-          <div style={{
-            width: '36px',
-            height: '4px',
-            borderRadius: '2px',
-            background: 'rgba(0,0,0,0.15)',
-          }} />
-        </div>
-
         <MembershipCard
           member={member}
           isValid={isValid}
           onClick={() => navigate('/scan')}
         />
+
+        {/* Guide text — right-aligned, below the card */}
+        <div style={{
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          marginTop: '10px',
+          gap: '2px',
+          paddingRight: '4px',
+          opacity: lifted ? 0 : 1,
+          transition: 'opacity 0.25s ease',
+        }}>
+          <span style={{ fontSize: fs.guide, color: 'rgba(0,0,0,0.4)', fontWeight: 500 }}>
+            눌러서 Check-IN 하기
+          </span>
+          <span style={{ fontSize: fs.guide, color: 'rgba(0,0,0,0.4)', fontWeight: 500 }}>
+            위로 올려서 이번 달 활동 보기
+          </span>
+        </div>
+
       </div>
 
     </div>
