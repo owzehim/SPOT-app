@@ -180,6 +180,8 @@ export default function MemberPage() {
 }
 
 // ─── Membership Card ──────────────────────────────────────────────────────────
+import QRScanner from '../components/QRScanner'
+
 function MembershipCard({ member, isValid }) {
   const [flipped, setFlipped] = useState(false)
   const swipeStartX = useRef(null)
@@ -325,16 +327,21 @@ function MembershipCard({ member, isValid }) {
             userSelect: 'none',
             padding: '8px',
             boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            paddingTop: '12px',
           }}
         >
-          {/* QRScanner — rotated 90deg to the right for portrait scanning */}
+          {/* QRScanner — rotated 90deg left, positioned higher */}
           {flipped && (
             <div style={{
               width: '100%',
-              height: '100%',
+              height: '90%',
               overflow: 'hidden',
               borderRadius: '10px',
-              transform: 'rotate(90deg)',
+              transform: 'rotate(-90deg)',
               transformOrigin: 'center center',
             }}>
               <QRScanner onScan={() => {}} />
