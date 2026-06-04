@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
@@ -179,113 +179,101 @@ export default function MemberPage() {
 }
 
 // ─── Membership Card ──────────────────────────────────────────────────────────
-function MembershipCard({ member, isValid, onClick }) {
-  const studentNum = member?.student_number ? String(member.student_number) : '00000000'
-  const part1 = studentNum.slice(0, 4)
-  const part2 = studentNum.slice(4, 8)
-  const part3 = 'XXXX'
-  const part4 = member?.year_of_birth ? String(member.year_of_birth) : '????'
-  const cardNumber = `${part1} ${part2} ${part3} ${part4}`
+function QRTab({ member, isValid }) {
+  const navigate = useNavigate()
+  const [lifted, setLifted] = useState(false)
+  const [dragging, setDragging] = useState(false)
+  const [dragOffset, setDragOffset] = useState(0)
+  const touchStartY = useRef(null)
+  const touchStartOffset = useRef(0)
 
-  const validUntil = member?.membership_valid_until
-    ? (() => {
-        const d = new Date(member.membership_valid_until)
-        const dd = String(d.getDate()).padStart(2, '0')
-        const mm = String(d.getMonth() + 1).padStart(2, '0')
-        const yy = String(d.getFullYear()).slice(-2)
-        return `${dd}/${mm}/${yy}`
-      })()
-    : 'N/A'
+  // How far up the card travels when fully open (px)
+  // We use a ref to measure the activity card height dynamically
+  const activityRef = useRef(null)
 
-  // Card dimensions — portrait orientation
-  // cardW = short side (portrait width), cardH = long side (portrait height)
-  const W = 'calc(100vw - 32px)'   // base unit: portrait width
-  const cardW = W
-  const cardH = `calc(${W} * 1.586)`
+  const getMaxLift = () => activityRef.current?.offsetHeight ?? 260
 
-  // All sizes derived from W so they scale with the card on any screen
-  const fs = {
-    label:   `calc(${W} * 0.045)`,   // "UvA-IN BENEFITS"
-    number:  `calc(${W} * 0.075)`,   // card number
-    valid:   `calc(${W} * 0.038)`,   // valid until line
-    name:    `calc(${W} * 0.052)`,   // cardholder name
-    logo:    `calc(${W} * 0.18)`,    // logo circle diameter
+  const handleTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY
+    touchStartOffset.current = lifted ? getMaxLift() : 0
+    setDragging(true)
   }
 
+  const handleTouchMove = (e) => {
+    if (touchStartY.current === null) return
+    const dy = touchStartY.current - e.touches[0].clientY
+    const raw = touchStartOffset.current + dy
+    // Clamp between 0 and maxLift
+    setDragOffset(Math.max(0, Math.min(raw, getMaxLift())))
+  }
+
+  const handleTouchEnd = () => {
+    const max = getMaxLift()
+    // Snap: if dragged more than 30% of the way, go to open state
+    if (dragOffset > max * 0.3) {
+      setLifted(true)
+      setDragOffset(max)
+    } else {
+      setLifted(false)
+      setDragOffset(0)
+    }
+    setDragging(false)
+    touchStartY.current = null
+  }
+
+  const translateY = -(dragging ? dragOffset : lifted ? getMaxLift() : 0)
+
   return (
-    <div style={{
-      width: cardW,
-      height: cardH,
-      margin: '0 auto',
-      position: 'relative',
-      flexShrink: 0,
-    }}>
+    <div style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
+
+      {/* Activity stats — sits behind/below the card */}
       <div
-        onClick={isValid ? onClick : undefined}
+        ref={activityRef}
         style={{
           position: 'absolute',
-          width: cardH,
-          height: cardW,
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%) rotate(90deg)',
-          transformOrigin: 'center center',
-          background: '#f97316',
-          borderRadius: '16px',
-          color: '#fff',
-          overflow: 'hidden',
-          userSelect: 'none',
-          cursor: isValid ? 'pointer' : 'default',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          padding: '0 16px 16px',
         }}
       >
-        {/* TOP: label */}
-        <div style={{ position: 'absolute', top: '8%', left: '7%' }}>
-          <span style={{ fontWeight: 700, fontSize: fs.label, letterSpacing: '0.08em' }}>
-            UvA-IN BENEFITS
-          </span>
-        </div>
-
-        {/* Card number */}
-        <div style={{ position: 'absolute', bottom: '24%', left: '7%', right: '7%' }}>
-          <div style={{ fontFamily: 'monospace', fontSize: fs.number, fontWeight: 700, letterSpacing: '0.12em', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
-            {cardNumber}
-          </div>
-        </div>
-
-        {/* Valid Until — horizontally centered */}
-        <div style={{ position: 'absolute', bottom: '16%', left: 0, right: 0, textAlign: 'center' }}>
-          <div style={{ fontSize: fs.valid, fontWeight: 500, opacity: 0.9 }}>
-            Valid Until: {validUntil}
-          </div>
-        </div>
-
-        {/* Name — bottom-left */}
-        <div style={{ position: 'absolute', bottom: '8%', left: '7%' }}>
-          <div style={{ fontWeight: 600, fontSize: fs.name, letterSpacing: '0.04em' }}>
-            {member?.first_name} {member?.last_name}
-          </div>
-        </div>
-
-        {/* Logo — bottom-right, perfect square derived from W */}
-        <div style={{
-          position: 'absolute',
-          bottom: '5%',
-          right: '4%',
-          width: fs.logo,
-          height: fs.logo,
-          borderRadius: '50%',
-          border: `calc(${W} * 0.007) solid rgba(255,255,255,0.85)`,
-          overflow: 'hidden',
-          flexShrink: 0,
-        }}>
-          <img
-            src="/UvA-IN-logo-transparent.png"
-            alt="UvA-IN logo"
-            style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
-          />
-        </div>
-
+        {isValid && <ActivityStatsCard userId={member?.user_id} />}
       </div>
+
+      {/* Card layer — slides up on swipe */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          padding: '16px 16px 24px',
+          transform: `translateY(${translateY}px)`,
+          transition: dragging ? 'none' : 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)',
+          zIndex: 10,
+          touchAction: 'none',
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Drag handle */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+          <div style={{
+            width: '36px',
+            height: '4px',
+            borderRadius: '2px',
+            background: 'rgba(0,0,0,0.15)',
+          }} />
+        </div>
+
+        <MembershipCard
+          member={member}
+          isValid={isValid}
+          onClick={() => navigate('/scan')}
+        />
+      </div>
+
     </div>
   )
 }
