@@ -188,21 +188,20 @@ function MembershipCard({ member, isValid }) {
   const cardNumber = `${part1} ${part2} ${part3} ${part4}`
 
   // Format: DD/MM/YY
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A'
-    const d = new Date(dateStr)
-    const dd = String(d.getDate()).padStart(2, '0')
-    const mm = String(d.getMonth() + 1).padStart(2, '0')
-    const yy = String(d.getFullYear()).slice(-2)
-    return `${dd}/${mm}/${yy}`
-  }
-
-  const validUntil = formatDate(member?.membership_valid_until)
+  const validUntil = member?.membership_valid_until
+    ? (() => {
+        const d = new Date(member.membership_valid_until)
+        const dd = String(d.getDate()).padStart(2, '0')
+        const mm = String(d.getMonth() + 1).padStart(2, '0')
+        const yy = String(d.getFullYear()).slice(-2)
+        return `${dd}/${mm}/${yy}`
+      })()
+    : 'N/A'
 
   return (
     <div
       style={{
-        background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+        background: '#f97316',
         borderRadius: '16px',
         color: '#fff',
         position: 'relative',
@@ -219,10 +218,18 @@ function MembershipCard({ member, isValid }) {
         <div style={{ position: 'absolute', top: '-15%', right: '-10%', width: '50%', height: '50%', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', bottom: '-25%', left: '-10%', width: '60%', height: '60%', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
 
-        {/* TOP: label */}
+        {/* TOP-LEFT: label */}
         <div style={{ position: 'absolute', top: '8%', left: '7%' }}>
           <span style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.08em' }}>UvA-IN MEMBER</span>
         </div>
+
+        {/* TOP-RIGHT: status dot */}
+        <div style={{
+          position: 'absolute', top: '8%', right: '7%',
+          width: '12px', height: '12px', borderRadius: '50%',
+          background: isValid ? '#22c55e' : '#ef4444',
+          boxShadow: isValid ? '0 0 6px rgba(34,197,94,0.7)' : '0 0 6px rgba(239,68,68,0.7)',
+        }} />
 
         {/* Card number */}
         <div style={{ position: 'absolute', bottom: '28%', left: '7%', right: '7%' }}>
@@ -231,16 +238,16 @@ function MembershipCard({ member, isValid }) {
           </div>
         </div>
 
-        {/* Valid — horizontally centered, one row above name */}
-        <div style={{ position: 'absolute', bottom: '16%', left: '0', right: '0', textAlign: 'center' }}>
+        {/* Valid Until — centred on the right half of the card */}
+        <div style={{ position: 'absolute', bottom: '16%', left: '50%', right: '7%', textAlign: 'center' }}>
           <div style={{ fontSize: '11px', fontWeight: 500, opacity: 0.9 }}>
-            Valid {isValid ? '✓' : '✗'}: {validUntil}
+            Valid Until: {validUntil}
           </div>
         </div>
 
-        {/* Name — bottom-left, bigger */}
+        {/* Name — bottom-left */}
         <div style={{ position: 'absolute', bottom: '8%', left: '7%' }}>
-          <div style={{ fontWeight: 600, fontSize: '17px', letterSpacing: '0.04em' }}>
+          <div style={{ fontWeight: 600, fontSize: '14px', letterSpacing: '0.04em' }}>
             {member?.first_name} {member?.last_name}
           </div>
         </div>
