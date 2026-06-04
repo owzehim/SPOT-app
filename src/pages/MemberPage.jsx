@@ -327,9 +327,16 @@ function MembershipCard({ member, isValid }) {
             boxSizing: 'border-box',
           }}
         >
-          {/* QRScanner — only renders when flipped */}
+          {/* QRScanner — rotated 90deg to the right for portrait scanning */}
           {flipped && (
-            <div style={{ width: '100%', height: '100%', overflow: 'hidden', borderRadius: '10px' }}>
+            <div style={{
+              width: '100%',
+              height: '100%',
+              overflow: 'hidden',
+              borderRadius: '10px',
+              transform: 'rotate(90deg)',
+              transformOrigin: 'center center',
+            }}>
               <QRScanner onScan={() => {}} />
             </div>
           )}
