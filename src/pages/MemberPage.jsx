@@ -141,14 +141,12 @@ export default function MemberPage() {
 
       {/* 컨텐츠 */}
       <div className="flex-1 overflow-hidden">
-        <div key={tabKey} className="h-full animate-quick-fade-slide-up">
-          {activeTab === 'qr' && (
-  <QRTab member={member} isValid={isValid} />
-)}
-          {activeTab === 'events' && <EventsTab events={events} />}
-          {activeTab === 'map' && <MapTab restaurants={restaurants} />}
-        </div>
-      </div>
+  <div className="h-full">
+    {activeTab === 'qr' && <QRTab member={member} isValid={isValid} />}
+    {activeTab === 'events' && <EventsTab events={events} />}
+    {activeTab === 'map' && <MapTab restaurants={restaurants} />}
+  </div>
+</div>
 
       {/* 하단 탭 */}
       <div
