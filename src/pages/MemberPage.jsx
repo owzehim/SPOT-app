@@ -180,23 +180,9 @@ export default function MemberPage() {
 }
 
 // ─── Membership Card ──────────────────────────────────────────────────────────
+
 function MembershipCard({ member, isValid }) {
   const [flipped, setFlipped] = useState(false)
-  const swipeStartX = useRef(null)
-
-  const handleTouchStartCard = (e) => {
-    swipeStartX.current = e.touches[0].clientX
-  }
-
-  const handleTouchEndCard = (e) => {
-    if (swipeStartX.current === null) return
-    const dx = e.changedTouches[0].clientX - swipeStartX.current
-    if (Math.abs(dx) > 40) {
-      // Swipe left or right → flip back
-      setFlipped(false)
-    }
-    swipeStartX.current = null
-  }
 
   const W = 'calc(100vw - 32px)'
   const cardW = W
@@ -220,8 +206,6 @@ function MembershipCard({ member, isValid }) {
         flexShrink: 0,
         perspective: '1200px',
       }}
-      onTouchStart={handleTouchStartCard}
-      onTouchEnd={handleTouchEndCard}
     >
       {/* Flip container */}
       <div
@@ -300,15 +284,11 @@ function MembershipCard({ member, isValid }) {
               style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
             />
           </div>
-
-          {/* Tap hint */}
-          <div style={{ position: 'absolute', top: '8%', right: '7%', opacity: 0.6, fontSize: fs.valid }}>
-            탭하여 스캔 ▶
-          </div>
         </div>
 
         {/* ── BACK ── (rotated 180deg on Y, then landscape rotate) */}
         <div
+          onClick={() => setFlipped(false)}
           style={{
             position: 'absolute',
             width: cardH,
@@ -325,36 +305,20 @@ function MembershipCard({ member, isValid }) {
             userSelect: 'none',
             padding: '8px',
             boxSizing: 'border-box',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-            paddingTop: '12px',
+            cursor: 'pointer',
           }}
         >
-          {/* QRScanner — rotated 90deg left, positioned higher */}
+          {/* QRScanner — rotated 90deg to the left */}
           {flipped && (
             <div style={{
               width: '100%',
-              height: '90%',
+              height: '100%',
               overflow: 'hidden',
               borderRadius: '10px',
               transform: 'rotate(-90deg)',
               transformOrigin: 'center center',
             }}>
               <QRScanner onScan={() => {}} />
-            </div>
-          )}
-
-          {/* Swipe hint */}
-          {!flipped && (
-            <div style={{
-              position: 'absolute', top: '50%', left: '50%',
-              transform: 'translate(-50%, -50%)',
-              textAlign: 'center', color: 'rgba(255,255,255,0.5)',
-              fontSize: fs.valid, fontWeight: 500,
-            }}>
-              좌우로 스와이프하여 닫기
             </div>
           )}
         </div>
