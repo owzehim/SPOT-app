@@ -180,7 +180,7 @@ export default function MemberPage() {
   )
 }
 
-// ─── Membership Card with Flip Animation ─────────────────────────────────────
+// ─── Membership Card with Flip Animation & Lazy Camera ──────────────────────
 function MembershipCard({ member, isValid, onQRScanned }) {
   const [flipped, setFlipped] = useState(false)
 
@@ -226,7 +226,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
-        {/* FRONT SIDE (original orange membership card) */}
+        {/* FRONT SIDE (orange membership card) */}
         <div
           style={{
             position: 'absolute',
@@ -399,7 +399,6 @@ function MembershipCard({ member, isValid, onQRScanned }) {
               padding: '8px',
             }}
           >
-            {/* Scanner wrapper */}
             <div
               style={{
                 width: '100%',
@@ -411,7 +410,8 @@ function MembershipCard({ member, isValid, onQRScanned }) {
                 justifyContent: 'center',
               }}
             >
-              <QRScanner onScan={onQRScanned} />
+              {/* Only mount scanner when flipped => permission asked after flip */}
+              {flipped && <QRScanner onScan={onQRScanned} />}
             </div>
           </div>
         </div>
