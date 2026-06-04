@@ -453,7 +453,7 @@ function QRTab({ member, isValid }) {
     setTranslate(lifted ? getMaxLift() : 0)
   }, [lifted])
 
-  // Helpers (copied from ScanPage)
+  // Helpers (from ScanPage)
   const formatScanTime = (date) => {
     if (!date) return ''
     const d = new Date(date)
@@ -486,7 +486,7 @@ function QRTab({ member, isValid }) {
     setScanTime(null)
   }
 
-  // Handle QR scan — SAME logic as ScanPage.handleScan, but stays inside this tab
+  // Handle QR scan — SAME logic as ScanPage.handleScan
   const handleQRScanned = async (rawValue) => {
     if (handlingRef.current) return
     handlingRef.current = true
@@ -578,10 +578,37 @@ function QRTab({ member, isValid }) {
     )
   }
 
-  // SUCCESS PAGE (copied from ScanPage success block)
+  // SUCCESS PAGE (copied from ScanPage, including blinking orange dot)
   if (state === 'success') {
     return (
-      <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4">
+      <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4 relative">
+        {/* Blinking orange dot – only on success, top-left with on/off blink */}
+        <>
+          <style>{`
+            @keyframes recordingDot {
+              0% { opacity: 1; }
+              50% { opacity: 1; }
+              50.1% { opacity: 0; }
+              100% { opacity: 0; }
+            }
+          `}</style>
+          <div
+            className="absolute"
+            style={{ top: 4, left: 16, zIndex: 10 }}
+          >
+            <span
+              style={{
+                display: 'inline-block',
+                width: 8,
+                height: 8,
+                borderRadius: 9999,
+                backgroundColor: '#f97316',
+                animation: 'recordingDot 1s step-start infinite',
+              }}
+            />
+          </div>
+        </>
+
         <div className="flex flex-col items-center gap-4 mt-10 text-center max-w-sm w-full">
           <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
             <span className="text-green-600 text-4xl">✓</span>
@@ -647,7 +674,7 @@ function QRTab({ member, isValid }) {
     )
   }
 
-  // ERROR PAGE (copied from ScanPage error block)
+  // ERROR PAGE (copied from ScanPage)
   if (state === 'error') {
     return (
       <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4">
@@ -677,7 +704,7 @@ function QRTab({ member, isValid }) {
   // SCANNING PAGE (original card + activity + scanner on back)
   return (
     <div style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
-      {/* Activity stats — anchored to bottom, naturally hidden behind card */}
+      {/* Activity stats */}
       <div
         ref={activityRef}
         style={{
@@ -692,7 +719,7 @@ function QRTab({ member, isValid }) {
         {isValid && <ActivityStatsCard userId={member?.user_id} />}
       </div>
 
-      {/* Card layer — covers the activity section completely when not lifted */}
+      {/* Card layer */}
       <div
         ref={cardLayerRef}
         style={{
@@ -725,7 +752,7 @@ function QRTab({ member, isValid }) {
           onQRScanned={handleQRScanned}
         />
 
-        {/* Guide text — right-aligned, fades out when lifted */}
+        {/* Guide text */}
         <div
           style={{
             width: '100%',
