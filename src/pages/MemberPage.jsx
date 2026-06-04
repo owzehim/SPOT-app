@@ -8,6 +8,8 @@ import { QrCode, Calendar, MapPin } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
+import { UserCircle, CheckCircle, XCircle } from '@phosphor-icons/react'
+import ActivityStatsCard from '../components/ActivityStatsCard'
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)
@@ -183,50 +185,103 @@ export default function MemberPage() {
 function QRTab({ member, isValid }) {
   const navigate = useNavigate()
 
+  const initials = [member?.first_name, member?.last_name]
+    .filter(Boolean)
+    .map((n) => n[0].toUpperCase())
+    .join('')
+
   return (
     <div className="h-full overflow-y-auto">
       <div className="px-4 py-6 max-w-md mx-auto space-y-4">
 
-        {/* Member info card (profile) */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold text-gray-900">
-              {member?.first_name} {member?.last_name}
-            </h2>
-            <span
-              className={
-                'text-xs font-medium px-2 py-1 rounded-full ' +
-                (isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600')
-              }
+        {/* ── Greeting card ── */}
+        <div
+          className="rounded-3xl p-6 relative overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)' }}
+        >
+          {/* Decorative background circles */}
+          <div
+            className="absolute -top-8 -right-8 rounded-full opacity-20"
+            style={{ width: 140, height: 140, background: 'white' }}
+          />
+          <div
+            className="absolute -bottom-10 -left-6 rounded-full opacity-10"
+            style={{ width: 100, height: 100, background: 'white' }}
+          />
+
+          {/* Content */}
+          <div className="relative flex items-start justify-between">
+
+            {/* Left: name + validity */}
+            <div className="flex-1">
+              <p className="text-orange-200 text-xs font-medium mb-1 tracking-wide uppercase">
+                SPOT Member
+              </p>
+              <h2 className="text-white font-bold leading-tight"
+                style={{ fontSize: '1.75rem' }}>
+                {member?.first_name}
+              </h2>
+              <h2 className="text-white font-bold leading-tight mb-3"
+                style={{ fontSize: '1.75rem' }}>
+                {member?.last_name}
+              </h2>
+
+              {/* Validity badge */}
+              <div className="flex items-center gap-1.5">
+                {isValid
+                  ? <CheckCircle size={15} weight="fill" color="white" />
+                  : <XCircle size={15} weight="fill" color="rgba(255,255,255,0.6)" />
+                }
+                <span className={
+                  'text-xs font-semibold ' +
+                  (isValid ? 'text-white' : 'text-orange-200')
+                }>
+                  {isValid
+                    ? `유효 · ${member?.membership_valid_until?.slice(0, 10) ?? ''}`
+                    : '멤버십 만료'}
+                </span>
+              </div>
+            </div>
+
+            {/* Right: avatar */}
+            <div
+              className="flex items-center justify-center rounded-full bg-white flex-shrink-0"
+              style={{ width: 64, height: 64 }}
             >
-              {isValid ? '✓ 유효' : '✗ 만료'}
-            </span>
-          </div>
-          <div className="space-y-1 text-sm text-gray-600">
-            <p>{'학번: ' + member?.student_number}</p>
-            <p>{'전공: ' + member?.major}</p>
-            <p>{'유효기간: ' + (member?.membership_valid_until ?? '없음')}</p>
+              {initials ? (
+                <span className="text-orange-500 font-bold text-xl">{initials}</span>
+              ) : (
+                <UserCircle size={40} weight="fill" color="#f97316" />
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Activity stats — only shown to valid members */}
+        {/* ── Activity stats ── */}
         {isValid && <ActivityStatsCard userId={member?.user_id} />}
 
-        {/* Check-in button */}
+        {/* ── Check-in button ── */}
         {isValid && (
           <button
             onClick={() => navigate('/scan')}
-            className="w-full py-3 bg-orange-500 text-white font-semibold rounded-2xl text-sm hover:bg-orange-600 transition-colors"
+            className="w-full py-3.5 bg-orange-500 text-white font-semibold rounded-2xl text-sm hover:bg-orange-600 active:scale-[0.98] transition-all"
           >
-            맴버십 check-in 하기
+            멤버십 Check-In 하기
           </button>
+        )}
+
+        {/* ── Expired state ── */}
+        {!isValid && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 text-center">
+            <p className="text-gray-400 text-sm">멤버십이 만료되었습니다.</p>
+            <p className="text-gray-400 text-xs mt-1">갱신은 협회에 문의해 주세요.</p>
+          </div>
         )}
 
       </div>
     </div>
   )
 }
-
 // ─── Nav Button ───────────────────────────────────────────────────────────────
 
 function NavBtn({ onClick, children, style = {} }) {
