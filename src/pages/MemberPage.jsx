@@ -197,22 +197,44 @@ function MembershipCard({ member, isValid, onClick }) {
       })()
     : 'N/A'
 
+  // Credit card landscape: width = W, height = W / 1.586
+  // Rotated 90°: portrait width = W / 1.586, portrait height = W
+  // We use paddingBottom on the outer container to reserve portrait space,
+  // then size the inner card to match the original landscape dimensions.
+
   return (
     <div
-      onClick={isValid ? onClick : undefined}
       style={{
-        background: '#f97316',
-        borderRadius: '16px',
-        color: '#fff',
+        // Outer container: portrait proportions (height > width)
+        // portrait ratio = 1.586 : 1  →  paddingBottom = 158.6%
         position: 'relative',
         width: '100%',
-        paddingBottom: 'calc(100% / 1.586)',
-        overflow: 'hidden',
-        userSelect: 'none',
-        cursor: isValid ? 'pointer' : 'default',
+        paddingBottom: 'calc(100% * 1.586)',
       }}
     >
-      <div style={{ position: 'absolute', inset: 0 }}>
+      {/* Inner card: landscape, then rotated 90° clockwise */}
+      <div
+        onClick={isValid ? onClick : undefined}
+        style={{
+          position: 'absolute',
+          // Landscape card: width = 1.586× the portrait width, height = portrait width
+          // After rotation, it fills the portrait container exactly
+          width: 'calc(100% * 1.586)',
+          height: '100%',
+          // Center before rotating
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%) rotate(90deg)',
+          transformOrigin: 'center center',
+          background: '#f97316',
+          borderRadius: '16px',
+          color: '#fff',
+          overflow: 'hidden',
+          userSelect: 'none',
+          cursor: isValid ? 'pointer' : 'default',
+        }}
+      >
+        {/* All internal layout unchanged */}
 
         {/* TOP: label */}
         <div style={{ position: 'absolute', top: '8%', left: '7%' }}>
@@ -250,7 +272,6 @@ function MembershipCard({ member, isValid, onClick }) {
           borderRadius: '50%',
           border: '2px solid rgba(255,255,255,0.85)',
           overflow: 'hidden',
-          flexShrink: 0,
         }}>
           <img
             src="/UvA-IN-logo-transparent.png"
