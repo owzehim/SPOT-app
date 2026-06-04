@@ -299,7 +299,7 @@ function MembershipCard({ member, isValid }) {
             transformOrigin: 'center center',
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
-            background: '#000',
+            background: '#f97316',
             borderRadius: '16px',
             overflow: 'hidden',
             userSelect: 'none',
