@@ -118,7 +118,7 @@ export default function MemberPage() {
         className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
-        <h1 className="font-bold text-gray-900">SPOT</h1>
+        <h1 className="font-bold text-gray-900">UvA-IN</h1>
         <div className="flex gap-2">
           {isAdmin && (
             <button
@@ -294,134 +294,111 @@ function MembershipCard({ member, isValid, onClick }) {
 
 function QRTab({ member, isValid }) {
   const navigate = useNavigate()
-  const [lifted, setLifted] = useState(false)
-  const cardLayerRef = useRef(null)
-  const activityRef = useRef(null)
-  const touchStartY = useRef(null)
-  const currentOffset = useRef(0)  // tracks live drag offset without re-renders
   const liftedRef = useRef(false)
+  const touchStartY = useRef(null)
+  const currentOffset = useRef(0)
+  const wrapperRef = useRef(null)
 
-  const getMaxLift = () => activityRef.current?.offsetHeight ?? 260
+  const getScreenH = () => window.innerHeight
 
-  // Directly set transform on the DOM node — no setState, no re-render
   const setTranslate = (offset) => {
-    if (cardLayerRef.current) {
-      cardLayerRef.current.style.transform = `translateY(${-offset}px)`
+    if (wrapperRef.current) {
+      wrapperRef.current.style.transform = `translateY(${-offset}px)`
     }
   }
 
   const handleTouchStart = (e) => {
-    // Disable transition during drag for instant response
-    if (cardLayerRef.current) {
-      cardLayerRef.current.style.transition = 'none'
-    }
+    if (wrapperRef.current) wrapperRef.current.style.transition = 'none'
     touchStartY.current = e.touches[0].clientY
-    currentOffset.current = liftedRef.current ? getMaxLift() : 0
+    currentOffset.current = liftedRef.current ? getScreenH() : 0
   }
 
   const handleTouchMove = (e) => {
     if (touchStartY.current === null) return
     const dy = touchStartY.current - e.touches[0].clientY
     const raw = currentOffset.current + dy
-    const clamped = Math.max(0, Math.min(raw, getMaxLift()))
+    const clamped = Math.max(0, Math.min(raw, getScreenH()))
     setTranslate(clamped)
   }
 
   const handleTouchEnd = (e) => {
     const dy = touchStartY.current - e.changedTouches[0].clientY
     const raw = currentOffset.current + dy
-    const max = getMaxLift()
-    const shouldLift = raw > max * 0.3
+    const shouldLift = raw > getScreenH() * 0.25
 
-    // Re-enable transition for snap animation
-    if (cardLayerRef.current) {
-      cardLayerRef.current.style.transition = 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
+    if (wrapperRef.current) {
+      wrapperRef.current.style.transition = 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)'
     }
-
-    setTranslate(shouldLift ? max : 0)
+    setTranslate(shouldLift ? getScreenH() : 0)
     liftedRef.current = shouldLift
-    setLifted(shouldLift)
     touchStartY.current = null
   }
 
-  // Sync DOM on mount and lifted state change
-  useEffect(() => {
-    if (cardLayerRef.current) {
-      cardLayerRef.current.style.transition = 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
-    }
-    setTranslate(lifted ? getMaxLift() : 0)
-  }, [lifted])
-
   const W = 'calc(100vw - 32px)'
-  const fs = {
-    guide: `calc(${W} * 0.032)`,
-  }
+  const fsGuide = `calc(${W} * 0.032)`
 
   return (
-    <div style={{ position: 'relative', height: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-
-      {/* Activity stats — sits behind/below the card */}
+    <div style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
+      {/* Two-panel wrapper — slides as one unit */}
       <div
-        ref={activityRef}
+        ref={wrapperRef}
         style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          padding: '0 16px 16px',
-        }}
-      >
-        {isValid && <ActivityStatsCard userId={member?.user_id} />}
-      </div>
-
-      {/* Card layer — slides up on swipe, centered on screen */}
-      <div
-        ref={cardLayerRef}
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          padding: '16px 16px 24px',
-          zIndex: 10,
-          touchAction: 'none',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
+          height: '200vh',
+          willChange: 'transform',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <MembershipCard
-          member={member}
-          isValid={isValid}
-          onClick={() => navigate('/scan')}
-        />
 
-        {/* Guide text — right-aligned, below the card */}
+        {/* Panel 1: Card — full screen height */}
         <div style={{
-          width: '100%',
+          height: '100vh',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'flex-end',
-          marginTop: '10px',
-          gap: '2px',
-          paddingRight: '4px',
-          opacity: lifted ? 0 : 1,
-          transition: 'opacity 0.25s ease',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px',
+          touchAction: 'none',
         }}>
-          <span style={{ fontSize: fs.guide, color: 'rgba(0,0,0,0.4)', fontWeight: 500 }}>
-            눌러서 Check-IN 하기
-          </span>
-          <span style={{ fontSize: fs.guide, color: 'rgba(0,0,0,0.4)', fontWeight: 500 }}>
-            위로 올려서 이번 달 활동 보기
-          </span>
+          <MembershipCard
+            member={member}
+            isValid={isValid}
+            onClick={() => navigate('/scan')}
+          />
+
+          {/* Guide text */}
+          <div style={{
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            marginTop: '10px',
+            gap: '2px',
+            paddingRight: '4px',
+          }}>
+            <span style={{ fontSize: fsGuide, color: 'rgba(0,0,0,0.4)', fontWeight: 500 }}>
+              눌러서 Check-IN 하기
+            </span>
+            <span style={{ fontSize: fsGuide, color: 'rgba(0,0,0,0.4)', fontWeight: 500 }}>
+              위로 올려서 이번 달 활동 보기
+            </span>
+          </div>
+        </div>
+
+        {/* Panel 2: Activity — full screen height */}
+        <div style={{
+          height: '100vh',
+          padding: '24px 16px',
+          overflowY: 'auto',
+          touchAction: 'none',
+        }}>
+          {isValid && <ActivityStatsCard userId={member?.user_id} />}
         </div>
 
       </div>
-
     </div>
   )
 }
