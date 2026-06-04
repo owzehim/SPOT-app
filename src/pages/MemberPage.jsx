@@ -197,8 +197,15 @@ function MembershipCard({ member, isValid, onClick }) {
       })()
     : 'N/A'
 
-  const cardW = 'min(63vw, 280px)'
+  // Portrait card fills screen width minus 32px edge spacing
+  // cardW = portrait short side, cardH = portrait long side
+  // Inner landscape card: width = cardH, height = cardW, rotated 90deg
+  const cardW = 'calc(100vw - 32px)'
   const cardH = `calc(${cardW} * 1.586)`
+
+  // Logo size: based on cardW (the landscape card's height after rotation)
+  // Using a CSS calc so it's always a perfect square visually
+  const logoSize = `calc(${cardW} * 0.14)`
 
   return (
     <div style={{
@@ -228,7 +235,7 @@ function MembershipCard({ member, isValid, onClick }) {
       >
         {/* TOP: label */}
         <div style={{ position: 'absolute', top: '8%', left: '7%' }}>
-          <span style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.08em' }}>UvA-IN Benefits</span>
+          <span style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.08em' }}>UvA-IN MEMBER</span>
         </div>
 
         {/* Card number */}
@@ -238,7 +245,7 @@ function MembershipCard({ member, isValid, onClick }) {
           </div>
         </div>
 
-        {/* Valid Until — centered between card number and name, horizontally centered */}
+        {/* Valid Until — horizontally centered */}
         <div style={{ position: 'absolute', bottom: '16%', left: 0, right: 0, textAlign: 'center' }}>
           <div style={{ fontSize: '11px', fontWeight: 500, opacity: 0.9 }}>
             Valid Until: {validUntil}
@@ -252,13 +259,13 @@ function MembershipCard({ member, isValid, onClick }) {
           </div>
         </div>
 
-        {/* Logo — bottom-right, fixed square size, no stretch */}
+        {/* Logo — bottom-right, explicitly square using same calc unit */}
         <div style={{
           position: 'absolute',
           bottom: '5%',
           right: '4%',
-          width: '18%',
-          height: '18%',
+          width: logoSize,
+          height: logoSize,
           borderRadius: '50%',
           border: '2px solid rgba(255,255,255,0.85)',
           overflow: 'hidden',
