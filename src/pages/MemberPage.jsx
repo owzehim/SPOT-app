@@ -1,16 +1,13 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
 import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE } from '../lib/mapCategories'
-import { QrCode, Calendar, MapPin } from '@phosphor-icons/react'
+import { QrCode, Calendar, MapPin, UserCircle, CheckCircle, XCircle, ArrowUp } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
-import { UserCircle, CheckCircle, XCircle } from '@phosphor-icons/react'
-import { UserCircle, CheckCircle, XCircle, ArrowUp } from '@phosphor-icons/react'
-import { useEffect, useRef, useState } from 'react'
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)
