@@ -307,8 +307,6 @@ function MembershipCard({ member, isValid }) {
   )
 }
 
-export default MembershipCard
-
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 
 function QRTab({ member, isValid }) {
