@@ -178,41 +178,86 @@ export default function MemberPage() {
   )
 }
 
+function MembershipCard({ member, isValid }) {
+  const studentNum = member?.student_number ? String(member.student_number) : '00000000'
+  const part1 = studentNum.slice(0, 4)          // e.g. "1613"
+  const part2 = studentNum.slice(4, 8)          // e.g. "8333"
+  const part3 = 'XXXX'
+  const part4 = member?.year_of_birth ? String(member.year_of_birth) : '????'
+  const cardNumber = `${part1} ${part2} ${part3} ${part4}`
+
+  return (
+    <div
+      style={{
+        background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+        borderRadius: '16px',
+        padding: '24px 24px 20px',
+        color: '#fff',
+        position: 'relative',
+        overflow: 'hidden',
+        boxShadow: '0 8px 32px rgba(249,115,22,0.35)',
+        userSelect: 'none',
+      }}
+    >
+      {/* Decorative circles */}
+      <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '160px', height: '160px', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: '-60px', left: '-30px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', pointerEvents: 'none' }} />
+
+      {/* Top row */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+        <span style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.08em' }}>UvA-IN MEMBER</span>
+        <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 10px', borderRadius: '999px', background: isValid ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)', color: '#fff', letterSpacing: '0.04em' }}>
+          {isValid ? '✓ VALID' : '✗ EXPIRED'}
+        </span>
+      </div>
+
+      {/* Chip + NFC */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+        <svg width="42" height="34" viewBox="0 0 42 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="1" y="1" width="40" height="32" rx="5" fill="#d4a843" stroke="#b8922e" strokeWidth="1.5"/>
+          <rect x="14" y="1" width="14" height="32" fill="#c49a30" opacity="0.5"/>
+          <rect x="1" y="11" width="40" height="12" fill="#c49a30" opacity="0.5"/>
+          <rect x="14" y="11" width="14" height="12" fill="#b8922e" opacity="0.7"/>
+          <line x1="14" y1="1" x2="14" y2="33" stroke="#b8922e" strokeWidth="1"/>
+          <line x1="28" y1="1" x2="28" y2="33" stroke="#b8922e" strokeWidth="1"/>
+          <line x1="1" y1="11" x2="41" y2="11" stroke="#b8922e" strokeWidth="1"/>
+          <line x1="1" y1="23" x2="41" y2="23" stroke="#b8922e" strokeWidth="1"/>
+        </svg>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 12 Q8 8 12 8" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.5"/>
+          <path d="M4 12 Q7 5 12 5" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.7"/>
+          <path d="M2 12 Q6 2 12 2" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.9"/>
+        </svg>
+      </div>
+
+      {/* Card number */}
+      <div style={{ fontFamily: 'monospace', fontSize: '22px', fontWeight: 700, letterSpacing: '0.12em', marginBottom: '20px', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
+        {cardNumber}
+      </div>
+
+      {/* Name */}
+      <div>
+        <div style={{ fontSize: '10px', opacity: 0.7, marginBottom: '2px', letterSpacing: '0.06em' }}>CARD HOLDER</div>
+        <div style={{ fontWeight: 600, fontSize: '15px', letterSpacing: '0.04em' }}>
+          {member?.first_name} {member?.last_name}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 
 function QRTab({ member, isValid }) {
   const navigate = useNavigate()
-
   return (
     <div className="h-full overflow-y-auto">
       <div className="px-4 py-6 max-w-md mx-auto space-y-4">
 
-        {/* Member info card (profile) */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-semibold text-gray-900">
-              {member?.first_name} {member?.last_name}
-            </h2>
-            <span
-              className={
-                'text-xs font-medium px-2 py-1 rounded-full ' +
-                (isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600')
-              }
-            >
-              {isValid ? '✓ 유효' : '✗ 만료'}
-            </span>
-          </div>
-          <div className="space-y-1 text-sm text-gray-600">
-            <p>{'학번: ' + member?.student_number}</p>
-            <p>{'전공: ' + member?.major}</p>
-            <p>{'유효기간: ' + (member?.membership_valid_until ?? '없음')}</p>
-          </div>
-        </div>
+        <MembershipCard member={member} isValid={isValid} />
 
-        {/* Activity stats — only shown to valid members */}
         {isValid && <ActivityStatsCard userId={member?.user_id} />}
 
-        {/* Check-in button */}
         {isValid && (
           <button
             onClick={() => navigate('/scan')}
@@ -221,7 +266,6 @@ function QRTab({ member, isValid }) {
             맴버십 check-in 하기
           </button>
         )}
-
       </div>
     </div>
   )
