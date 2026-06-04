@@ -196,135 +196,118 @@ function MembershipCard({ member, isValid }) {
   }
 
   return (
-    <div
-      style={{
-        width: cardW,
-        height: cardH,
-        margin: '0 auto',
-        position: 'relative',
-        flexShrink: 0,
-        perspective: '1200px',
-      }}
-    >
-      {/* Flip container */}
-      <div
-        style={{
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          transformStyle: 'preserve-3d',
-          transition: 'transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1)',
-          transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-        }}
-      >
-
-        {/* ── FRONT ── */}
+    <>
+      {/* Card (only visible when not flipped) */}
+      {!flipped && (
         <div
-          onClick={() => isValid && setFlipped(true)}
           style={{
-            position: 'absolute',
-            width: cardH,
-            height: cardW,
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%) rotate(90deg)',
-            transformOrigin: 'center center',
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
-            background: '#f97316',
-            borderRadius: '16px',
-            color: '#fff',
-            overflow: 'hidden',
-            userSelect: 'none',
-            cursor: isValid ? 'pointer' : 'default',
+            width: cardW,
+            height: cardH,
+            margin: '0 auto',
+            position: 'relative',
+            flexShrink: 0,
           }}
         >
-          {/* Label */}
-          <div style={{ position: 'absolute', top: '8%', left: '7%' }}>
-            <span style={{ fontWeight: 700, fontSize: fs.label, letterSpacing: '0.08em' }}>
-              UvA-IN BENEFITS
-            </span>
-          </div>
-
-          {/* Card number */}
-          <div style={{ position: 'absolute', bottom: '24%', left: '7%', right: '7%' }}>
-            <div style={{ fontFamily: 'monospace', fontSize: fs.number, fontWeight: 700, letterSpacing: '0.12em', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
-              {`${String(member?.student_number ?? '00000000').slice(0,4)} ${String(member?.student_number ?? '00000000').slice(4,8)} XXXX ${member?.year_of_birth ?? '????'}`}
+          <div
+            onClick={() => isValid && setFlipped(true)}
+            style={{
+              position: 'absolute',
+              width: cardH,
+              height: cardW,
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%) rotate(90deg)',
+              transformOrigin: 'center center',
+              background: '#f97316',
+              borderRadius: '16px',
+              color: '#fff',
+              overflow: 'hidden',
+              userSelect: 'none',
+              cursor: isValid ? 'pointer' : 'default',
+            }}
+          >
+            {/* Label */}
+            <div style={{ position: 'absolute', top: '8%', left: '7%' }}>
+              <span style={{ fontWeight: 700, fontSize: fs.label, letterSpacing: '0.08em' }}>
+                UvA-IN BENEFITS
+              </span>
             </div>
-          </div>
 
-          {/* Valid Until */}
-          <div style={{ position: 'absolute', bottom: '16%', left: 0, right: 0, textAlign: 'center' }}>
-            <div style={{ fontSize: fs.valid, fontWeight: 500, opacity: 0.9 }}>
-              Valid Until: {member?.membership_valid_until
-                ? (() => { const d = new Date(member.membership_valid_until); return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(-2)}` })()
-                : 'N/A'}
+            {/* Card number */}
+            <div style={{ position: 'absolute', bottom: '24%', left: '7%', right: '7%' }}>
+              <div style={{ fontFamily: 'monospace', fontSize: fs.number, fontWeight: 700, letterSpacing: '0.12em', textShadow: '0 1px 4px rgba(0,0,0,0.15)' }}>
+                {`${String(member?.student_number ?? '00000000').slice(0,4)} ${String(member?.student_number ?? '00000000').slice(4,8)} XXXX ${member?.year_of_birth ?? '????'}`}
+              </div>
             </div>
-          </div>
 
-          {/* Name */}
-          <div style={{ position: 'absolute', bottom: '8%', left: '7%' }}>
-            <div style={{ fontWeight: 600, fontSize: fs.name, letterSpacing: '0.04em' }}>
-              {member?.first_name} {member?.last_name}
+            {/* Valid Until */}
+            <div style={{ position: 'absolute', bottom: '16%', left: 0, right: 0, textAlign: 'center' }}>
+              <div style={{ fontSize: fs.valid, fontWeight: 500, opacity: 0.9 }}>
+                Valid Until: {member?.membership_valid_until
+                  ? (() => { const d = new Date(member.membership_valid_until); return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(-2)}` })()
+                  : 'N/A'}
+              </div>
             </div>
-          </div>
 
-          {/* Logo */}
-          <div style={{
-            position: 'absolute', bottom: '5%', right: '4%',
-            width: fs.logo, height: fs.logo,
-            borderRadius: '50%',
-            border: `calc(${W} * 0.007) solid rgba(255,255,255,0.85)`,
-            overflow: 'hidden', flexShrink: 0,
-          }}>
-            <img
-              src="/UvA-IN-logo-transparent.png"
-              alt="UvA-IN logo"
-              style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
-            />
+            {/* Name */}
+            <div style={{ position: 'absolute', bottom: '8%', left: '7%' }}>
+              <div style={{ fontWeight: 600, fontSize: fs.name, letterSpacing: '0.04em' }}>
+                {member?.first_name} {member?.last_name}
+              </div>
+            </div>
+
+            {/* Logo */}
+            <div style={{
+              position: 'absolute', bottom: '5%', right: '4%',
+              width: fs.logo, height: fs.logo,
+              borderRadius: '50%',
+              border: `calc(${W} * 0.007) solid rgba(255,255,255,0.85)`,
+              overflow: 'hidden', flexShrink: 0,
+            }}>
+              <img
+                src="/UvA-IN-logo-transparent.png"
+                alt="UvA-IN logo"
+                style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+              />
+            </div>
           </div>
         </div>
+      )}
 
-        {/* ── BACK ── (rotated 180deg on Y, then landscape rotate) */}
+      {/* Camera (only visible when flipped) */}
+      {flipped && (
         <div
           onClick={() => setFlipped(false)}
           style={{
-            position: 'absolute',
-            width: cardH,
-            height: cardW,
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%) rotateY(180deg) rotate(90deg)',
-            transformOrigin: 'center center',
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
+            width: cardW,
+            height: cardH,
+            margin: '0 auto',
+            position: 'relative',
+            flexShrink: 0,
             background: '#000',
             border: '6px solid #f97316',
             borderRadius: '16px',
             overflow: 'hidden',
-            userSelect: 'none',
+            cursor: 'pointer',
             padding: '8px',
             boxSizing: 'border-box',
-            cursor: 'pointer',
           }}
         >
-          {/* QRScanner — no CSS transform, let it render normally */}
-          {flipped && (
-            <div style={{
-              width: '100%',
-              height: '100%',
-              overflow: 'hidden',
-              borderRadius: '10px',
-            }}>
-              <QRScanner onScan={() => {}} />
-            </div>
-          )}
+          <div style={{
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
+            borderRadius: '10px',
+          }}>
+            <QRScanner onScan={() => {}} />
+          </div>
         </div>
-
-      </div>
-    </div>
+      )}
+    </>
   )
 }
+
+export default MembershipCard
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 
