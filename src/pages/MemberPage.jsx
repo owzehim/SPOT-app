@@ -9,6 +9,8 @@ import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
 import { UserCircle, CheckCircle, XCircle } from '@phosphor-icons/react'
+import { UserCircle, CheckCircle, XCircle, ArrowUp } from '@phosphor-icons/react'
+import { useEffect, useRef, useState } from 'react'
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)
@@ -183,6 +185,22 @@ export default function MemberPage() {
 
 function QRTab({ member, isValid }) {
   const navigate = useNavigate()
+  const [revealed, setRevealed] = useState(false)
+
+  // Touch swipe detection
+  const touchStartY = useRef(null)
+
+  const handleTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY
+  }
+
+  const handleTouchEnd = (e) => {
+    if (touchStartY.current == null) return
+    const dy = touchStartY.current - e.changedTouches[0].clientY
+    touchStartY.current = null
+    if (dy > 50) setRevealed(true)   // swipe up → reveal stats
+    if (dy < -50) setRevealed(false) // swipe down → back to card
+  }
 
   const initials = [member?.first_name, member?.last_name]
     .filter(Boolean)
@@ -190,83 +208,129 @@ function QRTab({ member, isValid }) {
     .join('')
 
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="px-4 py-6 max-w-md mx-auto space-y-4">
+    <div
+      className="h-full relative overflow-hidden"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
 
-        {/* ── Greeting card ── */}
+      {/* ── Layer 1: Stats (sits behind, always rendered) ── */}
+      <div className="absolute inset-0 overflow-y-auto">
+        <div className="px-4 max-w-md mx-auto" style={{ paddingTop: '1.5rem' }}>
+
+          {/* Back affordance */}
+          <button
+            onClick={() => setRevealed(false)}
+            className="flex items-center gap-1 text-xs text-gray-400 mb-4 active:text-gray-600 transition-colors"
+          >
+            <ArrowUp size={12} style={{ transform: 'rotate(180deg)' }} />
+            카드로 돌아가기
+          </button>
+
+          {isValid && <ActivityStatsCard userId={member?.user_id} />}
+
+          {!isValid && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 text-center mt-4">
+              <p className="text-gray-400 text-sm">멤버십이 만료되었습니다.</p>
+              <p className="text-gray-400 text-xs mt-1">갱신은 협회에 문의해 주세요.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Layer 2: Credit card (slides up on swipe) ── */}
+      <div
+        className="absolute inset-x-0 bottom-0"
+        style={{
+          top: revealed ? '-100%' : '0',
+          transition: 'top 0.45s cubic-bezier(0.32, 0, 0.67, 0)',
+        }}
+      >
+        {/* Card fills full height */}
         <div
-          className="rounded-3xl p-6 relative overflow-hidden"
-          style={{ background: '#f97316' }}
+          className="h-full px-4 flex flex-col"
+          style={{ paddingTop: '1.5rem', paddingBottom: '1.5rem' }}
         >
-          {/* Top row: label + avatar */}
-          <div className="flex items-center justify-between mb-6">
-            <p className="text-orange-200 text-xs font-semibold tracking-widest uppercase">
-              UvA-IN Member
-            </p>
-            <div
-              className="flex items-center justify-center rounded-full bg-white bg-opacity-20 flex-shrink-0"
-              style={{ width: 44, height: 44 }}
-            >
-              {initials ? (
-                <span className="text-white font-bold text-base">{initials}</span>
+          {/* The card itself — tappable, fills available space */}
+          <div
+            onClick={() => isValid && navigate('/scan')}
+            className="flex-1 rounded-3xl flex flex-col justify-between p-7 select-none"
+            style={{
+              background: '#f97316',
+              cursor: isValid ? 'pointer' : 'default',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            {/* Top row: label + avatar */}
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-orange-200 text-xs font-semibold tracking-widest uppercase mb-1">
+                  UvA-IN Member
+                </p>
+                <div className="flex items-center gap-1.5">
+                  {isValid
+                    ? <CheckCircle size={13} weight="fill" color="white" />
+                    : <XCircle size={13} weight="fill" color="rgba(255,255,255,0.5)" />
+                  }
+                  <span className="text-white text-xs font-medium opacity-80">
+                    {isValid
+                      ? `유효 · ${member?.membership_valid_until?.slice(0, 10) ?? ''}`
+                      : '멤버십 만료'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Avatar */}
+              <div
+                className="flex items-center justify-center rounded-full flex-shrink-0"
+                style={{
+                  width: 52,
+                  height: 52,
+                  background: 'rgba(255,255,255,0.2)',
+                }}
+              >
+                {initials ? (
+                  <span className="text-white font-bold text-lg">{initials}</span>
+                ) : (
+                  <UserCircle size={32} weight="fill" color="white" />
+                )}
+              </div>
+            </div>
+
+            {/* Name — hero */}
+            <div>
+              <h2
+                className="text-white font-black leading-none tracking-tight"
+                style={{ fontSize: '3rem' }}
+              >
+                {member?.first_name}
+              </h2>
+              <h2
+                className="text-white font-black leading-none tracking-tight"
+                style={{ fontSize: '3rem', opacity: 0.65 }}
+              >
+                {member?.last_name}
+              </h2>
+            </div>
+
+            {/* Bottom: tap hint + swipe hint */}
+            <div className="flex items-end justify-between">
+              {isValid ? (
+                <p className="text-white text-xs opacity-50">
+                  탭하여 Check-In
+                </p>
               ) : (
-                <UserCircle size={28} weight="fill" color="white" />
+                <span />
               )}
+              <div className="flex flex-col items-center gap-1 opacity-40">
+                <ArrowUp size={14} color="white" />
+                <p className="text-white text-xs">활동 보기</p>
+              </div>
             </div>
           </div>
-
-          {/* Name — big and bold, hero element */}
-          <div className="mb-6">
-            <h2
-              className="text-white font-black leading-none tracking-tight"
-              style={{ fontSize: '2.6rem' }}
-            >
-              {member?.first_name}
-            </h2>
-            <h2
-              className="text-white font-black leading-none tracking-tight"
-              style={{ fontSize: '2.6rem', opacity: 0.75 }}
-            >
-              {member?.last_name}
-            </h2>
-          </div>
-
-          {/* Bottom row: validity */}
-          <div className="flex items-center gap-2">
-            {isValid
-              ? <CheckCircle size={14} weight="fill" color="white" />
-              : <XCircle size={14} weight="fill" color="rgba(255,255,255,0.5)" />
-            }
-            <span className="text-white text-xs font-medium opacity-80">
-              {isValid
-                ? `유효 · ${member?.membership_valid_until?.slice(0, 10) ?? ''}`
-                : '멤버십 만료'}
-            </span>
-          </div>
         </div>
-
-        {/* ── Activity stats ── */}
-        {isValid && <ActivityStatsCard userId={member?.user_id} />}
-
-        {/* ── Check-in button ── */}
-        {isValid && (
-          <button
-            onClick={() => navigate('/scan')}
-            className="w-full py-3.5 bg-orange-500 text-white font-semibold rounded-2xl text-sm hover:bg-orange-600 active:scale-[0.98] transition-all"
-          >
-            멤버십 Check-In 하기
-          </button>
-        )}
-
-        {/* ── Expired state ── */}
-        {!isValid && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 text-center">
-            <p className="text-gray-400 text-sm">멤버십이 만료되었습니다.</p>
-            <p className="text-gray-400 text-xs mt-1">갱신은 협회에 문의해 주세요.</p>
-          </div>
-        )}
-
       </div>
+
     </div>
   )
 }
