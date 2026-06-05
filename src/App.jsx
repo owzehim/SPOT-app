@@ -6,8 +6,9 @@ import MemberPage from './pages/MemberPage'
 import AdminPage from './pages/AdminPage'
 import VerifyPage from './pages/VerifyPage'
 import PublicPage from './pages/PublicPage'
-import ScanPage from './pages/ScanPage'          // ← NEW
+import ScanPage from './pages/ScanPage'          
 import InstallBanner from './components/InstallBanner'
+import RegistrationPage from './pages/RegistrationPage';
 
 function App() {
   const [session, setSession] = useState(undefined)
@@ -32,14 +33,15 @@ function App() {
     <BrowserRouter>
       <InstallBanner />
       <Routes>
-        <Route path="/login"        element={!session ? <LoginPage />  : <Navigate to="/member" />} />
-        <Route path="/member"       element={session  ? <MemberPage /> : <Navigate to="/public" />} />
-        <Route path="/admin"        element={session  ? <AdminPage />  : <Navigate to="/login"  />} />
-        <Route path="/scan"         element={session  ? <ScanPage />   : <Navigate to="/login"  />} />  {/* ← NEW */}
-        <Route path="/verify/:token" element={<VerifyPage />} />
-        <Route path="/public"       element={<PublicPage />} />
-        <Route path="*"             element={<Navigate to={session ? "/member" : "/public"} />} />
-      </Routes>
+  <Route path="/login" element={!session ? <LoginPage /> : <Navigate to="/member" />} />
+  <Route path="/member" element={session ? <MemberPage /> : <Navigate to="/public" />} />
+  <Route path="/admin" element={session ? <AdminPage /> : <Navigate to="/login" />} />
+  <Route path="/scan" element={session ? <ScanPage /> : <Navigate to="/login" />} />
+  <Route path="/verify/:token" element={<VerifyPage />} />
+  <Route path="/public" element={<PublicPage />} />
+  <Route path="/register" element={<RegistrationPage />} /> {/* NEW */}
+  <Route path="*" element={<Navigate to={session ? '/member' : '/public'} />} />
+</Routes>
     </BrowserRouter>
   )
 }
