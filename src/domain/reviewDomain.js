@@ -180,14 +180,18 @@ export function getSortedTagsForDisplay(tagCounts) {
 }
 
 /**
- * Converts tags array to a human-readable string for Google Sheets.
- * e.g. ['GREAT_FOOD', 'GOOD_VALUE'] → '음식이 맛있어요, 가성비가 좋아요'
+ * Converts a tags array to an English string for Google Sheets.
+ * The UI still shows Korean labels — only the sheet output changes.
+ *
+ * e.g. ['GREAT_FOOD', 'GOOD_VALUE'] → 'Great food, Good value'
+ *
+ * Falls back to the raw key if labelEn is somehow missing.
  *
  * @param {string[]} tags
  * @returns {string}
  */
 export function tagsToSheetString(tags) {
   return tags
-    .map((key) => REVIEW_TAGS.find((t) => t.key === key)?.label ?? key)
+    .map((key) => REVIEW_TAGS.find((t) => t.key === key)?.labelEn ?? key)
     .join(', ')
 }
