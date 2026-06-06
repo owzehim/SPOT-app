@@ -29,9 +29,7 @@ serve(async (req) => {
         const raw = Deno.env.get('SUPABASE_SECRET_KEYS') || '{}'
         const parsed = JSON.parse(raw)
         return parsed.service_role_key || parsed.service_role || Object.values(parsed)[0] || ''
-      } catch {
-        return ''
-      }
+      } catch { return '' }
     })()
 
     if (!serviceKey) {
@@ -58,9 +56,10 @@ serve(async (req) => {
     }
 
     // ── Fetch member profile ───────────────────────────────────────────────
+    // ✅ FIXED: select education_level + year_number instead of year
     const { data: member, error: memberError } = await admin
       .from('members')
-      .select('first_name, last_name, University, student_number, major, year, membership_valid_until, is_member')
+      .select('first_name, last_name, University, student_number, major, education_level, year_number, year_of_birth, country_of_origin, gender, membership_valid_until, is_member')
       .eq('user_id', user.id)
       .single()
 
@@ -74,7 +73,9 @@ serve(async (req) => {
 
     // ── Membership validity check ──────────────────────────────────────────
     const now = new Date()
-    const validUntil = member.membership_valid_until ? new Date(member.membership_valid_until) : null
+    const validUntil = member.membership_valid_until
+      ? new Date(member.membership_valid_until)
+      : null
 
     if (!member.is_member) {
       return new Response(
@@ -113,65 +114,86 @@ serve(async (req) => {
       minute: '2-digit',
     })
 
-    // ── Safe field helpers (blank if missing) ──────────────────────────────
+    // ── Safe field helpers ─────────────────────────────────────────────────
     const safe = (v: unknown) => (v != null && v !== '' ? String(v) : '')
 
-    // ── Master sheet payload (All Scans tab) ───────────────────────────────
-    const masterPayload = {
-      type: 'master',
-      date,
-      time,
-      first_name: safe(member.first_name),
-      last_name: safe(member.last_name),
-      university: safe(member.University),
-      student_id: safe(member.student_number),
-      major: safe(member.major),
-      year: safe(member.year),
-      membership_valid_until: safe(member.membership_valid_until),
-      place_name: partnership.name,
-      store_id: storeId,
+    // ── Log to redemptions table first so we have the ID ──────────────────
+    const { data: redemptionRow, error: redemptionError } = await admin
+      .from('redemptions')
+      .insert({
+        user_id: user.id,
+        store_id: storeId,
+        redeemed_at: now.toISOString(),
+      })
+      .select('id')
+      .single()
+
+    if (redemptionError) {
+      console.error('Redemption insert error:', redemptionError)
+      // Non-fatal for the user — continue
     }
 
-    // ── Partnership sheet payload (e.g. "Northeast Kitchen" tab) ───────────
-    const storePayload = {
-      type: 'store',
-      sheet_name: partnership.sheet_name || partnership.name,
+    const redemptionId = redemptionRow?.id ?? ''
+
+    // ── Master sheet payload ───────────────────────────────────────────────
+    // ✅ FIXED: send education_level + year_number instead of year
+    const masterPayload = {
+      type:                    'master',
       date,
       time,
-      first_name: safe(member.first_name),
-      last_name: safe(member.last_name),
-      university: safe(member.University),
-      student_id: safe(member.student_number),
-      major: safe(member.major),
-      year: safe(member.year),
-      membership_valid_until: safe(member.membership_valid_until),
+      first_name:              safe(member.first_name),
+      last_name:               safe(member.last_name),
+      university:              safe(member.University),
+      student_id:              safe(member.student_number),
+      major:                   safe(member.major),
+      education_level:         safe(member.education_level),   // ✅ was: year
+      year_number:             member.year_number ?? '',        // ✅ new
+      year_of_birth:           safe(member.year_of_birth),
+      country_of_origin:       safe(member.country_of_origin),
+      gender:                  safe(member.gender),
+      membership_valid_until:  safe(member.membership_valid_until),
+      place_name:              partnership.name,
+      redemption_id:           redemptionId,
+    }
+
+    // ── Partner sheet payload ──────────────────────────────────────────────
+    // ✅ FIXED: send education_level + year_number instead of year
+    const storePayload = {
+      type:                    'store',
+      sheet_name:              partnership.sheet_name || partnership.name,
+      date,
+      time,
+      first_name:              safe(member.first_name),
+      last_name:               safe(member.last_name),
+      university:              safe(member.University),
+      major:                   safe(member.major),
+      education_level:         safe(member.education_level),   // ✅ was: year
+      year_number:             member.year_number ?? '',        // ✅ new
+      year_of_birth:           safe(member.year_of_birth),
+      country_of_origin:       safe(member.country_of_origin),
+      gender:                  safe(member.gender),
+      membership_valid_until:  safe(member.membership_valid_until),
+      redemption_id:           redemptionId,
     }
 
     const [masterRes, storeRes] = await Promise.all([
       fetch(partnership.master_apps_script_url, {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(masterPayload),
+        body:    JSON.stringify(masterPayload),
       }),
       fetch(partnership.partner_apps_script_url, {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(storePayload),
+        body:    JSON.stringify(storePayload),
       }),
     ])
 
     if (!masterRes.ok || !storeRes.ok) {
       const masterText = await masterRes.text()
-      const storeText = await storeRes.text()
+      const storeText  = await storeRes.text()
       console.error('Sheet POST failed — master:', masterText, '| store:', storeText)
     }
-
-    // ── Log to redemptions table ───────────────────────────────────────────
-    await admin.from('redemptions').insert({
-      user_id: user.id,
-      store_id: storeId,
-      redeemed_at: now.toISOString(),
-    })
 
     return new Response(
       JSON.stringify({ success: true, storeName: partnership.name }),
