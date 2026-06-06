@@ -6,7 +6,6 @@
 
 import { supabase } from '../lib/supabase'
 import { buildReviewSummary } from '../domain/reviewDomain'
-import { tagsToSheetString } from '../domain/reviewDomain'
 
 // ─────────────────────────────────────────────────────────────
 // CREATE
@@ -144,13 +143,13 @@ async function syncReviewToSheets({ redemptionId, storeId, rating, tags, comment
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) return
 
-  await supabase.functions.invoke('sync-review-to-sheets', {
+  await supabase.functions.invoke('sync-to-sheets', {
     body: {
       redemption_id: redemptionId,
       store_id:      storeId,
       user_id:       userId,
       rating,
-      tags: tags,   // send the raw array e.g. ['GREAT_FOOD', 'GOOD_VALUE']
+      tags,          // ← raw array e.g. ['GREAT_FOOD', 'GOOD_VALUE']
       comment:       comment || '',
     },
     headers: {
