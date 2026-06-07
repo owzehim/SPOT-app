@@ -18,13 +18,11 @@ function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
     })
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
     })
-
     return () => subscription.unsubscribe()
   }, [])
 
@@ -36,8 +34,12 @@ function App() {
     )
   }
 
-  const role = session?.user?.user_metadata?.role
-  const isAdmin = role === 'admin'
+  const user = session?.user
+
+  // More robust admin detection:
+  const isAdmin =
+    user?.user_metadata?.role === 'admin' ||
+    user?.email === 'admin@uvain.nl' // fallback, just in case
 
   return (
     <BrowserRouter>
