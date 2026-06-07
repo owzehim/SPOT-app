@@ -38,34 +38,39 @@ export default function MemberPage() {
   // ─────────────────────────────────────────────────────────
 
   useEffect(() => {
-    const fetchData = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      const { data: memberData } = await supabase
-        .from('members')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
-      const { data: adminData } = await supabase
-        .from('admin_roles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single()
-      const { data: eventData } = await supabase
-        .from('events')
-        .select('*')
-        .order('event_date', { ascending: true })
-      const { data: restaurantData } = await supabase
-        .from('restaurants')
-        .select('*')
-        .order('created_at', { ascending: false })
-      setMember(memberData)
-      setIsAdmin(!!adminData)
-      setEvents(eventData || [])
-      setRestaurants(restaurantData || [])
-      setLoading(false)
-    }
-    fetchData()
-  }, [])
+  const fetchData = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    // NEW: derive admin flag from user metadata, same as App.jsx
+    const isAdminUser = user?.user_metadata?.role === 'admin'
+
+    const { data: memberData } = await supabase
+      .from('members')
+      .select('*')
+      .eq('user_id', user.id)
+      .single()
+
+    const { data: eventData } = await supabase
+      .from('events')
+      .select('*')
+      .order('event_date', { ascending: true })
+
+    const { data: restaurantData } = await supabase
+      .from('restaurants')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    setMember(memberData)
+    setIsAdmin(isAdminUser)
+    setEvents(eventData || [])
+    setRestaurants(restaurantData || [])
+    setLoading(false)
+  }
+
+  fetchData()
+}, [])
 
   useEffect(() => {
     const handler = (e) => {
