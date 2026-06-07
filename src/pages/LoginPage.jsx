@@ -26,7 +26,7 @@ export default function LoginPage() {
         {/* Close button */}
         <div className="flex justify-end mb-4">
           <button
-            onClick={() => window.location.href = '/public'}
+            onClick={() => navigate('/public')}
             className="text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X size={24} weight="bold" />

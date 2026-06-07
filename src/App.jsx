@@ -9,6 +9,7 @@ import PublicPage from './pages/PublicPage'
 import ScanPage from './pages/ScanPage'          
 import InstallBanner from './components/InstallBanner'
 import RegistrationPage from './pages/RegistrationPage';
+import EmailConfirmedPage from './pages/EmailConfirmedPage'
 
 function App() {
   const [session, setSession] = useState(undefined)
@@ -39,8 +40,9 @@ function App() {
   <Route path="/scan" element={session ? <ScanPage /> : <Navigate to="/login" />} />
   <Route path="/verify/:token" element={<VerifyPage />} />
   <Route path="/public" element={<PublicPage />} />
-  <Route path="/register" element={<RegistrationPage />} /> {/* NEW */}
+  <Route path="/register" element={<RegistrationPage />} />
   <Route path="*" element={<Navigate to={session ? '/member' : '/public'} />} />
+  <Route path="/email-confirmed" element={<EmailConfirmedPage />} />
 </Routes>
     </BrowserRouter>
   )

@@ -55,3 +55,7 @@ html {
 body {
   min-height: -webkit-fill-available;
 }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
