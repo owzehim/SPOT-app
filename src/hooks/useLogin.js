@@ -2,11 +2,15 @@
 //
 // React orchestration hook for the full login flow.
 // ❌ Do NOT copy to React Native — rewrite with RN navigation patterns.
-//    But the state machine logic (step: 'credentials' → 'otp' → done)
-//    is identical and can be ported directly.
+// But the state machine logic (step: 'credentials' → 'otp' → 'unconfirmed')
+// is identical and can be ported directly.
 
 import { useState } from 'react'
-import { isOtpExempt, validateOtpInput, mapAuthError } from '../domain/auth/authRules'
+import {
+  isOtpExempt,
+  validateOtpInput,
+  mapAuthError,
+} from '../domain/auth/authRules'
 import {
   signInWithPassword,
   sendLoginOtp,
@@ -16,13 +20,13 @@ import {
 
 /**
  * Login flow states:
- *  'credentials'      — user enters email + password
- *  'otp'              — user enters the 6-digit code sent to their email
- *  'unconfirmed'      — email not confirmed yet, show resend button
+ * 'credentials' — user enters email + password
+ * 'otp'         — user enters the 6-digit code sent to their email
+ * 'unconfirmed' — email not confirmed yet, show resend button
  */
-
 export function useLogin() {
-  const [step, setStep] = useState('credentials')   // 'credentials' | 'otp' | 'unconfirmed'
+  const [step, setStep] = useState('credentials') // 'credentials' | 'otp' | 'unconfirmed'
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [otp, setOtp] = useState('')
@@ -30,7 +34,7 @@ export function useLogin() {
   const [error, setError] = useState('')
   const [resendSuccess, setResendSuccess] = useState(false)
 
-  // ── Step 1: submit email + password ────────────────────────────────────────
+  // ── Step 1: submit email + password ──────────────────────────────────────
   const handleCredentialsSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -40,24 +44,27 @@ export function useLogin() {
       // Always verify credentials first
       await signInWithPassword(email, password)
 
+      // OTP-exempt accounts (e.g. admin/test) are fully logged in now.
+      // App.jsx onAuthStateChange will handle navigation.
       if (isOtpExempt(email)) {
-        // Exempt accounts: password auth already set the session → done.
-        // App.jsx will pick up the session change via onAuthStateChange.
         return
       }
 
-      // Non-exempt: sign out the temp session, then send OTP.
-      // The real session will be established after OTP verification.
+      // Non-exempt accounts:
+      // 1) sign out the temp password session
+      // 2) send a 6-digit OTP to the email
+      // 3) move to OTP step; real session will be created after OTP verify
       await import('../lib/supabase').then(({ supabase }) =>
         supabase.auth.signOut()
       )
+
       await sendLoginOtp(email)
       setStep('otp')
-
     } catch (err) {
       const mapped = mapAuthError(err.message)
 
       if (mapped === 'EMAIL_NOT_CONFIRMED') {
+        // Email exists but not confirmed yet
         setStep('unconfirmed')
       } else {
         setError(mapped)
@@ -67,7 +74,7 @@ export function useLogin() {
     }
   }
 
-  // ── Step 2: submit OTP ─────────────────────────────────────────────────────
+  // ── Step 2: submit OTP ───────────────────────────────────────────────────
   const handleOtpSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -81,7 +88,8 @@ export function useLogin() {
     setLoading(true)
     try {
       await verifyLoginOtp(email, otp)
-      // Session is now set — App.jsx onAuthStateChange handles redirect.
+      // On success, Supabase sets the session automatically.
+      // App.jsx onAuthStateChange will redirect to /member or /admin.
     } catch (err) {
       setError(mapAuthError(err.message))
     } finally {
@@ -89,10 +97,11 @@ export function useLogin() {
     }
   }
 
-  // ── Resend OTP (on OTP screen) ─────────────────────────────────────────────
+  // ── Resend OTP (on OTP screen) ───────────────────────────────────────────
   const handleResendOtp = async () => {
     setError('')
     setLoading(true)
+
     try {
       await sendLoginOtp(email)
       setOtp('')
@@ -105,10 +114,11 @@ export function useLogin() {
     }
   }
 
-  // ── Resend confirmation email (on unconfirmed screen) ─────────────────────
+  // ── Resend confirmation email (on unconfirmed screen) ────────────────────
   const handleResendConfirmation = async () => {
     setError('')
     setLoading(true)
+
     try {
       await resendConfirmationEmail(email)
       setResendSuccess(true)
@@ -120,7 +130,7 @@ export function useLogin() {
     }
   }
 
-  // ── Go back to credentials screen ─────────────────────────────────────────
+  // ── Go back to credentials screen ────────────────────────────────────────
   const handleBack = () => {
     setStep('credentials')
     setOtp('')
@@ -131,9 +141,12 @@ export function useLogin() {
   return {
     // State
     step,
-    email, setEmail,
-    password, setPassword,
-    otp, setOtp,
+    email,
+    setEmail,
+    password,
+    setPassword,
+    otp,
+    setOtp,
     loading,
     error,
     resendSuccess,
