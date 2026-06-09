@@ -129,36 +129,73 @@ export default function AdminPage() {
 
   useEffect(() => {
     const checkAdmin = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { navigate('/login'); return }
-      const { data } = await supabase.from('admin_roles').select('id').eq('user_id', user.id).single()
-      if (!data) { navigate('/member'); return }
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      // Not logged in → send to login
+      if (!user) {
+        navigate('/login')
+        return
+      }
+
+      // New admin check: role from metadata (same idea as App.jsx & MemberPage)
+      const isAdmin =
+        user.user_metadata?.role === 'admin' ||
+        user.email === 'admin@uvain.nl' // fallback
+
+      if (!isAdmin) {
+        navigate('/member')
+        return
+      }
+
       setLoading(false)
     }
-    checkAdmin()
-  }, [])
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-gray-500">로딩 중...</p>
-    </div>
-  )
+    checkAdmin()
+  }, [navigate])
+
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">로딩 중...</p>
+      </div>
+    )
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/member')} className="text-sm text-gray-500 hover:text-gray-700">← 내 QR</button>
+          <button
+            onClick={() => navigate('/member')}
+            className="text-sm text-gray-500 hover:text-gray-700"
+          >
+            ← 내 QR
+          </button>
           <h1 className="font-bold text-gray-900">관리자 패널</h1>
         </div>
-        <button onClick={() => supabase.auth.signOut()} className="text-sm text-gray-500 hover:text-gray-700">로그아웃</button>
+        <button
+          onClick={() => supabase.auth.signOut()}
+          className="text-sm text-gray-500 hover:text-gray-700"
+        >
+          로그아웃
+        </button>
       </div>
       <div className="bg-white border-b border-gray-100 px-4 flex gap-1 overflow-x-auto">
-        {[{ key: 'members', label: '멤버 관리' }, { key: 'events', label: '이벤트' }, { key: 'restaurants', label: '장소' }].map(tab => (
+        {[
+          { key: 'members', label: '멤버 관리' },
+          { key: 'events', label: '이벤트' },
+          { key: 'restaurants', label: '장소' },
+        ].map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.key ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+              activeTab === tab.key
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
             {tab.label}
           </button>
         ))}
