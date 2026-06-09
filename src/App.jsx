@@ -10,6 +10,7 @@ import ScanPage from './pages/ScanPage'
 import InstallBanner from './components/InstallBanner'
 import RegistrationPage from './pages/RegistrationPage'
 import EmailConfirmedPage from './pages/EmailConfirmedPage'
+import SettingsPage from './pages/SettingsPage'
 
 function App() {
   const [session, setSession] = useState(undefined)
@@ -54,6 +55,10 @@ function App() {
           path="/member"
           element={session ? <MemberPage /> : <Navigate to="/public" />}
         />
+        <Route
+  path="/settings"
+  element={session ? <SettingsPage /> : <Navigate to="/login" />}
+/>
 
         <Route
           path="/admin"
