@@ -37,6 +37,18 @@ export default function MemberPage() {
   } = useReviewPrompt()
   // ────────────────────────────────────────────────────
 
+const AVATAR_COLORS = ['#F97316', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899']
+
+function getAvatarColor(seed) {
+  const str = seed || 'default'
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) | 0
+  }
+  const index = Math.abs(hash) % AVATAR_COLORS.length
+  return AVATAR_COLORS[index]
+}
+
   // Load user, member, events, restaurants
   useEffect(() => {
     const fetchData = async () => {
@@ -209,7 +221,6 @@ export default function MemberPage() {
 }
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
-
 function QRTab({ member, isValid }) {
   const navigate = useNavigate()
 
@@ -217,6 +228,9 @@ function QRTab({ member, isValid }) {
     .filter(Boolean)
     .map((n) => n[0].toUpperCase())
     .join('')
+
+  const hasProfileImage = !!member?.profile_image_url
+  const avatarColor = getAvatarColor(member?.user_id || member?.email || '')
 
   return (
     <div className="h-full overflow-y-auto">
@@ -231,11 +245,23 @@ function QRTab({ member, isValid }) {
             <p className="text-orange-200 text-xs font-semibold tracking-widest uppercase">
               UvA-IN Member
             </p>
+
+            {/* Avatar circle in the top-right of the orange card */}
             <div
-              className="flex items-center justify-center rounded-full bg-white bg-opacity-20 flex-shrink-0"
-              style={{ width: 44, height: 44 }}
+              className="flex items-center justify-center rounded-full overflow-hidden flex-shrink-0 border border-white/40"
+              style={{
+                width: 44,
+                height: 44,
+                backgroundColor: hasProfileImage ? '#ffffff' : avatarColor,
+              }}
             >
-              {initials ? (
+              {hasProfileImage ? (
+                <img
+                  src={member.profile_image_url}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : initials ? (
                 <span className="text-white font-bold text-base">{initials}</span>
               ) : (
                 <UserCircle size={28} weight="fill" color="white" />
@@ -291,13 +317,14 @@ function QRTab({ member, isValid }) {
         {!isValid && (
           <div className="bg-white rounded-2xl border border-gray-100 p-5 text-center">
             <p className="text-gray-400 text-sm">멤버십이 만료되었습니다.</p>
-            <p className="text-gray-400 text-xs mt-1">갱신은 협회에 문의해 주세요.</p>
+            <p className="text-gray-400 text-xs mt-1">갱신은 UvA-IN 임원에게 문의해 주세요.</p>
           </div>
         )}
       </div>
     </div>
   )
 }
+
 // ─── Nav Button ───────────────────────────────────────────────────────────────
 
 function NavBtn({ onClick, children, style = {} }) {
