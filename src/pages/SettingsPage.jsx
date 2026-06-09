@@ -227,9 +227,9 @@ export default function SettingsPage() {
 
       // 5) save in DB
       const { error: updateError } = await supabase
-        .from('members')
-        .update({ profile_image_url: url })
-        .eq('id', member.id)
+  .from('members')
+  .update({ profile_image_url: url })
+  .eq('user_id', member.user_id)
 
       if (updateError) {
         console.error('Profile image DB update failed:', updateError)
