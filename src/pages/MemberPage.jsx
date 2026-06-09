@@ -3,11 +3,36 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
-import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE } from '../lib/mapCategories'
-import { QrCode, Calendar, MapPin, UserCircle, CheckCircle, XCircle, Gear } from '@phosphor-icons/react'
+import {
+  MAP_CATEGORIES,
+  CATEGORY_ICONS_WHITE,
+  CATEGORY_ICONS_ORANGE,
+} from '../lib/mapCategories'
+import {
+  QrCode,
+  Calendar,
+  MapPin,
+  UserCircle,
+  CheckCircle,
+  XCircle,
+  Gear,
+} from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
+
+// avatar helpers (top-level so QRTab can use them)
+const AVATAR_COLORS = ['#F97316', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899']
+
+function getAvatarColor(seed) {
+  const str = seed || 'default'
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) | 0
+  }
+  const index = Math.abs(hash) % AVATAR_COLORS.length
+  return AVATAR_COLORS[index]
+}
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)
@@ -17,7 +42,7 @@ export default function MemberPage() {
   const [tabKey, setTabKey] = useState(0)
   const [events, setEvents] = useState([])
   const [restaurants, setRestaurants] = useState([])
-  const navigate = useNavigate() 
+  const navigate = useNavigate()
 
   // ── Review prompt hook ───────────────────────────────
   const {
@@ -36,18 +61,6 @@ export default function MemberPage() {
     skipReview,
   } = useReviewPrompt()
   // ────────────────────────────────────────────────────
-
-const AVATAR_COLORS = ['#F97316', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899']
-
-function getAvatarColor(seed) {
-  const str = seed || 'default'
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash * 31 + str.charCodeAt(i)) | 0
-  }
-  const index = Math.abs(hash) % AVATAR_COLORS.length
-  return AVATAR_COLORS[index]
-}
 
   // Load user, member, events, restaurants
   useEffect(() => {
@@ -156,30 +169,30 @@ function getAvatarColor(seed) {
 
       {/* 헤더 */}
       <div
-  className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0"
-  style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
->
-  <h1 className="font-bold text-gray-900">UvA-IN</h1>
-  <div className="flex gap-2 items-center">
-    {isAdmin && (
-      <button
-        onClick={() => {
-          window.location.href = '/admin'
-        }}
-        className="text-sm text-white font-medium px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
+        className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
-        관리자
-      </button>
-    )}
-    <button
-      onClick={() => navigate('/settings')}
-      className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
-      aria-label="Settings"
-    >
-      <Gear size={20} weight="bold" />
-    </button>
-  </div>
-</div>
+        <h1 className="font-bold text-gray-900">UvA-IN</h1>
+        <div className="flex gap-2 items-center">
+          {isAdmin && (
+            <button
+              onClick={() => {
+                window.location.href = '/admin'
+              }}
+              className="text-sm text-white font-medium px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
+            >
+              관리자
+            </button>
+          )}
+          <button
+            onClick={() => navigate('/settings')}
+            className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
+            aria-label="Settings"
+          >
+            <Gear size={20} weight="bold" />
+          </button>
+        </div>
+      </div>
 
       {/* 컨텐츠 */}
       <div className="flex-1 overflow-hidden">
@@ -317,7 +330,9 @@ function QRTab({ member, isValid }) {
         {!isValid && (
           <div className="bg-white rounded-2xl border border-gray-100 p-5 text-center">
             <p className="text-gray-400 text-sm">멤버십이 만료되었습니다.</p>
-            <p className="text-gray-400 text-xs mt-1">갱신은 UvA-IN 임원에게 문의해 주세요.</p>
+            <p className="text-gray-400 text-xs mt-1">
+              갱신은 UvA-IN 임원에게 문의해 주세요.
+            </p>
           </div>
         )}
       </div>
