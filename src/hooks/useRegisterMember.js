@@ -2,11 +2,9 @@
 //
 // React-specific orchestration hook.
 // ❌ Do NOT copy to React Native — rewrite with RN patterns.
-// But the logic flow (validate → register → confirm OTP → navigate) is the same.
+// But the logic flow (validate → register → show "check email") is the same.
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
 import { validateRegistrationForm } from '../domain/member/memberRegistration';
 import { registerMember } from '../api/memberRepository';
 
@@ -20,40 +18,59 @@ const INITIAL_FORM = {
   yearOfBirth: '',
   gender: '',
   countryOfOrigin: '',
-  university: 'University of Amsterdam',
+  // Defaults match the UI options
+  university: 'University of Amsterdam (UvA)',
   major: 'Business Administration',
   educationLevel: '',
   yearNumber: '',
 };
 
 export function useRegisterMember() {
-  const navigate = useNavigate();
-
-  const [step, setStep] = useState('form');        // 'form' | 'confirm'
+  // 'about' | 'academic' | 'account' | 'email'
+  const [step, setStep] = useState('about');
   const [formData, setFormData] = useState(INITIAL_FORM);
-  const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [resendSuccess, setResendSuccess] = useState(false);
 
-  // ── Generic field change ───────────────────────────────────────────────────
+  // ── Generic field change ────────────────────────────────────────────────
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ── Reset year when education level changes ────────────────────────────────
+  // ── Reset year when education level changes ─────────────────────────────
   const handleEducationLevelChange = (e) => {
     const level = e.target.value;
-    setFormData(prev => ({ ...prev, educationLevel: level, yearNumber: '' }));
+    setFormData((prev) => ({
+      ...prev,
+      educationLevel: level,
+      yearNumber: '',
+    }));
   };
 
-  // ── Step 1: submit registration form ──────────────────────────────────────
+  // ── Step navigation ─────────────────────────────────────────────────────
+  const goNext = () => {
+    setStep((prev) => {
+      if (prev === 'about') return 'academic';
+      if (prev === 'academic') return 'account';
+      return prev;
+    });
+  };
+
+  const goBack = () => {
+    setStep((prev) => {
+      if (prev === 'account') return 'academic';
+      if (prev === 'academic') return 'about';
+      return prev;
+    });
+  };
+
+  // ── Final submit (after step 3) ─────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    // Client-side validation
+    // Client-side password checks
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -73,6 +90,7 @@ export function useRegisterMember() {
       educationLevel: formData.educationLevel,
       yearNumber: formData.yearNumber || null,
     });
+
     if (validationError) {
       setError(validationError);
       return;
@@ -86,93 +104,39 @@ export function useRegisterMember() {
         firstName: formData.firstName,
         lastName: formData.lastName,
         studentNumber: formData.studentNumber,
-        yearOfBirth: formData.yearOfBirth ? Number(formData.yearOfBirth) : null,
+        yearOfBirth: formData.yearOfBirth
+          ? Number(formData.yearOfBirth)
+          : null,
         gender: formData.gender,
         countryOfOrigin: formData.countryOfOrigin,
         university: formData.university,
         major: formData.major,
         educationLevel: formData.educationLevel,
-        yearNumber: formData.yearNumber ? Number(formData.yearNumber) : null,
+        yearNumber: formData.yearNumber
+          ? Number(formData.yearNumber)
+          : null,
       });
-      // Account created — now ask for the 6-digit confirmation code
-      setStep('confirm');
+
+      // Account created — now tell user to check their email.
+      setStep('email');
     } catch (err) {
-      setError(err.message || 'Registration failed. Please try again.');
+      setError(
+        err.message || 'Registration failed. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
-  };
-
-  // ── Step 2: verify the 6-digit signup OTP ─────────────────────────────────
-  const handleConfirmOtp = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    if (otp.length !== 6) {
-      setError('Please enter the 6-digit code.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { error: verifyError } = await supabase.auth.verifyOtp({
-        email: formData.email,
-        token: otp,
-        type: 'signup',   // ← must be 'signup' for registration confirmation
-      });
-      if (verifyError) throw verifyError;
-      // Email confirmed — go to login
-      navigate('/login');
-    } catch (err) {
-      setError(err.message || 'Invalid code. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ── Resend confirmation code ───────────────────────────────────────────────
-  const handleResendOtp = async () => {
-    setError('');
-    setLoading(true);
-    try {
-      const { error: resendError } = await supabase.auth.resend({
-        type: 'signup',
-        email: formData.email,
-      });
-      if (resendError) throw resendError;
-      setOtp('');
-      setResendSuccess(true);
-      setTimeout(() => setResendSuccess(false), 4000);
-    } catch (err) {
-      setError(err.message || 'Failed to resend code.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ── Go back to the form ────────────────────────────────────────────────────
-  const handleBack = () => {
-    setStep('form');
-    setOtp('');
-    setError('');
-    setResendSuccess(false);
   };
 
   return {
-    // State
     step,
     formData,
-    otp,
-    setOtp,
     loading,
     error,
-    resendSuccess,
-    // Actions
     handleChange,
     handleEducationLevelChange,
     handleSubmit,
-    handleConfirmOtp,
-    handleResendOtp,
-    handleBack,
+    goNext,
+    goBack,
   };
 }

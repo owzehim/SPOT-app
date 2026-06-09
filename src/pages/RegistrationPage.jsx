@@ -3,6 +3,7 @@
 // Presentation only — all logic lives in useRegisterMember hook.
 // ❌ Do NOT copy to React Native — rewrite UI with RN components.
 
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRegisterMember } from '../hooks/useRegisterMember';
 import { getYearOptions } from '../domain/member/memberRegistration';
@@ -221,9 +222,7 @@ const MAJOR_OPTIONS = [
 ];
 
 // Sorted versions for typeahead
-const SORTED_COUNTRIES = [...COUNTRIES].sort((a, b) =>
-  a.localeCompare(b)
-);
+const SORTED_COUNTRIES = [...COUNTRIES].sort((a, b) => a.localeCompare(b));
 const SORTED_GENDERS = [...GENDERS].sort((a, b) => a.localeCompare(b));
 const SORTED_UNIVERSITIES = [...UNIVERSITY_OPTIONS].sort((a, b) =>
   a.localeCompare(b)
@@ -233,7 +232,6 @@ const SORTED_MAJORS = [...MAJOR_OPTIONS].sort((a, b) =>
 );
 
 // ── Typeahead select component ──────────────────────────────────────────────
-import { useState, useEffect, useRef } from 'react';
 
 function TypeaheadSelect({
   name,
@@ -269,7 +267,6 @@ function TypeaheadSelect({
   const handleSelect = (val) => {
     setInputValue(val);
     setOpen(false);
-    // send synthetic event to useRegisterMember.handleChange
     onChange({ target: { name, value: val } });
   };
 
@@ -301,7 +298,7 @@ function TypeaheadSelect({
               key={opt}
               style={s.typeaheadItem}
               onMouseDown={(e) => {
-                e.preventDefault(); // prevent input blur before click
+                e.preventDefault();
                 handleSelect(opt);
               }}
             >
@@ -314,31 +311,29 @@ function TypeaheadSelect({
   );
 }
 
+// ── Main component ──────────────────────────────────────────────────────────
+
 export default function RegistrationPage() {
   const navigate = useNavigate();
   const {
     step,
     formData,
-    otp,
-    setOtp,
     loading,
     error,
-    resendSuccess,
     handleChange,
     handleEducationLevelChange,
     handleSubmit,
-    handleConfirmOtp,
-    handleResendOtp,
-    handleBack,
+    goNext,
+    goBack,
   } = useRegisterMember();
 
   const yearOptions = getYearOptions(formData.educationLevel);
 
-  // ── STEP 2: OTP confirmation screen ───────────────────────────────────────
-  if (step === 'confirm') {
+  // Final step: after successful registration, tell user to check email
+  if (step === 'email') {
     return (
       <div style={s.page}>
-        <div style={{ ...s.card, maxWidth: '400px' }}>
+        <div style={{ ...s.card, maxWidth: '420px' }}>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <div style={{ fontSize: '40px', marginBottom: '12px' }}>📧</div>
             <h1 style={s.title}>Check your email</h1>
@@ -350,94 +345,27 @@ export default function RegistrationPage() {
                 margin: 0,
               }}
             >
-              We sent a 6-digit code to
+              We sent a confirmation link to
               <br />
               <strong style={{ color: '#111827' }}>{formData.email}</strong>
+              <br />
+              Please open that email, verify your address, then come back
+              and log in.
             </p>
           </div>
 
-          {error && <div style={s.errorBanner}>{error}</div>}
-          {resendSuccess && (
-            <div style={s.successBanner}>New code sent ✓</div>
-          )}
-
-          <form
-            onSubmit={handleConfirmOtp}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-            }}
+          <button
+            type="button"
+            onClick={() => navigate('/login')}
+            style={s.submitBtn}
           >
-            <div>
-              <label style={labelStyle}>Confirmation code</label>
-              <input
-                type="text"
-                inputMode="numeric"
-                maxLength={6}
-                value={otp}
-                onChange={(e) =>
-                  setOtp(e.target.value.replace(/\D/g, ''))
-                }
-                style={{
-                  ...s.input,
-                  textAlign: 'center',
-                  fontSize: '24px',
-                  letterSpacing: '0.3em',
-                  fontFamily: 'monospace',
-                }}
-                placeholder="000000"
-                autoFocus
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                ...s.submitBtn,
-                opacity: loading ? 0.6 : 1,
-                cursor: loading ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {loading ? 'Verifying…' : 'Confirm account'}
-            </button>
-
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                fontSize: '12px',
-                color: '#9ca3af',
-              }}
-            >
-              <button
-                type="button"
-                onClick={handleBack}
-                style={s.ghostBtn}
-              >
-                ← Back
-              </button>
-              <button
-                type="button"
-                onClick={handleResendOtp}
-                disabled={loading}
-                style={{
-                  ...s.ghostBtn,
-                  color: '#f97316',
-                }}
-              >
-                Resend code
-              </button>
-            </div>
-          </form>
+            Go to login
+          </button>
         </div>
       </div>
     );
   }
 
-  // ── STEP 1: Registration form ──────────────────────────────────────────────
   return (
     <div style={s.page}>
       <div style={s.card}>
@@ -450,196 +378,340 @@ export default function RegistrationPage() {
           </p>
         </div>
 
+        {/* Step indicator */}
+        <StepIndicator currentStep={step} />
+
         {error && <div style={s.errorBanner}>{error}</div>}
 
-        <form onSubmit={handleSubmit} style={s.form}>
-          {/* ── Personal info ── */}
-          <SectionTitle>Personal information</SectionTitle>
-          <Row>
-            <Field label="First name *">
-              <input
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                style={s.input}
-              />
-            </Field>
-            <Field label="Last name *">
-              <input
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                style={s.input}
-              />
-            </Field>
-          </Row>
+        {step === 'about' && (
+          <AboutStep
+            formData={formData}
+            handleChange={handleChange}
+            goNext={goNext}
+          />
+        )}
 
-          <Row>
-            <Field label="Email *">
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                style={s.input}
-                placeholder="your.name@student.uva.nl"
-              />
-            </Field>
-            <Field label="Student number *">
-              <input
-                name="studentNumber"
-                value={formData.studentNumber}
-                onChange={handleChange}
-                style={s.input}
-                placeholder="e.g. 12345678"
-              />
-            </Field>
-          </Row>
+        {step === 'academic' && (
+          <AcademicStep
+            formData={formData}
+            handleChange={handleChange}
+            handleEducationLevelChange={handleEducationLevelChange}
+            yearOptions={yearOptions}
+            goNext={goNext}
+            goBack={goBack}
+          />
+        )}
 
-          <Row>
-            <Field label="Year of birth (optional)">
-              <input
-                type="number"
-                name="yearOfBirth"
-                value={formData.yearOfBirth}
-                onChange={handleChange}
-                style={s.input}
-                placeholder="2004"
-                min="1950"
-                max="2015"
-              />
-            </Field>
-            <Field label="Gender *">
-              <TypeaheadSelect
-                name="gender"
-                value={formData.gender}
-                onChange={handleChange}
-                options={SORTED_GENDERS}
-                placeholder="Select gender"
-              />
-            </Field>
-          </Row>
-
-          <Field label="Country of origin *">
-            <TypeaheadSelect
-              name="countryOfOrigin"
-              value={formData.countryOfOrigin}
-              onChange={handleChange}
-              options={SORTED_COUNTRIES}
-              placeholder="Select country"
-            />
-          </Field>
-
-          {/* ── Academic info ── */}
-          <SectionTitle>Academic information</SectionTitle>
-          <Row>
-            <Field label="University *">
-              <TypeaheadSelect
-                name="university"
-                value={formData.university}
-                onChange={handleChange}
-                options={SORTED_UNIVERSITIES}
-                placeholder="Select university"
-              />
-            </Field>
-            <Field label="Major *">
-              <TypeaheadSelect
-                name="major"
-                value={formData.major}
-                onChange={handleChange}
-                options={SORTED_MAJORS}
-                placeholder="Select major"
-              />
-            </Field>
-          </Row>
-
-          <Field label="Programme *">
-            <div style={s.radioGroup}>
-              {['bachelor', 'master', 'alumni'].map((level) => (
-                <label key={level} style={s.radioLabel}>
-                  <input
-                    type="radio"
-                    name="educationLevel"
-                    value={level}
-                    checked={formData.educationLevel === level}
-                    onChange={handleEducationLevelChange}
-                  />
-                  {level.charAt(0).toUpperCase() + level.slice(1)}
-                </label>
-              ))}
-            </div>
-          </Field>
-
-          {yearOptions.length > 0 && (
-            <Field label={`Year (${formData.educationLevel}) *`}>
-              <select
-                name="yearNumber"
-                value={formData.yearNumber}
-                onChange={handleChange}
-                style={s.select}
-              >
-                <option value="">Select year</option>
-                {yearOptions.map((y) => (
-                  <option key={y} value={y}>
-                    Year {y}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          )}
-
-          {/* ── Account credentials ── */}
-          <SectionTitle>Login credentials</SectionTitle>
-          <Row>
-            <Field label="Password *">
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                style={s.input}
-                placeholder="Min. 6 characters"
-              />
-            </Field>
-            <Field label="Confirm password *">
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                style={s.input}
-              />
-            </Field>
-          </Row>
-
-          {/* ── Submit ── */}
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              ...s.submitBtn,
-              opacity: loading ? 0.6 : 1,
-              cursor: loading ? 'not-allowed' : 'pointer',
-            }}
-          >
-            {loading ? 'Creating account…' : 'Create account'}
-          </button>
-
-          <p style={s.loginPrompt}>
-            Already have an account?{' '}
-            <button
-              type="button"
-              onClick={() => navigate('/login')}
-              style={s.linkBtn}
-            >
-              Log in
-            </button>
-          </p>
-        </form>
+        {step === 'account' && (
+          <AccountStep
+            formData={formData}
+            handleChange={handleChange}
+            handleSubmit={handleSubmit}
+            goBack={goBack}
+            loading={loading}
+            navigate={navigate}
+          />
+        )}
 
         <p style={s.note}>* Required fields</p>
       </div>
     </div>
+  );
+}
+
+// ── Step indicator ───────────────────────────────────────────────────────────
+
+function StepIndicator({ currentStep }) {
+  const steps = [
+    { key: 'about', label: 'About you', number: 1 },
+    { key: 'academic', label: 'Studies', number: 2 },
+    { key: 'account', label: 'Account', number: 3 },
+  ];
+
+  const activeIndex = steps.findIndex((s) => s.key === currentStep);
+
+  return (
+    <div style={s.stepRow}>
+      {steps.map((step, i) => {
+        const active = i === activeIndex;
+        const completed = i < activeIndex;
+        const bg = completed
+          ? '#22c55e'
+          : active
+          ? '#f97316'
+          : '#e5e7eb';
+        const color = completed || active ? '#ffffff' : '#6b7280';
+
+        return (
+          <div key={step.key} style={s.stepItem}>
+            <div
+              style={{
+                ...s.stepCircle,
+                backgroundColor: bg,
+                color,
+              }}
+            >
+              {step.number}
+            </div>
+            <span
+              style={{
+                fontSize: '11px',
+                color: active ? '#f97316' : '#6b7280',
+                fontWeight: active ? 600 : 400,
+              }}
+            >
+              {step.label}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Step 1: About you ───────────────────────────────────────────────────────
+
+function AboutStep({ formData, handleChange, goNext }) {
+  return (
+    <div style={s.form}>
+      <SectionTitle>About you</SectionTitle>
+
+      <Row>
+        <Field label="First name *">
+          <input
+            name="firstName"
+            value={formData.firstName}
+            onChange={handleChange}
+            style={s.input}
+          />
+        </Field>
+        <Field label="Last name *">
+          <input
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleChange}
+            style={s.input}
+          />
+        </Field>
+      </Row>
+
+      <Row>
+        <Field label="Year of birth (optional)">
+          <input
+            type="number"
+            name="yearOfBirth"
+            value={formData.yearOfBirth}
+            onChange={handleChange}
+            style={s.input}
+            placeholder="2004"
+            min="1950"
+            max="2015"
+          />
+        </Field>
+        <Field label="Gender *">
+          <TypeaheadSelect
+            name="gender"
+            value={formData.gender}
+            onChange={handleChange}
+            options={SORTED_GENDERS}
+            placeholder="Select gender"
+          />
+        </Field>
+      </Row>
+
+      <Field label="Nationality *">
+        <TypeaheadSelect
+          name="countryOfOrigin"
+          value={formData.countryOfOrigin}
+          onChange={handleChange}
+          options={SORTED_COUNTRIES}
+          placeholder="Select nationality"
+        />
+      </Field>
+
+      <button
+        type="button"
+        onClick={goNext}
+        style={s.submitBtn}
+      >
+        Next →
+      </button>
+    </div>
+  );
+}
+
+// ── Step 2: Academic info ───────────────────────────────────────────────────
+
+function AcademicStep({
+  formData,
+  handleChange,
+  handleEducationLevelChange,
+  yearOptions,
+  goNext,
+  goBack,
+}) {
+  return (
+    <div style={s.form}>
+      <SectionTitle>Academic information</SectionTitle>
+
+      <Row>
+        <Field label="University *">
+          <TypeaheadSelect
+            name="university"
+            value={formData.university}
+            onChange={handleChange}
+            options={SORTED_UNIVERSITIES}
+            placeholder="Select university"
+          />
+        </Field>
+        <Field label="Major *">
+          <TypeaheadSelect
+            name="major"
+            value={formData.major}
+            onChange={handleChange}
+            options={SORTED_MAJORS}
+            placeholder="Select major"
+          />
+        </Field>
+      </Row>
+
+      <Field label="Programme *">
+        <div style={s.radioGroup}>
+          {['foundation', 'bachelor', 'master', 'alumni'].map((level) => (
+            <label key={level} style={s.radioLabel}>
+              <input
+                type="radio"
+                name="educationLevel"
+                value={level}
+                checked={formData.educationLevel === level}
+                onChange={handleEducationLevelChange}
+              />
+              {level.charAt(0).toUpperCase() + level.slice(1)}
+            </label>
+          ))}
+        </div>
+      </Field>
+
+      {yearOptions.length > 0 && (
+        <Field label="Academic year *">
+          <select
+            name="yearNumber"
+            value={formData.yearNumber}
+            onChange={handleChange}
+            style={s.select}
+          >
+            <option value="">Select year</option>
+            {yearOptions.map((y) => (
+              <option key={y} value={y}>
+                Year {y}
+              </option>
+            ))}
+          </select>
+        </Field>
+      )}
+
+      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+        <button
+          type="button"
+          onClick={goBack}
+          style={{ ...s.ghostBtn, flex: 1 }}
+        >
+          ← Back
+        </button>
+        <button
+          type="button"
+          onClick={goNext}
+          style={{ ...s.submitBtn, flex: 1 }}
+        >
+          Next →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Step 3: Account & login info ────────────────────────────────────────────
+
+function AccountStep({
+  formData,
+  handleChange,
+  handleSubmit,
+  goBack,
+  loading,
+  navigate,
+}) {
+  return (
+    <form onSubmit={handleSubmit} style={s.form}>
+      <SectionTitle>Final step</SectionTitle>
+
+      <Field label="Email *">
+        <input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          style={s.input}
+          placeholder="your.name@student.uva.nl"
+        />
+      </Field>
+
+      <Row>
+        <Field label="Password *">
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            style={s.input}
+            placeholder="Min. 6 characters"
+          />
+        </Field>
+        <Field label="Confirm password *">
+          <input
+            type="password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            style={s.input}
+          />
+        </Field>
+      </Row>
+
+      {/* Profile picture can be added later here */}
+
+      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+        <button
+          type="button"
+          onClick={goBack}
+          style={{ ...s.ghostBtn, flex: 1 }}
+        >
+          ← Back
+        </button>
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            ...s.submitBtn,
+            flex: 1,
+            opacity: loading ? 0.6 : 1,
+            cursor: loading ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {loading ? 'Creating account…' : 'Create account'}
+        </button>
+      </div>
+
+      <p style={s.loginPrompt}>
+        Already have an account?{' '}
+        <button
+          type="button"
+          onClick={() => navigate('/login')}
+          style={s.linkBtn}
+        >
+          Log in
+        </button>
+      </p>
+    </form>
   );
 }
 
@@ -712,7 +784,7 @@ const s = {
     width: '100%',
   },
   header: {
-    marginBottom: '20px',
+    marginBottom: '12px',
   },
   title: {
     fontSize: '22px',
@@ -730,6 +802,7 @@ const s = {
     display: 'flex',
     flexDirection: 'column',
     gap: '14px',
+    marginTop: '10px',
   },
   input: {
     padding: '9px 11px',
@@ -749,10 +822,6 @@ const s = {
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box',
-  },
-  disabled: {
-    backgroundColor: '#f3f4f6',
-    color: '#6b7280',
   },
   radioGroup: {
     display: 'flex',
@@ -779,7 +848,7 @@ const s = {
     fontWeight: 600,
     width: '100%',
   },
-    errorBanner: {
+  errorBanner: {
     padding: '10px 12px',
     marginBottom: '4px',
     borderRadius: '6px',
@@ -813,11 +882,15 @@ const s = {
     padding: 0,
   },
   ghostBtn: {
-    background: 'none',
+    background: '#f3f4f6',
+    borderRadius: '9999px',
     border: 'none',
     cursor: 'pointer',
-    padding: 0,
-    color: '#9ca3af',
+    padding: '10px',
+    color: '#4b5563',
+    textAlign: 'center',
+    fontSize: '13px',
+    fontWeight: 500,
   },
   note: {
     marginTop: '16px',
@@ -848,5 +921,29 @@ const s = {
     fontSize: '14px',
     cursor: 'pointer',
     color: '#374151',
+  },
+  // step indicator
+  stepRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginBottom: '8px',
+    gap: '8px',
+  },
+  stepItem: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '4px',
+  },
+  stepCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: '999px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '13px',
+    fontWeight: 600,
   },
 };
