@@ -93,42 +93,6 @@ export default function SettingsPage() {
     load()
   }, [navigate])
 
-  const handleProfileImageChange = async (file) => {
-    if (!file || !member) return
-    setError('')
-    setUploading(true)
-
-    try {
-      const compressed = await compressImage(file, 800, 800, 0.75)
-
-      const baseName =
-        typeof crypto !== 'undefined' && crypto.randomUUID
-          ? crypto.randomUUID()
-          : `${member.user_id}-${Date.now()}`
-
-      const filePath = `avatars/${baseName}.jpg`
-
-      const { error: uploadError } = await supabase.storage
-        .from('profile-images')
-        .upload(filePath, compressed, {
-          contentType: 'image/jpeg',
-          upsert: false,
-        })
-
-      if (uploadError) {
-        console.error('Profile image upload failed:', uploadError)
-        setError('프로필 사진 업로드에 실패했습니다. 다시 시도해 주세요.')
-        return
-      }
-
-      const { data: publicData } = supabase
-        .from('profile-images')
-        .storage.getPublicUrl(filePath) // older versions; but you already use supabase.storage.from in registration
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
   const handleLogout = async () => {
     await supabase.auth.signOut()
     navigate('/login')
@@ -196,10 +160,6 @@ export default function SettingsPage() {
               <p className="text-xs text-gray-400 mt-1">{member?.email}</p>
             </div>
 
-            <p className="text-xs text-gray-500 text-center">
-              프로필 사진을 변경하려면 아래 버튼을 눌러주세요.
-            </p>
-
             <input
               ref={fileInputRef}
               type="file"
@@ -207,16 +167,11 @@ export default function SettingsPage() {
               className="hidden"
               onChange={async (e) => {
                 const file = e.target.files && e.target.files[0]
-                if (!file) return
+                if (!file || !member) return
                 setError('')
                 setUploading(true)
                 try {
-                  const compressed = await compressImage(
-                    file,
-                    800,
-                    800,
-                    0.75
-                  )
+                  const compressed = await compressImage(file, 800, 800, 0.75)
 
                   const baseName =
                     typeof crypto !== 'undefined' && crypto.randomUUID
