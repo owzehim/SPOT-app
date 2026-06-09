@@ -3,16 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
-import {
-  MAP_CATEGORIES,
-  CATEGORY_ICONS_WHITE,
-  CATEGORY_ICONS_ORANGE,
-} from '../lib/mapCategories'
-import { QrCode, Calendar, MapPin } from '@phosphor-icons/react'
+import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE } from '../lib/mapCategories'
+import { QrCode, Calendar, MapPin, UserCircle, CheckCircle, XCircle, Gear } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
 import ActivityStatsCard from '../components/ActivityStatsCard'
-import { UserCircle, CheckCircle, XCircle } from '@phosphor-icons/react'
 
 export default function MemberPage() {
   const [member, setMember] = useState(null)
@@ -22,6 +17,7 @@ export default function MemberPage() {
   const [tabKey, setTabKey] = useState(0)
   const [events, setEvents] = useState([])
   const [restaurants, setRestaurants] = useState([])
+  const navigate = useNavigate() 
 
   // ── Review prompt hook ───────────────────────────────
   const {
@@ -148,29 +144,30 @@ export default function MemberPage() {
 
       {/* 헤더 */}
       <div
-        className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
+  className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0"
+  style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
+>
+  <h1 className="font-bold text-gray-900">UvA-IN</h1>
+  <div className="flex gap-2 items-center">
+    {isAdmin && (
+      <button
+        onClick={() => {
+          window.location.href = '/admin'
+        }}
+        className="text-sm text-white font-medium px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
       >
-        <h1 className="font-bold text-gray-900">UvA-IN</h1>
-        <div className="flex gap-2">
-          {isAdmin && (
-            <button
-              onClick={() => {
-                window.location.href = '/admin'
-              }}
-              className="text-sm text-white font-medium px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
-            >
-              관리자
-            </button>
-          )}
-          <button
-            onClick={() => supabase.auth.signOut()}
-            className="text-sm text-gray-500 px-3 py-1 rounded-lg hover:bg-gray-100"
-          >
-            로그아웃
-          </button>
-        </div>
-      </div>
+        관리자
+      </button>
+    )}
+    <button
+      onClick={() => navigate('/settings')}
+      className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
+      aria-label="Settings"
+    >
+      <Gear size={20} weight="bold" />
+    </button>
+  </div>
+</div>
 
       {/* 컨텐츠 */}
       <div className="flex-1 overflow-hidden">
