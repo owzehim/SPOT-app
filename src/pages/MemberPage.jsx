@@ -231,7 +231,114 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const cardW = W
   const cardH = `calc(${W} * 1.586)`
 
-  // ── NON-VALID MEMBERSHIP: dotted card ──────────────────────────────────────
+  const cardFront = (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        borderRadius: '16px',
+        background: '#F6F4F1',
+        border: '1px solid #d6d3c0',
+        boxShadow: '0 14px 35px rgba(15,23,42,0.09)',
+        padding: '24px',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+      }}
+    >
+      {/* TOP: avatar + info */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        {/* Avatar */}
+        <div
+          style={{
+            width: '64px',
+            height: '64px',
+            borderRadius: '50%',
+            background: '#d6d3c0',
+            border: '2px solid #b5b29e',
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '11px',
+            color: '#6b6a5e',
+            fontFamily: '"Handjet", system-ui, sans-serif',
+            letterSpacing: '0.04em',
+          }}
+        >
+          {member?.first_name?.[0]}{member?.last_name?.[0]}
+        </div>
+
+        {/* Info block */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', textAlign: 'right' }}>
+          <span
+            style={{
+              fontFamily: '"Handjet", system-ui, sans-serif',
+              fontSize: '13px',
+              fontWeight: 700,
+              color: '#1a1a1a',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+            }}
+          >
+            UvA-IN Membership
+          </span>
+          <span
+            style={{
+              fontFamily: '"Handjet", system-ui, sans-serif',
+              fontSize: '11px',
+              fontWeight: 500,
+              color: '#6b6a5e',
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              marginTop: '4px',
+            }}
+          >
+            Valid Until{' '}
+            {member?.membership_valid_until
+              ? new Date(member.membership_valid_until).toLocaleDateString('en-CA')
+              : 'N/A'}
+          </span>
+          <span
+            style={{
+              fontFamily: '"Handjet", system-ui, sans-serif',
+              fontSize: '18px',
+              fontWeight: 800,
+              color: '#1a1a1a',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              marginTop: '2px',
+            }}
+          >
+            {member?.first_name} {member?.last_name}
+          </span>
+        </div>
+      </div>
+
+      {/* MIDDLE: empty */}
+      <div style={{ flex: 1 }} />
+
+      {/* BOTTOM: wordmark */}
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <span
+          style={{
+            fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
+            fontSize: '52px',
+            fontWeight: 900,
+            color: '#1a1a1a',
+            letterSpacing: '-0.01em',
+            lineHeight: 1,
+            textTransform: 'uppercase',
+          }}
+        >
+          UvA-IN
+        </span>
+      </div>
+    </div>
+  )
+
+  // ── NON-VALID MEMBERSHIP ───────────────────────────────────────────────────
   if (!isValid) {
     return (
       <div
@@ -242,7 +349,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           flexShrink: 0,
           borderRadius: '16px',
           border: '2px dashed #cbd5b1',
-          background: '#efeddc',
+          background: '#F6F4F1',
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
@@ -251,7 +358,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           color: '#4b5563',
           textAlign: 'center',
           padding: '16px',
-          fontFamily: '"Handjet", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+          fontFamily: '"Handjet", system-ui, sans-serif',
         }}
       >
         <span
@@ -265,44 +372,22 @@ function MembershipCard({ member, isValid, onQRScanned }) {
         >
           UvA-IN MEMBERSHIP
         </span>
-        <span
-          style={{
-            marginTop: '8px',
-            fontSize: '14px',
-            fontWeight: 500,
-          }}
-        >
+        <span style={{ marginTop: '8px', fontSize: '14px', fontWeight: 500 }}>
           활성화된 멤버십이 없습니다
         </span>
         {member?.first_name && (
-          <span
-            style={{
-              marginTop: '4px',
-              fontSize: '13px',
-              color: '#6b7280',
-            }}
-          >
+          <span style={{ marginTop: '4px', fontSize: '13px', color: '#6b7280' }}>
             {member.first_name} {member.last_name}
           </span>
         )}
-        <span
-          style={{
-            marginTop: '10px',
-            fontSize: '11px',
-            color: '#9ca3af',
-          }}
-        >
+        <span style={{ marginTop: '10px', fontSize: '11px', color: '#9ca3af' }}>
           멤버십 갱신은 운영진에게 문의해주세요
         </span>
       </div>
     )
   }
 
-  // ── VALID MEMBERSHIP: front in #efeddc + scanner back ──────────────────────
-  const handleToggle = () => {
-    setFlipped((f) => !f)
-  }
-
+  // ── VALID MEMBERSHIP: flip card ────────────────────────────────────────────
   return (
     <div
       style={{
@@ -313,9 +398,8 @@ function MembershipCard({ member, isValid, onQRScanned }) {
         flexShrink: 0,
         cursor: 'pointer',
       }}
-      onClick={handleToggle}
+      onClick={() => setFlipped((f) => !f)}
     >
-      {/* Flip container */}
       <div
         style={{
           width: '100%',
@@ -326,44 +410,20 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
-        {/* FRONT SIDE */}
+        {/* FRONT */}
         <div
           style={{
             position: 'absolute',
             inset: 0,
             backfaceVisibility: 'hidden',
+            padding: '12px',
+            boxSizing: 'border-box',
           }}
         >
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              padding: '12px',
-              boxSizing: 'border-box',
-            }}
-          >
-            <div
-              style={{
-                width: '100%',
-                height: '100%',
-                borderRadius: '16px',
-                background: '#efeddc',
-                border: '1px solid #cbd5b1',
-                boxShadow: '0 14px 35px rgba(15,23,42,0.09)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center',
-                padding: '16px',
-                boxSizing: 'border-box',
-              }}
-            >
-              {/* Card front content — add your design here */}
-            </div>
-          </div>
+          {cardFront}
         </div>
 
-        {/* BACK SIDE (scanner) */}
+        {/* BACK (scanner) */}
         <div
           style={{
             position: 'absolute',
@@ -376,9 +436,6 @@ function MembershipCard({ member, isValid, onQRScanned }) {
             style={{
               width: '100%',
               height: '100%',
-              margin: '0 auto',
-              position: 'relative',
-              flexShrink: 0,
               background: '#000',
               border: '6px solid #f97316',
               borderRadius: '16px',
@@ -401,7 +458,6 @@ function MembershipCard({ member, isValid, onQRScanned }) {
                 justifyContent: 'center',
               }}
             >
-              {/* Only mount scanner when flipped => permission asked after flip */}
               {flipped && <QRScanner onScan={onQRScanned} />}
             </div>
           </div>
@@ -410,7 +466,6 @@ function MembershipCard({ member, isValid, onQRScanned }) {
     </div>
   )
 }
-
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 function QRTab({ member, isValid }) {
