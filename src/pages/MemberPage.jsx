@@ -223,7 +223,6 @@ export default function MemberPage() {
   )
 }
 
-// ─── QR Tab ───────────────────────────────────────────────────────────────────
 // ─── Membership Card with Flip Animation & Lazy Camera ──────────────────────
 function MembershipCard({ member, isValid, onQRScanned }) {
   const [flipped, setFlipped] = useState(false)
