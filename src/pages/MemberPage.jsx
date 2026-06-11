@@ -11,19 +11,6 @@ import ActivityStatsCard from '../components/ActivityStatsCard'
 import QRScanner from '../components/QRScanner'
 import { logRedemption } from '../lib/redemption'
 
-// avatar helpers (top-level so QRTab can use them)
-const AVATAR_COLORS = ['#F97316', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899']
-
-function getAvatarColor(seed) {
-  const str = seed || 'default'
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash * 31 + str.charCodeAt(i)) | 0
-  }
-  const index = Math.abs(hash) % AVATAR_COLORS.length
-  return AVATAR_COLORS[index]
-}
-
 export default function MemberPage() {
   const [member, setMember] = useState(null)
   const [loading, setLoading] = useState(true)
