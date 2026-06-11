@@ -210,24 +210,16 @@ export default function MemberPage() {
   )
 }
 
-// ─── Pastel avatar colors (deterministic per user) ───────────────────────────
+// ─── Pastel avatar colors ────────────────────────────────────────────────────
 const PASTEL_COLORS = [
-  '#FFB3B3',
-  '#FFD9A0',
-  '#FFF3A0',
-  '#B3F0C2',
-  '#A8D8FF',
-  '#C5B3FF',
-  '#FFB3E6',
-  '#B3F0EE',
+  '#FFB3B3', '#FFD9A0', '#FFF3A0', '#B3F0C2',
+  '#A8D8FF', '#C5B3FF', '#FFB3E6', '#B3F0EE',
 ]
 
 function getPastelColor(seed) {
   const str = seed || 'default'
   let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash * 31 + str.charCodeAt(i)) | 0
-  }
+  for (let i = 0; i < str.length; i++) hash = (hash * 31 + str.charCodeAt(i)) | 0
   return PASTEL_COLORS[Math.abs(hash) % PASTEL_COLORS.length]
 }
 
@@ -244,7 +236,6 @@ function MembershipCard({ member, isValid, onQRScanned }) {
     valid:    `calc(${W} * 0.032)`,
     name:     `calc(${W} * 0.052)`,
     wordmark: `calc(${W} * 0.152)`,
-    hint:     `calc(${W} * 0.034)`,
   }
 
   const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
@@ -252,60 +243,43 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const avatarSize = `calc(${W} * 0.19)`
   const hasProfileImage = !!member?.profile_image_url
 
-  // QR outline box — scales with card width to match the real scanner box
-  const qrOutlineSize = `calc(${W} * 0.58)`
-
-  const BRACKET = 28 // px, matches QRScanner corner bracket size
+  // The back card has 12px outer padding + 12px inner padding = 24px total each side.
+  // QRScanner renders inside a max-w-xs (320px) centered box.
+  // QR_BOX_SIZE = 220px, centered in that box.
+  // We replicate this: outline box = 220/320 = 68.75% of the inner scanner area.
+  // Inner scanner area = card width - 2*24px padding = W - 48px.
+  // So outline = (W - 48px) * (220/320) ≈ W * 0.595
+  const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
+  const BRACKET = 24
 
   const cardFront = (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        borderRadius: '16px',
-        background: '#F6F4F1',
-        border: '1px solid #d6d3c0',
-        boxShadow: '0 14px 35px rgba(15,23,42,0.09)',
-        padding: `calc(${W} * 0.07)`,
-        boxSizing: 'border-box',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-      }}
-    >
-      {/* TOP: avatar + info */}
+    <div style={{
+      width: '100%', height: '100%',
+      borderRadius: '16px',
+      background: '#F6F4F1',
+      border: '1px solid #d6d3c0',
+      boxShadow: '0 14px 35px rgba(15,23,42,0.09)',
+      padding: `calc(${W} * 0.07)`,
+      boxSizing: 'border-box',
+      display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+    }}>
+      {/* TOP */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        {/* Avatar */}
-        <div
-          style={{
-            width: avatarSize,
-            height: avatarSize,
-            borderRadius: '50%',
-            background: hasProfileImage ? 'transparent' : pastelBg,
-            flexShrink: 0,
-            overflow: 'hidden',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            userSelect: 'none',
-          }}
-        >
+        <div style={{
+          width: avatarSize, height: avatarSize, borderRadius: '50%',
+          background: hasProfileImage ? 'transparent' : pastelBg,
+          flexShrink: 0, overflow: 'hidden',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', userSelect: 'none',
+        }}>
           {hasProfileImage ? (
-            <img
-              src={member.profile_image_url}
-              alt="Profile"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-            />
+            <img src={member.profile_image_url} alt="Profile"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           ) : (
             <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
           )}
         </div>
 
-        {/* Info block */}
-        <div style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
-          gap: `calc(${W} * 0.01)`, textAlign: 'right',
-        }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: `calc(${W} * 0.01)`, textAlign: 'right' }}>
           <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.brand, fontWeight: 700, color: '#2C2A27', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             UvA-IN Membership
           </span>
@@ -321,54 +295,42 @@ function MembershipCard({ member, isValid, onQRScanned }) {
         </div>
       </div>
 
-      {/* MIDDLE: QR outline hint */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: `calc(${W} * 0.03)`,
-      }}>
-        {/* Corner bracket outline box */}
-        <div style={{
-          position: 'relative',
-          width: qrOutlineSize,
-          height: qrOutlineSize,
-          flexShrink: 0,
-        }}>
-          {/* Top-left */}
-          <span style={{ position: 'absolute', top: 0, left: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.25)', borderLeft: '2.5px solid rgba(44,42,39,0.25)', borderRadius: '4px 0 0 0' }} />
-          {/* Top-right */}
-          <span style={{ position: 'absolute', top: 0, right: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.25)', borderRight: '2.5px solid rgba(44,42,39,0.25)', borderRadius: '0 4px 0 0' }} />
-          {/* Bottom-left */}
-          <span style={{ position: 'absolute', bottom: 0, left: 0, width: BRACKET, height: BRACKET, borderBottom: '2.5px solid rgba(44,42,39,0.25)', borderLeft: '2.5px solid rgba(44,42,39,0.25)', borderRadius: '0 0 0 4px' }} />
-          {/* Bottom-right */}
-          <span style={{ position: 'absolute', bottom: 0, right: 0, width: BRACKET, height: BRACKET, borderBottom: '2.5px solid rgba(44,42,39,0.25)', borderRight: '2.5px solid rgba(44,42,39,0.25)', borderRadius: '0 0 4px 0' }} />
-        </div>
+      {/* MIDDLE: QR outline with icon centered inside */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ position: 'relative', width: qrOutlineSize, height: qrOutlineSize, flexShrink: 0 }}>
+          {/* Corner brackets */}
+          <span style={{ position: 'absolute', top: 0, left: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.3)', borderLeft: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '4px 0 0 0' }} />
+          <span style={{ position: 'absolute', top: 0, right: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.3)', borderRight: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 4px 0 0' }} />
+          <span style={{ position: 'absolute', bottom: 0, left: 0, width: BRACKET, height: BRACKET, borderBottom: '2.5px solid rgba(44,42,39,0.3)', borderLeft: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 0 0 4px' }} />
+          <span style={{ position: 'absolute', bottom: 0, right: 0, width: BRACKET, height: BRACKET, borderBottom: '2.5px solid rgba(44,42,39,0.3)', borderRight: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 0 4px 0' }} />
 
-        {/* Hint text */}
-        <span style={{
-          fontFamily: '"Handjet", system-ui, sans-serif',
-          fontSize: fs.hint,
-          fontWeight: 600,
-          color: '#f97316',
-          letterSpacing: '0.05em',
-        }}>
-          눌러서 Check-IN 하기
-        </span>
+          {/* QrCode icon + label centered inside the box */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: `calc(${W} * 0.02)`,
+          }}>
+            <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.35)" />
+            <span style={{
+              fontFamily: '"Handjet", system-ui, sans-serif',
+              fontSize: `calc(${W} * 0.034)`,
+              fontWeight: 600,
+              color: 'rgba(44,42,39,0.45)',
+              letterSpacing: '0.05em',
+            }}>
+              눌러서 Check-IN 하기
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* BOTTOM: wordmark */}
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <span style={{
           fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
-          fontSize: fs.wordmark,
-          fontWeight: 900,
-          color: '#2C2A27',
-          letterSpacing: '-0.01em',
-          lineHeight: 1,
-          textTransform: 'uppercase',
+          fontSize: fs.wordmark, fontWeight: 900, color: '#2C2A27',
+          letterSpacing: '-0.01em', lineHeight: 1, textTransform: 'uppercase',
         }}>
           UvA-IN
         </span>
@@ -376,22 +338,21 @@ function MembershipCard({ member, isValid, onQRScanned }) {
     </div>
   )
 
-  // ── NON-VALID MEMBERSHIP ───────────────────────────────────────────────────
+  // ── NON-VALID ─────────────────────────────────────────────────────────────
   if (!isValid) {
     return (
       <div style={{
         width: cardW, height: cardH, margin: '0 auto', flexShrink: 0,
         borderRadius: '16px', border: '2px dashed #cbd5b1', background: '#F6F4F1',
         boxSizing: 'border-box', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', color: '#4b5563',
-        textAlign: 'center', padding: '16px', fontFamily: '"Handjet", system-ui, sans-serif',
+        alignItems: 'center', justifyContent: 'center',
+        color: '#4b5563', textAlign: 'center', padding: '16px',
+        fontFamily: '"Handjet", system-ui, sans-serif',
       }}>
         <span style={{ fontSize: fs.brand, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: '"Alien Block", system-ui, sans-serif', color: '#2C2A27' }}>
           UvA-IN MEMBERSHIP
         </span>
-        <span style={{ marginTop: '8px', fontSize: fs.valid, fontWeight: 500 }}>
-          활성화된 멤버십이 없습니다
-        </span>
+        <span style={{ marginTop: '8px', fontSize: fs.valid, fontWeight: 500 }}>활성화된 멤버십이 없습니다</span>
         {member?.first_name && (
           <span style={{ marginTop: '4px', fontSize: fs.valid, color: '#6b7280' }}>
             {member.first_name} {member.last_name}
@@ -404,7 +365,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
     )
   }
 
-  // ── VALID MEMBERSHIP: flip card ────────────────────────────────────────────
+  // ── VALID: flip card ──────────────────────────────────────────────────────
   return (
     <div
       style={{ width: cardW, height: cardH, margin: '0 auto', perspective: '1200px', flexShrink: 0, cursor: 'pointer' }}
@@ -421,18 +382,14 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           {cardFront}
         </div>
 
-        {/* BACK (scanner) */}
+        {/* BACK */}
         <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
           <div style={{
             width: '100%', height: '100%',
-            background: '#F6F4F1',
-            border: '1px solid #d6d3c0',
-            borderRadius: '16px',
-            overflow: 'hidden',
+            background: '#F6F4F1', border: '1px solid #d6d3c0',
+            borderRadius: '16px', overflow: 'hidden',
             boxSizing: 'border-box',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: '12px',
           }}>
             {flipped && <QRScanner onScan={onQRScanned} />}
