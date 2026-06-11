@@ -826,121 +826,215 @@ function NavBtn({ onClick, children, style = {} }) {
 }
 
 // ─── Events Tab ───────────────────────────────────────────────────────────────
+import { useState } from 'react'
+import EventCard from '../components/EventCard'
+
 function EventsTab({ events }) {
   const [expandedId, setExpandedId] = useState(null)
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false)
 
-  // Separate upcoming and past events
+  // Sort events by date
+  const sortedEvents = [...events].sort((a, b) => {
+    if (!a.event_date) return 1
+    if (!b.event_date) return -1
+    return new Date(a.event_date) - new Date(b.event_date)
+  })
+
+  // Get newest event (first upcoming event)
   const now = new Date()
-  const upcomingEvents = events.filter(
+  const newestEvent = sortedEvents.find(
     (ev) => ev.event_date && new Date(ev.event_date) >= now
   )
-  const pastEvents = events.filter(
+
+  // Get other upcoming events (excluding newest)
+  const otherUpcomingEvents = sortedEvents.filter(
+    (ev) =>
+      ev.event_date &&
+      new Date(ev.event_date) >= now &&
+      ev.id !== newestEvent?.id
+  )
+
+  // Get past events
+  const pastEvents = sortedEvents.filter(
     (ev) => ev.event_date && new Date(ev.event_date) < now
   )
 
-  // Group events by month
-  const groupEventsByMonth = (eventList) => {
-    const grouped = {}
-    eventList.forEach((ev) => {
-      const monthKey = ev.event_date
-        ? `${new Date(ev.event_date).getMonth() + 1}월`
-        : '날짜 미정'
-      if (!grouped[monthKey]) {
-        grouped[monthKey] = []
-      }
-      grouped[monthKey].push(ev)
-    })
-    return grouped
+  // Format date helper
+  const formatDate = (dateStr) => {
+    if (!dateStr) return null
+    const date = new Date(dateStr)
+    const day = String(date.getDate()).padStart(2, '0')
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const dayName = date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()
+    const monthName = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
+
+    return {
+      dayName,
+      dateNum: `${day}.${month}`,
+      monthName,
+    }
   }
 
-  const upcomingByMonth = groupEventsByMonth(upcomingEvents)
-  const pastByMonth = groupEventsByMonth(pastEvents)
+  const W = 'calc(100vw - 32px)'
+  const fs = {
+    day: `calc(${W} * 0.028)`,
+    date: `calc(${W} * 0.068)`,
+    month: `calc(${W} * 0.052)`,
+    title: `calc(${W} * 0.042)`,
+    location: `calc(${W} * 0.036)`,
+  }
 
   return (
     <div className="h-full overflow-y-auto">
       <div className="px-4 py-6 max-w-md mx-auto">
-        <h2 className="font-semibold text-gray-900 mb-6" style={{ fontSize: 'calc(100vw * 0.045)' }}>
-          EVENTS
-        </h2>
+        {/* TOP SECTION - NEWEST EVENT (NO BOX) */}
+        {newestEvent && (
+          <div className="mb-8 pb-6 border-b border-gray-100">
+            <div className="flex gap-4">
+              {/* LEFT SIDE - DATE */}
+              {formatDate(newestEvent.event_date) && (
+                <div className="flex-shrink-0 flex flex-col items-start justify-start" style={{ minWidth: '80px' }}>
+                  <span
+                    style={{
+                      fontFamily: '"Handjet", system-ui, sans-serif',
+                      fontSize: fs.day,
+                      fontWeight: 500,
+                      color: '#9ca3af',
+                      letterSpacing: '0.05em',
+                      textTransform: 'uppercase',
+                      lineHeight: 1,
+                    }}
+                  >
+                    {formatDate(newestEvent.event_date).dayName}
+                  </span>
 
-        {events.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
-            <p className="text-2xl mb-2">📅</p>
-            <p className="text-gray-500 text-sm">예정된 이벤트가 없어요</p>
+                  <span
+                    style={{
+                      fontFamily: '"Handjet", system-ui, sans-serif',
+                      fontSize: fs.date,
+                      fontWeight: 800,
+                      color: '#1f2937',
+                      letterSpacing: '0.02em',
+                      lineHeight: 1,
+                      marginTop: '2px',
+                    }}
+                  >
+                    {formatDate(newestEvent.event_date).dateNum}
+                  </span>
+
+                  <span
+                    style={{
+                      fontFamily: '"Handjet", system-ui, sans-serif',
+                      fontSize: fs.month,
+                      fontWeight: 700,
+                      color: '#f97316',
+                      letterSpacing: '0.04em',
+                      textTransform: 'uppercase',
+                      lineHeight: 1,
+                      marginTop: '2px',
+                    }}
+                  >
+                    {formatDate(newestEvent.event_date).monthName}
+                  </span>
+                </div>
+              )}
+
+              {/* RIGHT SIDE - TITLE & LOCATION */}
+              <div className="flex-1 flex flex-col justify-start">
+                <h3
+                  style={{
+                    fontFamily: '"Noto Sans KR", system-ui, sans-serif',
+                    fontSize: fs.title,
+                    fontWeight: 600,
+                    color: '#1f2937',
+                    margin: 0,
+                  }}
+                >
+                  {newestEvent.title}
+                </h3>
+
+                {newestEvent.location && (
+                  <p
+                    style={{
+                      fontFamily: '"Noto Sans KR", system-ui, sans-serif',
+                      fontSize: fs.location,
+                      fontWeight: 400,
+                      color: '#6b7280',
+                      margin: '4px 0 0 0',
+                    }}
+                  >
+                    {newestEvent.location}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
-        ) : (
+        )}
+
+        {/* MIDDLE SECTION - OTHER UPCOMING EVENTS (IN BOXES) */}
+        {otherUpcomingEvents.length > 0 && (
+          <div className="mb-8">
+            {otherUpcomingEvents.map((event) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                isExpanded={expandedId === event.id}
+                onToggle={() =>
+                  setExpandedId(expandedId === event.id ? null : event.id)
+                }
+              />
+            ))}
+          </div>
+        )}
+
+        {/* BOTTOM SECTION - PAST EVENTS DROPDOWN */}
+        {pastEvents.length > 0 && (
           <div>
-            {/* UPCOMING EVENTS */}
-            {upcomingEvents.length > 0 && (
-              <div className="mb-8">
-                {Object.entries(upcomingByMonth).map(([month, monthEvents]) => (
-                  <div key={month}>
-                    <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3 pt-2">
-                      {month}
-                    </h3>
-                    {monthEvents.map((event) => (
-                      <EventCard
-                        key={event.id}
-                        event={event}
-                        isExpanded={expandedId === event.id}
-                        onToggle={() =>
-                          setExpandedId(expandedId === event.id ? null : event.id)
-                        }
-                      />
-                    ))}
-                  </div>
+            <button
+              onClick={() => setPastEventsExpanded(!pastEventsExpanded)}
+              className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-gray-600 font-semibold">지난 이벤트</span>
+                <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">
+                  {pastEvents.length}
+                </span>
+              </div>
+              <span className="text-gray-400 text-lg">
+                {pastEventsExpanded ? '▲' : '▼'}
+              </span>
+            </button>
+
+            {pastEventsExpanded && (
+              <div className="mt-3 space-y-3">
+                {pastEvents.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    isExpanded={expandedId === event.id}
+                    onToggle={() =>
+                      setExpandedId(expandedId === event.id ? null : event.id)
+                    }
+                  />
                 ))}
               </div>
             )}
+          </div>
+        )}
 
-            {/* PAST EVENTS */}
-            {pastEvents.length > 0 && (
-              <div className="mt-8">
-                <button
-                  onClick={() => setPastEventsExpanded(!pastEventsExpanded)}
-                  className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-600 font-semibold">지난 이벤트</span>
-                    <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">
-                      {pastEvents.length}
-                    </span>
-                  </div>
-                  <span className="text-gray-400 text-lg">
-                    {pastEventsExpanded ? '▲' : '▼'}
-                  </span>
-                </button>
-
-                {pastEventsExpanded && (
-                  <div className="mt-3">
-                    {Object.entries(pastByMonth).map(([month, monthEvents]) => (
-                      <div key={month}>
-                        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3 pt-2">
-                          {month}
-                        </h3>
-                        {monthEvents.map((event) => (
-                          <EventCard
-                            key={event.id}
-                            event={event}
-                            isExpanded={expandedId === event.id}
-                            onToggle={() =>
-                              setExpandedId(expandedId === event.id ? null : event.id)
-                            }
-                          />
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+        {/* EMPTY STATE */}
+        {!newestEvent && otherUpcomingEvents.length === 0 && pastEvents.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-2xl mb-2">📅</p>
+            <p className="text-gray-500 text-sm">예정된 이벤트가 없어요</p>
           </div>
         )}
       </div>
     </div>
   )
 }
+
+export default EventsTab
 
 // ─── Map Tab ──────────────────────────────────────────────────────────────────
 
