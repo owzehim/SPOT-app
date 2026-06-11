@@ -223,7 +223,29 @@ function getPastelColor(seed) {
   return PASTEL_COLORS[Math.abs(hash) % PASTEL_COLORS.length]
 }
 
-// Metal frame wrapper - matching your photo
+// ─── Membership Card ───────────────────────────────────────────────────────────
+function MembershipCard({ member, isValid, onQRScanned }) {
+  const [flipped, setFlipped] = useState(false)
+
+  const W = 'calc(100vw - 32px)'
+  const cardW = W
+  const cardH = `calc(${W} * 1.586)`
+
+  const fs = {
+    brand: `calc(${W} * 0.038)`,
+    valid: `calc(${W} * 0.032)`,
+    name: `calc(${W} * 0.052)`,
+    wordmark: `calc(${W} * 0.152)`,
+  }
+
+  const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
+  const pastelBg = getPastelColor(avatarSeed)
+  const avatarSize = `calc(${W} * 0.19)`
+  const hasProfileImage = !!member?.profile_image_url
+
+  const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
+  const BRACKET = 24
+
 const MetalFrame = ({ children }) => (
   <div
     style={{
