@@ -1,14 +1,10 @@
-// src/components/MapView.jsx
-
 import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { getMapIconSvg } from '../lib/mapCategories'
 import { MapPin } from '@phosphor-icons/react'
 
-// Put your MapTiler key in .env.local as VITE_MAPTILER_KEY
-// If you really want to hardcode, you can replace MAPTILER_KEY
-// with 'your-key-here', but it's not recommended for a public repo.
+// Read MapTiler key from environment
 const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY
 
 export default function MapView({ restaurants, selected, onSelect }) {
@@ -139,21 +135,36 @@ export default function MapView({ restaurants, selected, onSelect }) {
       scrollWheelZoom: true,
       dragging: true,
       tap: true,
-    }).setView([52.3676, 4.9041], 13) // Amsterdam-ish default
+    }).setView([52.3676, 4.9041], 13) // Amsterdam default
 
-    // MapTiler raster tiles for your custom style
-    L.tileLayer(
-      `https://api.maptiler.com/maps/019e706d-8f70-7fa6-bbe7-d48f8bc6e123/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`,
-      {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
-          '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a>',
-        maxZoom: 20,
-        tileSize: 512,
-        zoomOffset: -1,
-        crossOrigin: true,
-      },
-    ).addTo(map)
+    // MapTiler raster tiles with your custom style
+    if (MAPTILER_KEY) {
+      L.tileLayer(
+        `https://api.maptiler.com/maps/019e706d-8f70-7fa6-bbe7-d48f8bc6e123/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`,
+        {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
+            '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a>',
+          maxZoom: 20,
+          tileSize: 512,
+          zoomOffset: -1,
+          crossOrigin: true,
+        },
+      ).addTo(map)
+    } else {
+      // Fallback if key is missing (show warning in console)
+      console.warn(
+        'VITE_MAPTILER_KEY not set. Add it to .env.local or Vercel environment variables.',
+      )
+      // Fallback to CARTO tiles
+      L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        {
+          attribution: '© OpenStreetMap © CARTO',
+          maxZoom: 19,
+        },
+      ).addTo(map)
+    }
 
     L.control
       .zoom({
