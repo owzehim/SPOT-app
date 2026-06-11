@@ -874,9 +874,9 @@ function EventsTab({ events }) {
 
   const W = 'calc(100vw - 32px)'
   const fs = {
-    day: `calc(${W} * 0.06)`,      // Increased - small day text
-    date: `calc(${W} * 0.15)`,     // Increased - big date numbers (covering ~1/3 of screen)
-    month: `calc(${W} * 0.12)`,    // Increased - big month letters
+    day: `calc(${W} * 0.06)`,      // Small day text
+    date: `calc(${W} * 0.18)`,     // Extra large date numbers
+    month: `calc(${W} * 0.18)`,    // Same size as date number
     title: `calc(${W} * 0.042)`,   // Event title
     location: `calc(${W} * 0.036)`, // Location text
   }
@@ -887,10 +887,10 @@ function EventsTab({ events }) {
         {/* TOP SECTION - NEWEST EVENT (NO BOX) */}
         {newestEvent && (
           <div className="mb-8 pb-6 border-b border-gray-100">
-            <div className="flex gap-6 items-start">
+            <div className="flex gap-8 items-start">
               {/* LEFT SIDE - DATE */}
               {formatDate(newestEvent.event_date) && (
-                <div className="flex-shrink-0 flex flex-col items-start justify-start leading-none">
+                <div className="flex-shrink-0 flex flex-col items-start justify-start leading-none pl-2">
                   <span
                     style={{
                       fontFamily: '"Handjet", system-ui, sans-serif',
@@ -899,7 +899,7 @@ function EventsTab({ events }) {
                       color: '#9ca3af',
                       letterSpacing: '0.05em',
                       textTransform: 'uppercase',
-                      lineHeight: 0.9,
+                      lineHeight: 0.85,
                     }}
                   >
                     {formatDate(newestEvent.event_date).dayName}
@@ -912,8 +912,8 @@ function EventsTab({ events }) {
                       fontWeight: 800,
                       color: '#1f2937',
                       letterSpacing: '0.02em',
-                      lineHeight: 0.9,
-                      marginTop: '4px',
+                      lineHeight: 0.85,
+                      marginTop: '2px',
                     }}
                   >
                     {formatDate(newestEvent.event_date).dateNum}
@@ -923,12 +923,12 @@ function EventsTab({ events }) {
                     style={{
                       fontFamily: '"Handjet", system-ui, sans-serif',
                       fontSize: fs.month,
-                      fontWeight: 700,
-                      color: '#f97316',
+                      fontWeight: 800,
+                      color: '#1f2937',
                       letterSpacing: '0.04em',
                       textTransform: 'uppercase',
-                      lineHeight: 0.9,
-                      marginTop: '4px',
+                      lineHeight: 0.85,
+                      marginTop: '2px',
                     }}
                   >
                     {formatDate(newestEvent.event_date).monthName}
@@ -937,7 +937,7 @@ function EventsTab({ events }) {
               )}
 
               {/* RIGHT SIDE - TITLE & LOCATION */}
-              <div className="flex-1 flex flex-col justify-start">
+              <div className="flex-1 flex flex-col justify-start pr-2">
                 <h3
                   style={{
                     fontFamily: '"Noto Sans KR", system-ui, sans-serif',
