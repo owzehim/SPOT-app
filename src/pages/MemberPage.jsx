@@ -234,8 +234,8 @@ function MembershipCard({ member, isValid, onQRScanned }) {
 
   const fs = {
   day: `calc(${W} * 0.08)`,       // bigger day text
-  date: `calc(${W} * 0.24)`,      // MUCH bigger date
-  month: `calc(${W} * 0.24)`,     // same size as date
+  date: `calc(${W} * 0.40)`,      // MUCH bigger date
+  month: `calc(${W} * 0.40)`,     // same size as date
   title: `calc(${W} * 0.042)`,
   location: `calc(${W} * 0.036)`,
 }
@@ -891,7 +891,7 @@ function EventsTab({ events }) {
             <div className="flex gap-8 items-start">
               {/* LEFT SIDE - DATE */}
               {formatDate(newestEvent.event_date) && (
-                <div className="flex-shrink-0 flex flex-col items-start justify-start leading-none pl-10">
+                <div className="flex-shrink-0 flex flex-col items-start justify-start leading-none pl-8">
                   <span
                     style={{
                       fontFamily: '"Handjet", system-ui, sans-serif',
