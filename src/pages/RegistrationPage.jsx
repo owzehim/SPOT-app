@@ -32,6 +32,7 @@ const COUNTRIES = [
 ];
 
 const GENDERS = ['female', 'male', 'non-binary', 'prefer not to say'];
+const GENDERS_KO = ['여성', '남성', '논바이너리', '답변 거절'];
 const UNIVERSITY_OPTIONS = ['University of Amsterdam (UvA)'];
 const MAJOR_OPTIONS = [
   'Business Administration',
@@ -44,11 +45,101 @@ const MAJOR_OPTIONS = [
   'Sport and Performance Psychology',
 ];
 
-// Sorted versions for typeahead
 const SORTED_COUNTRIES = [...COUNTRIES].sort((a, b) => a.localeCompare(b));
 const SORTED_GENDERS = [...GENDERS].sort((a, b) => a.localeCompare(b));
+const SORTED_GENDERS_KO = [...GENDERS_KO].sort((a, b) => a.localeCompare(b, 'ko'));
 const SORTED_UNIVERSITIES = [...UNIVERSITY_OPTIONS].sort((a, b) => a.localeCompare(b));
 const SORTED_MAJORS = [...MAJOR_OPTIONS].sort((a, b) => a.localeCompare(b));
+
+// ── Translations ────────────────────────────────────────────────────────────────
+const translations = {
+  en: {
+    title: 'Account Register',
+    subtitle: 'Your membership will be inactive after registration. The board will activate it once verified.',
+    aboutYou: 'About you',
+    academicInfo: 'Academic information',
+    finalStep: 'Final step',
+    firstName: 'First name *',
+    lastName: 'Last name *',
+    yearOfBirth: 'Year of birth (optional)',
+    gender: 'Gender *',
+    nationality: 'Nationality *',
+    university: 'University *',
+    major: 'Major *',
+    programme: 'Programme *',
+    academicYear: 'Academic year *',
+    email: 'Email *',
+    password: 'Password *',
+    confirmPassword: 'Confirm password *',
+    profilePicture: 'Profile picture (optional)',
+    next: 'Next →',
+    back: '← Back',
+    createAccount: 'Create account',
+    creatingAccount: 'Creating account…',
+    requiredFields: '* Required fields',
+    passwordMismatch: '⚠️ Passwords do not match',
+    checkEmail: 'Check your email',
+    emailSent: 'We sent a confirmation link to',
+    verifyEmail: 'Please open that email, verify your address, then come back and log in.',
+    goToLogin: 'Go to login',
+    alreadyHaveAccount: 'Already have an account?',
+    logIn: 'Log in',
+    minCharacters: 'Min. 6 characters',
+    selectGender: 'Select gender',
+    selectNationality: 'Select nationality',
+    selectUniversity: 'Select university',
+    selectMajor: 'Select major',
+    selectYear: 'Select year',
+    year: 'Year',
+    foundation: 'Foundation',
+    bachelor: 'Bachelor',
+    master: 'Master',
+    alumni: 'Alumni',
+  },
+  ko: {
+    title: '계정 등록',
+    subtitle: '등록 후 회원 자격은 비활성 상태입니다. 보드에서 확인 후 활성화됩니다.',
+    aboutYou: '당신에 대해',
+    academicInfo: '학력 정보',
+    finalStep: '마지막 단계',
+    firstName: '이름 *',
+    lastName: '성 *',
+    yearOfBirth: '출생 연도 (선택사항)',
+    gender: '성별 *',
+    nationality: '국적 *',
+    university: '대학 *',
+    major: '전공 *',
+    programme: '프로그램 *',
+    academicYear: '학년 *',
+    email: '이메일 *',
+    password: '비밀번호 *',
+    confirmPassword: '비밀번호 확인 *',
+    profilePicture: '프로필 사진 (선택사항)',
+    next: '다음 →',
+    back: '← 뒤로',
+    createAccount: '계정 만들기',
+    creatingAccount: '계정 생성 중…',
+    requiredFields: '* 필수 필드',
+    passwordMismatch: '⚠️ 비밀번호가 일치하지 않습니다',
+    checkEmail: '이메일 확인',
+    emailSent: '확인 링크를 다음 주소로 보냈습니다',
+    verifyEmail: '해당 이메일을 열고 주소를 확인한 후 돌아와서 로그인하세요.',
+    goToLogin: '로그인으로 이동',
+    alreadyHaveAccount: '이미 계정이 있으신가요?',
+    logIn: '로그인',
+    minCharacters: '최소 6자',
+    selectGender: '성별 선택',
+    selectNationality: '국적 선택',
+    selectUniversity: '대학 선택',
+    selectMajor: '전공 선택',
+    selectYear: '학년 선택',
+    year: '학년',
+    foundation: '파운데이션',
+    bachelor: '학사',
+    master: '석사',
+    alumni: '동문',
+  },
+};
 
 // ── Typeahead select component ────────────────────────────────────────────────
 function TypeaheadSelect({ name, value, onChange, options, placeholder = '' }) {
@@ -60,7 +151,6 @@ function TypeaheadSelect({ name, value, onChange, options, placeholder = '' }) {
     setInputValue(value || '');
   }, [value]);
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e) => {
       if (!containerRef.current) return;
@@ -125,6 +215,8 @@ function TypeaheadSelect({ name, value, onChange, options, placeholder = '' }) {
 // ── Main component ────────────────────────────────────────────────────────────
 export default function RegistrationPage() {
   const navigate = useNavigate();
+  const [language, setLanguage] = useState('en');
+
   const {
     step,
     formData,
@@ -139,31 +231,42 @@ export default function RegistrationPage() {
   } = useRegisterMember();
 
   const yearOptions = getYearOptions(formData.educationLevel);
+  const t = translations[language];
+  const genderOptions = language === 'en' ? SORTED_GENDERS : SORTED_GENDERS_KO;
 
   // Final step: after successful registration, tell user to check email
   if (step === 'email') {
     return (
-      <div style={s.page}>
-        <div style={{ ...s.card, maxWidth: '420px' }}>
+      <div style={{ ...s.page, fontFamily: language === 'en' ? 'Handjet, cursive' : '"Noto Sans KR", sans-serif' }}>
+        <div style={s.topBar}>
+          <button
+            type="button"
+            onClick={() => navigate('/public')}
+            style={s.backButton}
+            title="Go back"
+          >
+            ←
+          </button>
+          <button
+            onClick={() => setLanguage(language === 'en' ? 'ko' : 'en')}
+            style={s.languageToggle}
+          >
+            {language === 'en' ? '한국어' : 'English'}
+          </button>
+        </div>
+        <div style={s.emailCard}>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <div style={{ fontSize: '40px', marginBottom: '12px' }}>📧</div>
-            <h1 style={s.title}>Check your email</h1>
-            <p
-              style={{
-                fontSize: '13px',
-                color: '#6b7280',
-                lineHeight: 1.6,
-                margin: 0,
-              }}
-            >
-              We sent a confirmation link to <br />
+            <h1 style={s.title}>{t.checkEmail}</h1>
+            <p style={s.emailText}>
+              {t.emailSent} <br />
               <strong style={{ color: '#111827' }}>{formData.email}</strong>
               <br />
-              Please open that email, verify your address, then come back and log in.
+              {t.verifyEmail}
             </p>
           </div>
           <button type="button" onClick={() => navigate('/login')} style={s.submitBtn}>
-            Go to login
+            {t.goToLogin}
           </button>
         </div>
       </div>
@@ -171,116 +274,89 @@ export default function RegistrationPage() {
   }
 
   return (
-    <div style={s.page}>
-      <div style={s.card}>
-        {/* Header */}
-        <div style={s.header}>
-          <h1 style={s.title}>Account Register</h1>
-          <p style={s.subtitle}>
-            Your membership will be <strong>inactive</strong> after registration. The board will activate it once verified.
-          </p>
-        </div>
-
-        {/* Step indicator */}
-        <StepIndicator currentStep={step} />
-
-        {error && <div style={s.errorBanner}>{error}</div>}
-
-        {step === 'about' && (
-          <AboutStep formData={formData} handleChange={handleChange} goNext={goNext} />
-        )}
-
-        {step === 'academic' && (
-          <AcademicStep
-            formData={formData}
-            handleChange={handleChange}
-            handleEducationLevelChange={handleEducationLevelChange}
-            yearOptions={yearOptions}
-            goNext={goNext}
-            goBack={goBack}
-          />
-        )}
-
-        {step === 'account' && (
-          <AccountStep
-            formData={formData}
-            handleChange={handleChange}
-            handleSubmit={handleSubmit}
-            goBack={goBack}
-            loading={loading}
-            navigate={navigate}
-            setProfileFile={setProfileFile}
-          />
-        )}
-
-        <p style={s.note}>* Required fields</p>
+    <div style={{ ...s.page, fontFamily: language === 'en' ? 'Handjet, cursive' : '"Noto Sans KR", sans-serif' }}>
+      {/* Top Bar with Back Button and Language Toggle */}
+      <div style={s.topBar}>
+        <button
+          type="button"
+          onClick={() => navigate('/public')}
+          style={s.backButton}
+          title="Go back"
+        >
+          ←
+        </button>
+        <button
+          onClick={() => setLanguage(language === 'en' ? 'ko' : 'en')}
+          style={s.languageToggle}
+        >
+          {language === 'en' ? '한국어' : 'English'}
+        </button>
       </div>
-    </div>
-  );
-}
 
-// ── Step indicator ─────────────────────────────────────────────────────────────
-function StepIndicator({ currentStep }) {
-  const steps = [
-    { key: 'about', label: 'About you', number: 1 },
-    { key: 'academic', label: 'Studies', number: 2 },
-    { key: 'account', label: 'Account', number: 3 },
-  ];
+      {/* Header */}
+      <div style={s.header}>
+        <h1 style={s.title}>{t.title}</h1>
+        <p style={s.subtitle}>{t.subtitle}</p>
+      </div>
 
-  const activeIndex = steps.findIndex((s) => s.key === currentStep);
+      {error && <div style={s.errorBanner}>{error}</div>}
 
-  return (
-    <div style={s.stepRow}>
-      {steps.map((step, i) => {
-        const active = i === activeIndex;
-        const completed = i < activeIndex;
-        const bg = completed ? '#22c55e' : active ? '#f97316' : '#e5e7eb';
-        const color = completed || active ? '#ffffff' : '#6b7280';
+      {step === 'about' && (
+        <AboutStep
+          formData={formData}
+          handleChange={handleChange}
+          goNext={goNext}
+          language={language}
+          t={t}
+        />
+      )}
 
-        return (
-          <div key={step.key} style={s.stepItem}>
-            <div
-              style={{
-                ...s.stepCircle,
-                backgroundColor: bg,
-                color,
-              }}
-            >
-              {step.number}
-            </div>
-            <span
-              style={{
-                fontSize: '11px',
-                color: active ? '#f97316' : '#6b7280',
-                fontWeight: active ? 600 : 400,
-              }}
-            >
-              {step.label}
-            </span>
-          </div>
-        );
-      })}
+      {step === 'academic' && (
+        <AcademicStep
+          formData={formData}
+          handleChange={handleChange}
+          handleEducationLevelChange={handleEducationLevelChange}
+          yearOptions={yearOptions}
+          goNext={goNext}
+          goBack={goBack}
+          language={language}
+          t={t}
+        />
+      )}
+
+      {step === 'account' && (
+        <AccountStep
+          formData={formData}
+          handleChange={handleChange}
+          handleSubmit={handleSubmit}
+          goBack={goBack}
+          loading={loading}
+          navigate={navigate}
+          setProfileFile={setProfileFile}
+          language={language}
+          t={t}
+        />
+      )}
+
+      <p style={s.note}>{t.requiredFields}</p>
     </div>
   );
 }
 
 // ── Step 1: About you ──────────────────────────────────────────────────────────
-function AboutStep({ formData, handleChange, goNext }) {
-  // Check if all required fields are filled
+function AboutStep({ formData, handleChange, goNext, language, t }) {
   const isComplete =
     formData.firstName.trim() &&
     formData.lastName.trim() &&
-    formData.firstNameKorean.trim() &&
-    formData.lastNameKorean.trim() &&
     formData.gender &&
     formData.countryOfOrigin;
 
   return (
     <div style={s.form}>
-      <SectionTitle>About you</SectionTitle>
+      <SectionTitle>{t.aboutYou}</SectionTitle>
 
       <Row>
-        <Field label="First name (English) *">
+        <Field label={t.firstName}>
           <input
             name="firstName"
             value={formData.firstName}
@@ -288,7 +364,7 @@ function AboutStep({ formData, handleChange, goNext }) {
             style={s.input}
           />
         </Field>
-        <Field label="Last name (English) *">
+        <Field label={t.lastName}>
           <input
             name="lastName"
             value={formData.lastName}
@@ -299,30 +375,7 @@ function AboutStep({ formData, handleChange, goNext }) {
       </Row>
 
       <Row>
-        <Field label="First name (Korean) *">
-          <input
-            name="firstNameKorean"
-            value={formData.firstNameKorean}
-            onChange={handleChange}
-            style={s.input}
-          />
-        </Field>
-        <Field label="Last name (Korean) *">
-          <input
-            name="lastNameKorean"
-            value={formData.lastNameKorean}
-            onChange={handleChange}
-            style={s.input}
-          />
-        </Field>
-      </Row>
-
-      <p style={s.helperText}>
-        💡 If you don't have a Korean name, you may fill both fields in English.
-      </p>
-
-      <Row>
-        <Field label="Year of birth (optional)">
+        <Field label={t.yearOfBirth}>
           <input
             type="number"
             name="yearOfBirth"
@@ -334,24 +387,24 @@ function AboutStep({ formData, handleChange, goNext }) {
             max="2015"
           />
         </Field>
-        <Field label="Gender *">
+        <Field label={t.gender}>
           <TypeaheadSelect
             name="gender"
             value={formData.gender}
             onChange={handleChange}
-            options={SORTED_GENDERS}
-            placeholder="Select gender"
+            options={language === 'en' ? SORTED_GENDERS : SORTED_GENDERS_KO}
+            placeholder={t.selectGender}
           />
         </Field>
       </Row>
 
-      <Field label="Nationality *">
+      <Field label={t.nationality}>
         <TypeaheadSelect
           name="countryOfOrigin"
           value={formData.countryOfOrigin}
           onChange={handleChange}
           options={SORTED_COUNTRIES}
-          placeholder="Select nationality"
+          placeholder={t.selectNationality}
         />
       </Field>
 
@@ -365,7 +418,7 @@ function AboutStep({ formData, handleChange, goNext }) {
           cursor: isComplete ? 'pointer' : 'not-allowed',
         }}
       >
-        Next →
+        {t.next}
       </button>
     </div>
   );
@@ -379,42 +432,45 @@ function AcademicStep({
   yearOptions,
   goNext,
   goBack,
+  language,
+  t,
 }) {
-  // Check if all required fields are filled
   const isComplete =
     formData.university &&
     formData.major &&
     formData.educationLevel &&
     (yearOptions.length === 0 || formData.yearNumber);
 
+  const programmeOptions = ['foundation', 'bachelor', 'master', 'alumni'];
+
   return (
     <div style={s.form}>
-      <SectionTitle>Academic information</SectionTitle>
+      <SectionTitle>{t.academicInfo}</SectionTitle>
 
       <Row>
-        <Field label="University *">
+        <Field label={t.university}>
           <TypeaheadSelect
             name="university"
             value={formData.university}
             onChange={handleChange}
             options={SORTED_UNIVERSITIES}
-            placeholder="Select university"
+            placeholder={t.selectUniversity}
           />
         </Field>
-        <Field label="Major *">
+        <Field label={t.major}>
           <TypeaheadSelect
             name="major"
             value={formData.major}
             onChange={handleChange}
             options={SORTED_MAJORS}
-            placeholder="Select major"
+            placeholder={t.selectMajor}
           />
         </Field>
       </Row>
 
-      <Field label="Programme *">
+      <Field label={t.programme}>
         <div style={s.radioGroup}>
-          {['foundation', 'bachelor', 'master', 'alumni'].map((level) => (
+          {programmeOptions.map((level) => (
             <label key={level} style={s.radioLabel}>
               <input
                 type="radio"
@@ -423,24 +479,24 @@ function AcademicStep({
                 checked={formData.educationLevel === level}
                 onChange={handleEducationLevelChange}
               />
-              {level.charAt(0).toUpperCase() + level.slice(1)}
+              {t[level]}
             </label>
           ))}
         </div>
       </Field>
 
       {yearOptions.length > 0 && (
-        <Field label="Academic year *">
+        <Field label={t.academicYear}>
           <select
             name="yearNumber"
             value={formData.yearNumber}
             onChange={handleChange}
             style={s.select}
           >
-            <option value="">Select year</option>
+            <option value="">{t.selectYear}</option>
             {yearOptions.map((y) => (
               <option key={y} value={y}>
-                Year {y}
+                {t.year} {y}
               </option>
             ))}
           </select>
@@ -453,7 +509,7 @@ function AcademicStep({
           onClick={goBack}
           style={{ ...s.ghostBtn, flex: 1 }}
         >
-          ← Back
+          {t.back}
         </button>
         <button
           type="button"
@@ -466,7 +522,7 @@ function AcademicStep({
             cursor: isComplete ? 'pointer' : 'not-allowed',
           }}
         >
-          Next →
+          {t.next}
         </button>
       </div>
     </div>
@@ -482,8 +538,9 @@ function AccountStep({
   loading,
   navigate,
   setProfileFile,
+  language,
+  t,
 }) {
-  // Check if all required fields are filled
   const isComplete =
     formData.email &&
     formData.password &&
@@ -493,9 +550,9 @@ function AccountStep({
 
   return (
     <form onSubmit={handleSubmit} style={s.form}>
-      <SectionTitle>Final step</SectionTitle>
+      <SectionTitle>{t.finalStep}</SectionTitle>
 
-      <Field label="Email *">
+      <Field label={t.email}>
         <input
           type="email"
           name="email"
@@ -507,17 +564,17 @@ function AccountStep({
       </Field>
 
       <Row>
-        <Field label="Password *">
+        <Field label={t.password}>
           <input
             type="password"
             name="password"
             value={formData.password}
             onChange={handleChange}
             style={s.input}
-            placeholder="Min. 6 characters"
+            placeholder={t.minCharacters}
           />
         </Field>
-        <Field label="Confirm password *">
+        <Field label={t.confirmPassword}>
           <input
             type="password"
             name="confirmPassword"
@@ -530,11 +587,11 @@ function AccountStep({
 
       {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
         <p style={{ ...s.helperText, color: '#dc2626' }}>
-          ⚠️ Passwords do not match
+          {t.passwordMismatch}
         </p>
       )}
 
-      <Field label="Profile picture (optional)">
+      <Field label={t.profilePicture}>
         <input
           type="file"
           accept="image/*"
@@ -552,7 +609,7 @@ function AccountStep({
           onClick={goBack}
           style={{ ...s.ghostBtn, flex: 1 }}
         >
-          ← Back
+          {t.back}
         </button>
         <button
           type="submit"
@@ -564,18 +621,18 @@ function AccountStep({
             cursor: loading || !isComplete ? 'not-allowed' : 'pointer',
           }}
         >
-          {loading ? 'Creating account…' : 'Create account'}
+          {loading ? t.creatingAccount : t.createAccount}
         </button>
       </div>
 
       <p style={s.loginPrompt}>
-        Already have an account?{' '}
+        {t.alreadyHaveAccount}{' '}
         <button
           type="button"
           onClick={() => navigate('/login')}
           style={s.linkBtn}
         >
-          Log in
+          {t.logIn}
         </button>
       </p>
     </form>
@@ -633,40 +690,79 @@ const s = {
   page: {
     minHeight: '100vh',
     display: 'flex',
-    alignItems: 'flex-start',
-    justifyContent: 'center',
+    flexDirection: 'column',
+    alignItems: 'center',
     backgroundColor: '#f9fafb',
-    padding: '32px 16px',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    padding: '0',
   },
-  card: {
-    backgroundColor: 'white',
-    borderRadius: '12px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.06)',
-    padding: '32px',
-    maxWidth: '640px',
+  topBar: {
     width: '100%',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '16px 32px',
+    backgroundColor: 'white',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    position: 'sticky',
+    top: 0,
+    zIndex: 100,
+  },
+  backButton: {
+    background: 'none',
+    border: 'none',
+    fontSize: '24px',
+    cursor: 'pointer',
+    color: '#374151',
+    padding: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'color 0.2s',
+  },
+  languageToggle: {
+    padding: '8px 16px',
+    borderRadius: '6px',
+    border: '1px solid #d1d5db',
+    backgroundColor: 'white',
+    color: '#374151',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'all 0.2s',
   },
   header: {
-    marginBottom: '12px',
+    width: '100%',
+    textAlign: 'center',
+    padding: '40px 32px 20px',
+    backgroundColor: 'white',
+    borderBottom: '1px solid #e5e7eb',
   },
   title: {
-    fontSize: '22px',
+    fontSize: '32px',
     fontWeight: 700,
     color: '#111827',
-    margin: '0 0 6px',
+    margin: '0 0 12px',
   },
   subtitle: {
-    fontSize: '13px',
+    fontSize: '15px',
     color: '#6b7280',
     margin: 0,
-    lineHeight: 1.5,
+    lineHeight: 1.6,
+    maxWidth: '600px',
+    marginLeft: 'auto',
+    marginRight: 'auto',
   },
   form: {
     display: 'flex',
     flexDirection: 'column',
     gap: '14px',
-    marginTop: '10px',
+    marginTop: '20px',
+    padding: '32px',
+    backgroundColor: 'white',
+    borderRadius: '0',
+    maxWidth: '800px',
+    width: '100%',
+    margin: '20px auto',
   },
   input: {
     padding: '9px 11px',
@@ -711,24 +807,18 @@ const s = {
     fontSize: '15px',
     fontWeight: 600,
     width: '100%',
+    cursor: 'pointer',
   },
   errorBanner: {
     padding: '10px 12px',
-    marginBottom: '4px',
+    margin: '20px auto',
     borderRadius: '6px',
     backgroundColor: '#fef2f2',
     color: '#b91c1c',
     border: '1px solid #fecaca',
     fontSize: '13px',
-  },
-  successBanner: {
-    padding: '10px 12px',
-    marginBottom: '4px',
-    borderRadius: '6px',
-    backgroundColor: '#ecfdf5',
-    color: '#15803d',
-    border: '1px solid #bbf7d0',
-    fontSize: '13px',
+    maxWidth: '800px',
+    width: '100%',
   },
   loginPrompt: {
     textAlign: 'center',
@@ -758,6 +848,7 @@ const s = {
   },
   note: {
     marginTop: '16px',
+    marginBottom: '40px',
     fontSize: '11px',
     color: '#9ca3af',
     textAlign: 'center',
@@ -768,7 +859,6 @@ const s = {
     margin: '4px 0 0',
     fontStyle: 'italic',
   },
-  // typeahead styles
   typeaheadContainer: {
     position: 'relative',
   },
@@ -792,28 +882,19 @@ const s = {
     cursor: 'pointer',
     color: '#374151',
   },
-  // step indicator
-  stepRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginBottom: '8px',
-    gap: '8px',
+  emailCard: {
+    backgroundColor: 'white',
+    borderRadius: '12px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.06)',
+    padding: '32px',
+    maxWidth: '420px',
+    width: '100%',
+    margin: '60px auto',
   },
-  stepItem: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '4px',
-  },
-  stepCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: '999px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+  emailText: {
     fontSize: '13px',
-    fontWeight: 600,
+    color: '#6b7280',
+    lineHeight: 1.6,
+    margin: 0,
   },
 };
