@@ -446,7 +446,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           {cardFront}
         </div>
 
-        {/* BACK (scanner) */}
+                {/* BACK (scanner) */}
         <div
           style={{
             position: 'absolute',
@@ -459,34 +459,22 @@ function MembershipCard({ member, isValid, onQRScanned }) {
             style={{
               width: '100%',
               height: '100%',
-              background: '#000',
-              border: '6px solid #f97316',
+              background: '#F6F4F1',
+              border: '1px solid #d6d3c0',
               borderRadius: '16px',
               overflow: 'hidden',
               boxSizing: 'border-box',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '8px',
+              padding: '12px',
             }}
           >
-            <div
-              style={{
-                width: '100%',
-                height: '100%',
-                overflow: 'hidden',
-                borderRadius: '10px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {flipped && <QRScanner onScan={onQRScanned} />}
-            </div>
+            {flipped && <QRScanner onScan={onQRScanned} />}
           </div>
         </div>
+        </div>
       </div>
-    </div>
   )
 }
 
