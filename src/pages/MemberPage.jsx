@@ -246,7 +246,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
   const BRACKET = 24
 
-  /// Metal frame wrapper - matching your photo
+// Metal frame wrapper - matching your photo exactly
 const MetalFrame = ({ children }) => (
   <div
     style={{
@@ -261,33 +261,46 @@ const MetalFrame = ({ children }) => (
       overflow: 'visible',
     }}
   >
-    {/* Left grip handle */}
+    {/* TOP TAB - sticks out from frame */}
     <div
       style={{
         position: 'absolute',
-        top: '50%',
-        left: '-6px',
-        transform: 'translateY(-50%)',
-        width: '12px',
-        height: '48%',
-        borderRadius: '6px',
+        top: '-12px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '40px',
+        height: '16px',
+        borderRadius: '4px 4px 0 0',
+        background: '#c5c5c5',
+        boxShadow: '0 -2px 4px rgba(0,0,0,0.2)',
+      }}
+    />
+
+    {/* Left side rail - indented inward */}
+    <div
+      style={{
+        position: 'absolute',
+        top: '20%',
+        left: '2px',
+        width: '8px',
+        height: '60%',
+        borderRadius: '4px',
         background: '#b8b8b8',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.2)',
       }}
     />
     
-    {/* Right grip handle */}
+    {/* Right side rail - indented inward */}
     <div
       style={{
         position: 'absolute',
-        top: '50%',
-        right: '-6px',
-        transform: 'translateY(-50%)',
-        width: '12px',
-        height: '48%',
-        borderRadius: '6px',
+        top: '20%',
+        right: '2px',
+        width: '8px',
+        height: '60%',
+        borderRadius: '4px',
         background: '#b8b8b8',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.2)',
       }}
     />
 
@@ -321,6 +334,7 @@ const MetalFrame = ({ children }) => (
     </div>
   </div>
 )
+
   const cardFront = (
     <MetalFrame>
       <div
