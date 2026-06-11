@@ -261,32 +261,46 @@ const MetalFrame = ({ children }) => (
       overflow: 'visible',
     }}
   >
-    {/* TOP TAB - sticks out from frame */}
+    {/* TOP TAB - wider with pill-shaped hole */}
     <div
       style={{
         position: 'absolute',
-        top: '-12px',
+        top: '-16px',
         left: '50%',
         transform: 'translateX(-50%)',
-        width: '40px',
-        height: '16px',
+        width: '80px',
+        height: '20px',
         borderRadius: '4px 4px 0 0',
         background: '#c5c5c5',
         boxShadow: '0 -2px 4px rgba(0,0,0,0.2)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}
-    />
+    >
+      {/* Pill-shaped hole */}
+      <div
+        style={{
+          width: '30px',
+          height: '10px',
+          borderRadius: '999px',
+          background: '#999',
+          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.3)',
+        }}
+      />
+    </div>
 
     {/* Left side rail - indented inward */}
     <div
       style={{
         position: 'absolute',
-        top: '20%',
-        left: '2px',
-        width: '8px',
-        height: '60%',
-        borderRadius: '4px',
+        top: '15%',
+        left: '3px',
+        width: '6px',
+        height: '70%',
+        borderRadius: '3px',
         background: '#b8b8b8',
-        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.2)',
+        boxShadow: 'inset 1px 0 1px rgba(0,0,0,0.3), inset -1px 0 1px rgba(255,255,255,0.4)',
       }}
     />
     
@@ -294,13 +308,13 @@ const MetalFrame = ({ children }) => (
     <div
       style={{
         position: 'absolute',
-        top: '20%',
-        right: '2px',
-        width: '8px',
-        height: '60%',
-        borderRadius: '4px',
+        top: '15%',
+        right: '3px',
+        width: '6px',
+        height: '70%',
+        borderRadius: '3px',
         background: '#b8b8b8',
-        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.2)',
+        boxShadow: 'inset 1px 0 1px rgba(0,0,0,0.3), inset -1px 0 1px rgba(255,255,255,0.4)',
       }}
     />
 
