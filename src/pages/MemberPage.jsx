@@ -727,11 +727,11 @@ function QRTab({ member, isValid }) {
     )
   }
 
-  // ── SCANNING (valid membership: card + swipe + guide text) ────────────────
+ // ── SCANNING ─────────────────────────────────────────────────────────────
   return (
     <div style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
 
-      {/* Activity stats — sits behind the card layer at the bottom */}
+      {/* Activity stats — sits behind at the bottom */}
       <div
         ref={activityRef}
         style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 16px 16px', zIndex: 1 }}
@@ -739,7 +739,7 @@ function QRTab({ member, isValid }) {
         {isValid && <ActivityStatsCard userId={member?.user_id} />}
       </div>
 
-      {/* Card layer — swipeable. No paddingTop/marginTop hack; just flex-end */}
+      {/* Card layer — swipeable */}
       <div
         ref={cardLayerRef}
         style={{
@@ -747,15 +747,15 @@ function QRTab({ member, isValid }) {
           bottom: 0,
           left: 0,
           right: 0,
-          top: 0,                          // fill full height so flex-end works
-          backgroundColor: '#f9fafb',      // matches bg-gray-50
+          top: 0,
+          backgroundColor: '#f9fafb',
           zIndex: 10,
           touchAction: 'none',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'flex-end',
-          paddingBottom: '0px',
+          justifyContent: 'center',   // ← center the card vertically
+          padding: '16px 16px 0',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -767,7 +767,7 @@ function QRTab({ member, isValid }) {
           onQRScanned={handleQRScanned}
         />
 
-        {/* Guide text — muted, flush to bottom of card */}
+        {/* Guide text — follows card, right below it */}
         <div
           style={{
             width: '100%',
@@ -775,7 +775,6 @@ function QRTab({ member, isValid }) {
             justifyContent: 'flex-end',
             paddingRight: '20px',
             paddingTop: '6px',
-            paddingBottom: '12px',
             opacity: lifted ? 0 : 1,
             transition: 'opacity 0.25s ease',
           }}
