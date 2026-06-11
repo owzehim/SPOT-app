@@ -389,14 +389,17 @@ function MembershipCard({ member, isValid, onQRScanned }) {
         </div>
 
         {/* BACK */}
-        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
+        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', padding: '12px', boxSizing: 'border-box' }}>
           <div style={{
-            width: '100%', height: '100%',
-            background: '#F6F4F1', border: '1px solid #d6d3c0',
-            borderRadius: '16px', overflow: 'hidden',
+            width: '100%',
+            height: '100%',
+            background: '#F6F4F1',
+            border: '1px solid #d6d3c0',
+            borderRadius: '16px',
             boxSizing: 'border-box',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}>
             {flipped && <QRScanner onScan={onQRScanned} />}
           </div>
@@ -727,22 +730,16 @@ function QRTab({ member, isValid }) {
   // ── SCANNING (valid membership: card + swipe + guide text) ────────────────
   return (
     <div style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
-      {/* Activity stats (behind card layer at the bottom) */}
+
+      {/* Activity stats — sits behind the card layer at the bottom */}
       <div
         ref={activityRef}
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          padding: '0 16px 16px',
-          zIndex: 1,
-        }}
+        style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 16px 16px', zIndex: 1 }}
       >
         {isValid && <ActivityStatsCard userId={member?.user_id} />}
       </div>
 
-      {/* Card layer (swipeable) */}
+      {/* Card layer — swipeable. No paddingTop/marginTop hack; just flex-end */}
       <div
         ref={cardLayerRef}
         style={{
@@ -750,44 +747,40 @@ function QRTab({ member, isValid }) {
           bottom: 0,
           left: 0,
           right: 0,
-          paddingTop: '100vh',
-          marginTop: '-100vh',
-          backgroundColor: 'var(--background, #ffffff)',
-          padding: '16px 16px 24px',
-          paddingTop: 'calc(100vh)',
+          top: 0,                          // fill full height so flex-end works
+          backgroundColor: '#f9fafb',      // matches bg-gray-50
           zIndex: 10,
           touchAction: 'none',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'flex-end',
+          paddingBottom: '0px',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Spacer so card sits vertically centered */}
-        <div style={{ flex: 1 }} />
-
         <MembershipCard
           member={member}
           isValid={isValid}
           onQRScanned={handleQRScanned}
         />
 
-         {/* Guide text — only 위로 올려서 이번 달 활동 보기 */}
+        {/* Guide text — muted, flush to bottom of card */}
         <div
           style={{
             width: '100%',
             display: 'flex',
             justifyContent: 'flex-end',
-            marginTop: '10px',
-            paddingRight: '4px',
+            paddingRight: '20px',
+            paddingTop: '6px',
+            paddingBottom: '12px',
             opacity: lifted ? 0 : 1,
             transition: 'opacity 0.25s ease',
           }}
         >
-          <span style={{ fontSize: fs.guide, color: '#f97316', fontWeight: 500 }}>
+          <span style={{ fontSize: fs.guide, color: 'rgba(44,42,39,0.35)', fontWeight: 500 }}>
             위로 올려서 이번 달 활동 보기
           </span>
         </div>
