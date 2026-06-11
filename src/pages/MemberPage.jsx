@@ -231,24 +231,20 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const cardW = W
   const cardH = `calc(${W} * 1.586)`
 
-  // All font sizes scale relative to card width (100vw - 32px)
-  // Percentages are tuned to match the mockup proportions
   const fs = {
-    brand:    `calc(${W} * 0.038)`,  // "UvA-IN Membership" label
-    valid:    `calc(${W} * 0.032)`,  // "Valid Until" line
-    name:     `calc(${W} * 0.052)`,  // Full name
-    initials: `calc(${W} * 0.065)`,  // Avatar initials
-    wordmark: `calc(${W} * 0.152)`,  // "UvA-IN" bottom
+    brand:    `calc(${W} * 0.038)`,
+    valid:    `calc(${W} * 0.032)`,
+    name:     `calc(${W} * 0.052)`,
+    initials: `calc(${W} * 0.065)`,
+    wordmark: `calc(${W} * 0.152)`,
   }
 
-  // Avatar: colored background derived from name, white initials
   const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
   const avatarBg = getAvatarColor(avatarSeed)
   const initials =
     `${member?.first_name?.[0] || ''}${member?.last_name?.[0] || ''}`.toUpperCase()
-
-  // Avatar size also scales with card width
   const avatarSize = `calc(${W} * 0.19)`
+  const hasProfileImage = !!member?.profile_image_url
 
   const cardFront = (
     <div
@@ -269,14 +265,15 @@ function MembershipCard({ member, isValid, onQRScanned }) {
       {/* TOP: avatar + info */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
 
-        {/* Avatar circle */}
+        {/* Avatar circle — photo if available, else colored initials */}
         <div
           style={{
             width: avatarSize,
             height: avatarSize,
             borderRadius: '50%',
-            background: avatarBg,
+            background: hasProfileImage ? 'transparent' : avatarBg,
             flexShrink: 0,
+            overflow: 'hidden',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -288,7 +285,15 @@ function MembershipCard({ member, isValid, onQRScanned }) {
             userSelect: 'none',
           }}
         >
-          {initials || '?'}
+          {hasProfileImage ? (
+            <img
+              src={member.profile_image_url}
+              alt="Profile"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
+          ) : (
+            initials || '?'
+          )}
         </div>
 
         {/* Info block */}
@@ -299,45 +304,39 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           gap: `calc(${W} * 0.01)`,
           textAlign: 'right',
         }}>
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.brand,
-              fontWeight: 700,
-              color: '#1a1a1a',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-            }}
-          >
+          <span style={{
+            fontFamily: '"Handjet", system-ui, sans-serif',
+            fontSize: fs.brand,
+            fontWeight: 700,
+            color: '#1a1a1a',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+          }}>
             UvA-IN Membership
           </span>
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.valid,
-              fontWeight: 500,
-              color: '#6b6a5e',
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              marginTop: `calc(${W} * 0.012)`,
-            }}
-          >
+          <span style={{
+            fontFamily: '"Handjet", system-ui, sans-serif',
+            fontSize: fs.valid,
+            fontWeight: 500,
+            color: '#6b6a5e',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            marginTop: `calc(${W} * 0.012)`,
+          }}>
             Valid Until{' '}
             {member?.membership_valid_until
               ? new Date(member.membership_valid_until).toLocaleDateString('en-CA')
               : 'N/A'}
           </span>
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.name,
-              fontWeight: 800,
-              color: '#1a1a1a',
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-              marginTop: `calc(${W} * 0.008)`,
-            }}
-          >
+          <span style={{
+            fontFamily: '"Handjet", system-ui, sans-serif',
+            fontSize: fs.name,
+            fontWeight: 800,
+            color: '#1a1a1a',
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase',
+            marginTop: `calc(${W} * 0.008)`,
+          }}>
             {member?.first_name} {member?.last_name}
           </span>
         </div>
@@ -348,17 +347,15 @@ function MembershipCard({ member, isValid, onQRScanned }) {
 
       {/* BOTTOM: wordmark */}
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <span
-          style={{
-            fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
-            fontSize: fs.wordmark,
-            fontWeight: 900,
-            color: '#1a1a1a',
-            letterSpacing: '-0.01em',
-            lineHeight: 1,
-            textTransform: 'uppercase',
-          }}
-        >
+        <span style={{
+          fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
+          fontSize: fs.wordmark,
+          fontWeight: 900,
+          color: '#1a1a1a',
+          letterSpacing: '-0.01em',
+          lineHeight: 1,
+          textTransform: 'uppercase',
+        }}>
           UvA-IN
         </span>
       </div>
@@ -388,15 +385,13 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           fontFamily: '"Handjet", system-ui, sans-serif',
         }}
       >
-        <span
-          style={{
-            fontSize: fs.brand,
-            fontWeight: 600,
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            fontFamily: '"Alien Block", system-ui, sans-serif',
-          }}
-        >
+        <span style={{
+          fontSize: fs.brand,
+          fontWeight: 600,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          fontFamily: '"Alien Block", system-ui, sans-serif',
+        }}>
           UvA-IN MEMBERSHIP
         </span>
         <span style={{ marginTop: '8px', fontSize: fs.valid, fontWeight: 500 }}>
@@ -493,7 +488,6 @@ function MembershipCard({ member, isValid, onQRScanned }) {
     </div>
   )
 }
-
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
 function QRTab({ member, isValid }) {
