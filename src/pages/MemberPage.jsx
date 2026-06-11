@@ -315,12 +315,12 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           zIndex: 1,
         }}
       >
-        {/* Left side rail — INSIDE the card, on the left edge */}
+        {/* Left side rail — flush to the edge */}
         <div
           style={{
             position: 'absolute',
             top: '25%',
-            left: '3px',
+            left: '0px',
             width: '6px',
             height: '50%',
             borderRadius: '3px',
@@ -330,12 +330,12 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           }}
         />
 
-        {/* Right side rail — INSIDE the card, on the right edge */}
+        {/* Right side rail — flush to the edge */}
         <div
           style={{
             position: 'absolute',
             top: '25%',
-            right: '3px',
+            right: '0px',
             width: '6px',
             height: '50%',
             borderRadius: '3px',
@@ -569,6 +569,25 @@ function MembershipCard({ member, isValid, onQRScanned }) {
     </MetalFrame>
   )
 
+  const cardBack = (
+    <MetalFrame>
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: '#F6F4F1',
+          borderRadius: '22px',
+          boxSizing: 'border-box',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {flipped && <QRScanner onScan={onQRScanned} />}
+      </div>
+    </MetalFrame>
+  )
+
   // ── NON-VALID ─────────────────────────────────────────────────────────────
   if (!isValid) {
     return (
@@ -689,22 +708,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
             boxSizing: 'border-box',
           }}
         >
-          <MetalFrame>
-            <div
-              style={{
-                width: '100%',
-                height: '100%',
-                background: '#F6F4F1',
-                borderRadius: '22px',
-                boxSizing: 'border-box',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {flipped && <QRScanner onScan={onQRScanned} />}
-            </div>
-          </MetalFrame>
+          {cardBack}
         </div>
       </div>
     </div>
