@@ -139,10 +139,8 @@ export default function MapView({ restaurants, selected, onSelect }) {
 
       el.addEventListener('click', () => onSelect(r))
 
-      marker._isSelected = false
-      marker._restaurant = r
       markersRef.current.push(marker)
-      markerDataRef.current.push({ r, marker })
+      markerDataRef.current.push({ r, marker, element: el })
     })
 
     // Fit bounds
@@ -179,8 +177,6 @@ export default function MapView({ restaurants, selected, onSelect }) {
       preserveDrawingBuffer: false,
     })
 
-    // Don't add any controls - we're hiding them with CSS
-
     return () => {
       // Cleanup if needed
     }
@@ -196,12 +192,15 @@ export default function MapView({ restaurants, selected, onSelect }) {
   useEffect(() => {
     if (!map.current) return
 
-    markerDataRef.current.forEach(({ r, marker }) => {
+    markerDataRef.current.forEach(({ r, marker, element }) => {
       const isSelected = !!(selected && r.id === selected.id)
 
-      if (marker._isSelected === isSelected) return
+      // Remove old element
+      if (element && element.parentNode) {
+        element.parentNode.removeChild(element)
+      }
 
-      marker._isSelected = isSelected
+      // Create new element with updated styling
       const newEl = createMarkerElement(r, isSelected)
       marker.setElement(newEl)
 
