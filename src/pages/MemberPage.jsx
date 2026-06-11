@@ -210,8 +210,11 @@ export default function MemberPage() {
   )
 }
 
-// Pastel color helper
-const PASTEL_COLORS = ['#FFB3B3', '#FFD9A0', '#FFF3A0', '#B3F0C2', '#A8D8FF', '#C5B3FF', '#FFB3E6', '#B3F0EE']
+// ─── Pastel avatar colors ────────────────────────────────────────────────────
+const PASTEL_COLORS = [
+  '#FFB3B3', '#FFD9A0', '#FFF3A0', '#B3F0C2',
+  '#A8D8FF', '#C5B3FF', '#FFB3E6', '#B3F0EE',
+]
 
 function getPastelColor(seed) {
   const str = seed || 'default'
@@ -229,9 +232,9 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const cardH = `calc(${W} * 1.586)`
 
   const fs = {
-    brand: `calc(${W} * 0.038)`,
-    valid: `calc(${W} * 0.032)`,
-    name: `calc(${W} * 0.052)`,
+    brand:    `calc(${W} * 0.038)`,
+    valid:    `calc(${W} * 0.032)`,
+    name:     `calc(${W} * 0.052)`,
     wordmark: `calc(${W} * 0.152)`,
   }
 
@@ -239,397 +242,166 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const pastelBg = getPastelColor(avatarSeed)
   const avatarSize = `calc(${W} * 0.19)`
   const hasProfileImage = !!member?.profile_image_url
+
+  // Back: 12px outer + 12px inner = 24px padding each side → inner = W - 48px
+  // QRScanner: flex-col [video square (max-w-xs)] + [text ~40px] + gap ~12px
+  // Video fills max-w-xs = min(320px, inner). QR box = 220px centered in video.
+  // The whole QRScanner column is centered in the back card, so the video top
+  // sits at: center - (videoH/2 + textH/2 + gap/2) ≈ center - ~28px
+  // We shift the outline up by that same ~28px offset.
   const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
   const BRACKET = 24
 
   const cardFront = (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        borderRadius: '16px',
-        background: '#F6F4F1',
-        border: '1px solid #d6d3c0',
-        boxShadow: '0 14px 35px rgba(15,23,42,0.09)',
-        padding: `calc(${W} * 0.07)`,
-        boxSizing: 'border-box',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-      }}
-    >
+    <div style={{
+      width: '100%', height: '100%',
+      borderRadius: '16px',
+      background: '#F6F4F1',
+      border: '1px solid #d6d3c0',
+      boxShadow: '0 14px 35px rgba(15,23,42,0.09)',
+      padding: `calc(${W} * 0.07)`,
+      boxSizing: 'border-box',
+      display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+    }}>
       {/* TOP */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div
-          style={{
-            width: avatarSize,
-            height: avatarSize,
-            borderRadius: '50%',
-            background: hasProfileImage ? 'transparent' : pastelBg,
-            flexShrink: 0,
-            overflow: 'hidden',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            userSelect: 'none',
-          }}
-        >
+        <div style={{
+          width: avatarSize, height: avatarSize, borderRadius: '50%',
+          background: hasProfileImage ? 'transparent' : pastelBg,
+          flexShrink: 0, overflow: 'hidden',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', userSelect: 'none',
+        }}>
           {hasProfileImage ? (
-            <img
-              src={member.profile_image_url}
-              alt="Profile"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                display: 'block',
-              }}
-            />
+            <img src={member.profile_image_url} alt="Profile"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           ) : (
             <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
           )}
         </div>
 
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-end',
-            gap: `calc(${W} * 0.01)`,
-            textAlign: 'right',
-          }}
-        >
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.brand,
-              fontWeight: 700,
-              color: '#2C2A27',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-            }}
-          >
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: `calc(${W} * 0.01)`, textAlign: 'right' }}>
+          <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.brand, fontWeight: 700, color: '#2C2A27', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             UvA-IN Membership
           </span>
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.valid,
-              fontWeight: 500,
-              color: '#6b6a5e',
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              marginTop: `calc(${W} * 0.012)`,
-            }}
-          >
+          <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.valid, fontWeight: 500, color: '#6b6a5e', letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: `calc(${W} * 0.012)` }}>
             Valid Until{' '}
             {member?.membership_valid_until
               ? new Date(member.membership_valid_until).toLocaleDateString('en-CA')
               : 'N/A'}
           </span>
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.name,
-              fontWeight: 800,
-              color: '#f97316',
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-              marginTop: `calc(${W} * 0.008)`,
-            }}
-          >
+          <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.name, fontWeight: 800, color: '#f97316', letterSpacing: '0.04em', textTransform: 'uppercase', marginTop: `calc(${W} * 0.008)` }}>
             {member?.first_name} {member?.last_name}
           </span>
         </div>
       </div>
 
-      {/* MIDDLE: QR outline */}
-      <div
-        style={{
+      {/* MIDDLE: QR outline shifted up to match back camera position */}
+      <div style={{
           flex: 1,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           paddingBottom: '52px',
-        }}
-      >
-        <div style={{ position: 'relative', width: qrOutlineSize, height: qrOutlineSize, flexShrink: 0 }}>
-          <span
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: BRACKET,
-              height: BRACKET,
-              borderTop: '2.5px solid rgba(44,42,39,0.3)',
-              borderLeft: '2.5px solid rgba(44,42,39,0.3)',
-              borderRadius: '4px 0 0 0',
-            }}
-          />
-          <span
-            style={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              width: BRACKET,
-              height: BRACKET,
-              borderTop: '2.5px solid rgba(44,42,39,0.3)',
-              borderRight: '2.5px solid rgba(44,42,39,0.3)',
-              borderRadius: '0 4px 0 0',
-            }}
-          />
-          <span
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              width: BRACKET,
-              height: BRACKET,
-              borderBottom: '2.5px solid rgba(44,42,39,0.3)',
-              borderLeft: '2.5px solid rgba(44,42,39,0.3)',
-              borderRadius: '0 0 0 4px',
-            }}
-          />
-          <span
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              right: 0,
-              width: BRACKET,
-              height: BRACKET,
-              borderBottom: '2.5px solid rgba(44,42,39,0.3)',
-              borderRight: '2.5px solid rgba(44,42,39,0.3)',
-              borderRadius: '0 0 4px 0',
-            }}
-          />
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
+        }}>
+          <div style={{ position: 'relative', width: qrOutlineSize, height: qrOutlineSize, flexShrink: 0 }}>
+            {/* Corner brackets */}
+            <span style={{ position: 'absolute', top: 0, left: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.3)', borderLeft: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '4px 0 0 0' }} />
+            <span style={{ position: 'absolute', top: 0, right: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.3)', borderRight: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 4px 0 0' }} />
+            <span style={{ position: 'absolute', bottom: 0, left: 0, width: BRACKET, height: BRACKET, borderBottom: '2.5px solid rgba(44,42,39,0.3)', borderLeft: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 0 0 4px' }} />
+            <span style={{ position: 'absolute', bottom: 0, right: 0, width: BRACKET, height: BRACKET, borderBottom: '2.5px solid rgba(44,42,39,0.3)', borderRight: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 0 4px 0' }} />
+
+            {/* QrCode icon + 눌러서 Check-IN 하기 centered inside */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
               gap: `calc(${W} * 0.02)`,
-            }}
-          >
-            <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.25)" />
-            <span
-              style={{
+            }}>
+              <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.25)" />
+              <span style={{
                 fontFamily: '"Handjet", system-ui, sans-serif',
                 fontSize: `calc(${W} * 0.034)`,
                 fontWeight: 600,
                 color: 'rgba(44,42,39,0.4)',
                 letterSpacing: '0.05em',
-              }}
-            >
-              눌러서 Check-IN 하기
-            </span>
+              }}>
+                눌러서 Check-IN 하기
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* BOTTOM: wordmark */}
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <span
-          style={{
-            fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
-            fontSize: fs.wordmark,
-            fontWeight: 900,
-            color: '#2C2A27',
-            letterSpacing: '-0.01em',
-            lineHeight: 1,
-            textTransform: 'uppercase',
-          }}
-        >
+        <span style={{
+          fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
+          fontSize: fs.wordmark, fontWeight: 900, color: '#2C2A27',
+          letterSpacing: '-0.01em', lineHeight: 1, textTransform: 'uppercase',
+        }}>
           UvA-IN
         </span>
       </div>
     </div>
   )
 
-  // Non-valid card: no frame
+  // ── NON-VALID ─────────────────────────────────────────────────────────────
   if (!isValid) {
     return (
-      <div
-        style={{
-          width: cardW,
-          height: cardH,
-          margin: '0 auto',
-          flexShrink: 0,
-          borderRadius: '16px',
-          border: '2px dashed #cbd5b1',
-          background: '#F6F4F1',
-          boxSizing: 'border-box',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#4b5563',
-          textAlign: 'center',
-          padding: '16px',
-          fontFamily: '"Handjet", system-ui, sans-serif',
-        }}
-      >
-        <p>Membership Expired</p>
+      <div style={{
+        width: cardW, height: cardH, margin: '0 auto', flexShrink: 0,
+        borderRadius: '16px', border: '2px dashed #cbd5b1', background: '#F6F4F1',
+        boxSizing: 'border-box', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        color: '#4b5563', textAlign: 'center', padding: '16px',
+        fontFamily: '"Handjet", system-ui, sans-serif',
+      }}>
+        <span style={{ fontSize: fs.brand, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: '"Alien Block", system-ui, sans-serif', color: '#2C2A27' }}>
+          UvA-IN MEMBERSHIP
+        </span>
+        <span style={{ marginTop: '8px', fontSize: fs.valid, fontWeight: 500 }}>활성화된 멤버십이 없습니다</span>
+        {member?.first_name && (
+          <span style={{ marginTop: '4px', fontSize: fs.valid, color: '#6b7280' }}>
+            {member.first_name} {member.last_name}
+          </span>
+        )}
+        <span style={{ marginTop: '10px', fontSize: `calc(${W} * 0.028)`, color: '#9ca3af' }}>
+          멤버십 갱신은 임원에게 문의해주세요
+        </span>
       </div>
     )
   }
 
-  // Valid card: wrapped in frame with 3D flip
+  // ── VALID: flip card ──────────────────────────────────────────────────────
   return (
     <div
-      style={{
-        position: 'relative',
-        width: cardW,
-        height: `calc(${cardH} + 24px)`,
-        paddingTop: '24px',
-        flexShrink: 0,
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-      }}
+      style={{ width: cardW, height: cardH, margin: '0 auto', perspective: '1200px', flexShrink: 0, cursor: 'pointer' }}
+      onClick={() => setFlipped((f) => !f)}
     >
-      {/* Top Tab */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '140px',
-          height: '18px',
-          borderRadius: '5px 5px 0 0',
-          background: 'linear-gradient(180deg, #e8e8e8 0%, #d4d4d4 50%, #e0e0e0 100%)',
-          border: 'none',
-          boxShadow: '0 -1px 2px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 2,
-        }}
-      >
-        <div
-          style={{
-            width: '44px',
-            height: '6px',
-            borderRadius: '999px',
-            background: 'transparent',
-            border: '1.5px solid rgba(0,0,0,0.25)',
-            boxShadow: 'inset 0 0.5px 1px rgba(0,0,0,0.2)',
-          }}
-        />
-      </div>
+      <div style={{
+        width: '100%', height: '100%', position: 'relative',
+        transformStyle: 'preserve-3d',
+        transition: 'transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)',
+        transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+      }}>
+        {/* FRONT */}
+        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', padding: '12px', boxSizing: 'border-box' }}>
+          {cardFront}
+        </div>
 
-      {/* Frame Body */}
-      <div
-        style={{
-          position: 'relative',
-          width: '100%',
-          height: cardH,
-          background: 'linear-gradient(160deg, #f0f0f0 0%, #d8d8d8 12%, #e8e8e8 26%, #d0d0d0 42%, #e0e0e0 60%, #d4d4d4 78%, #ececec 100%)',
-          boxShadow:
-            '0 0 0 1px rgba(0,0,0,0.12), 0 0 0 1px rgba(255,255,255,0.4) inset, 0 8px 20px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.10)',
-          padding: '4px',
-          borderRadius: '18px',
-          overflow: 'hidden',
-          clipPath:
-            'polygon(0 0, 100% 0, 100% 100%, calc(100% - 16px) 100%, calc(100% - 16px) calc(100% - 12px), calc(100% - 8px) calc(100% - 12px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 12px), 16px calc(100% - 12px), 16px 100%, 0 100%)',
-        }}
-      >
-        {/* Left Rail */}
-        <div
-          style={{
-            position: 'absolute',
-            left: '2px',
-            top: '28%',
-            width: '8px',
-            height: '44%',
-            background: 'linear-gradient(90deg, #d4d4d4, #e8e8e8 50%, #d8d8d8)',
-            borderRadius: '0 4px 4px 0',
-            boxShadow:
-              'inset 0 1px 2px rgba(255,255,255,0.5), inset 0 -1px 2px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.15)',
-            zIndex: 1,
-          }}
-        />
-
-        {/* Right Rail */}
-        <div
-          style={{
-            position: 'absolute',
-            right: '2px',
-            top: '28%',
-            width: '8px',
-            height: '44%',
-            background: 'linear-gradient(90deg, #d4d4d4, #e8e8e8 50%, #d8d8d8)',
-            borderRadius: '4px 0 0 4px',
-            boxShadow:
-              'inset 0 1px 2px rgba(255,255,255,0.5), inset 0 -1px 2px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.15)',
-            zIndex: 1,
-          }}
-        />
-
-        {/* Flippable Card Container */}
-        <div
-          style={{
+        {/* BACK */}
+        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', padding: '12px', boxSizing: 'border-box' }}>
+          <div style={{
             width: '100%',
             height: '100%',
-            perspective: '1200px',
-            cursor: 'pointer',
-            position: 'relative',
-          }}
-          onClick={() => setFlipped((f) => !f)}
-        >
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              position: 'relative',
-              transformStyle: 'preserve-3d',
-              transition: 'transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)',
-              transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-            }}
-          >
-            {/* FRONT */}
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                backfaceVisibility: 'hidden',
-                padding: '12px',
-                boxSizing: 'border-box',
-              }}
-            >
-              {cardFront}
-            </div>
-
-            {/* BACK */}
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                backfaceVisibility: 'hidden',
-                transform: 'rotateY(180deg)',
-                padding: '12px',
-                boxSizing: 'border-box',
-              }}
-            >
-              <div
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  background: '#F6F4F1',
-                  border: '1px solid #d6d3c0',
-                  borderRadius: '16px',
-                  boxSizing: 'border-box',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                {flipped && <QRScanner onScan={onQRScanned} />}
-              </div>
-            </div>
+            background: '#F6F4F1',
+            border: '1px solid #d6d3c0',
+            borderRadius: '16px',
+            boxSizing: 'border-box',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            {flipped && <QRScanner onScan={onQRScanned} />}
           </div>
         </div>
       </div>
