@@ -27,6 +27,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
   const map = useRef(null)
   const markersRef = useRef(new Map())
   const initializedRef = useRef(false)
+  const mapReadyRef = useRef(false)
 
   // ─── Helper: Create marker element ──────────────────────────────────────
   const createMarkerElement = (r, isSelected = false) => {
@@ -106,35 +107,15 @@ export default function MapView({ restaurants, selected, onSelect }) {
     return el
   }
 
-  // ─── Initialize map once ──────────────────────────────────────────────
-  useEffect(() => {
-    if (initializedRef.current || !mapContainer.current) return
-    initializedRef.current = true
-
-    map.current = new maptilersdk.Map({
-      container: mapContainer.current,
-      style: `https://api.maptiler.com/maps/019eb88d-92dc-70b4-b9c2-008b7e4a977d/style.json?key=${API_KEY}`,
-      center: [4.9041, 52.3676],
-      zoom: 13,
-      attributionControl: false,
-      optimizeForTerrain: false,
-      preserveDrawingBuffer: false,
-    })
-
-    return () => {
-      // Cleanup if needed
-    }
-  }, [])
-
-  // ─── Render all markers when restaurants list changes ──────────────────
-  useEffect(() => {
-    if (!map.current) return
+  // ─── Render all markers ──────────────────────────────────────────────
+  const renderMarkers = (data) => {
+    if (!map.current || !mapReadyRef.current) return
 
     // Remove all old markers
     markersRef.current.forEach((marker) => marker.remove())
     markersRef.current.clear()
 
-    const valid = (restaurants || []).filter((r) => r.latitude && r.longitude)
+    const valid = (data || []).filter((r) => r.latitude && r.longitude)
     if (valid.length === 0) return
 
     const sorted = [...valid].sort(
@@ -142,14 +123,15 @@ export default function MapView({ restaurants, selected, onSelect }) {
     )
 
     sorted.forEach((r) => {
-      const el = createMarkerElement(r, false)
+      const isSelected = !!(selected && r.id === selected.id)
+      const el = createMarkerElement(r, isSelected)
       const marker = new maptilersdk.Marker({ element: el })
         .setLngLat([r.longitude, r.latitude])
         .addTo(map.current)
 
       el.addEventListener('click', () => onSelect(r))
 
-      markersRef.current.set(r.id, marker)
+      markersRef.current.set(r.id, { marker, element: el })
     })
 
     // Fit bounds
@@ -169,27 +151,62 @@ export default function MapView({ restaurants, selected, onSelect }) {
       )
       map.current.fitBounds(bounds, { padding: 40, duration: 1000 })
     }
+  }
+
+  // ─── Initialize map once ──────────────────────────────────────────────
+  useEffect(() => {
+    if (initializedRef.current || !mapContainer.current) return
+    initializedRef.current = true
+
+    map.current = new maptilersdk.Map({
+      container: mapContainer.current,
+      style: `https://api.maptiler.com/maps/019eb88d-92dc-70b4-b9c2-008b7e4a977d/style.json?key=${API_KEY}`,
+      center: [4.9041, 52.3676],
+      zoom: 13,
+      attributionControl: false,
+      optimizeForTerrain: false,
+      preserveDrawingBuffer: false,
+    })
+
+    // Wait for map to be fully loaded before rendering markers
+    map.current.on('load', () => {
+      mapReadyRef.current = true
+      renderMarkers(restaurants)
+    })
+
+    return () => {
+      // Cleanup if needed
+    }
+  }, [])
+
+  // ─── Re-render markers when restaurants list changes ──────────────────
+  useEffect(() => {
+    if (mapReadyRef.current) {
+      renderMarkers(restaurants)
+    }
   }, [restaurants])
 
   // ─── Update marker styling when selection changes ──────────────────────
   useEffect(() => {
     if (!map.current || !restaurants) return
 
-    restaurants.forEach((r) => {
-      const marker = markersRef.current.get(r.id)
-      if (!marker) return
+    markersRef.current.forEach(({ marker, element }, restaurantId) => {
+      const restaurant = restaurants.find((r) => r.id === restaurantId)
+      if (!restaurant) return
 
-      const isSelected = !!(selected && r.id === selected.id)
-      const newEl = createMarkerElement(r, isSelected)
+      const isSelected = !!(selected && restaurant.id === selected.id)
+      const newEl = createMarkerElement(restaurant, isSelected)
 
       // Replace the element in the DOM
-      const oldEl = marker.getElement()
-      if (oldEl && oldEl.parentNode) {
-        oldEl.parentNode.replaceChild(newEl, oldEl)
+      if (element && element.parentNode) {
+        element.parentNode.replaceChild(newEl, element)
       }
 
+      // Update reference
+      markersRef.current.set(restaurantId, { marker, element: newEl })
+
       // Re-attach click listener
-      newEl.addEventListener('click', () => onSelect(r))
+      newEl.addEventListener('click', () => onSelect(restaurant))
     })
   }, [selected, restaurants])
 
