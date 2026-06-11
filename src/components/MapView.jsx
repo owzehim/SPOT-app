@@ -156,15 +156,16 @@ export default function MapView({ restaurants, selected, onSelect }) {
     initializedRef.current = true
 
     map.current = new maptilersdk.Map({
-      container: mapContainer.current,
-      style: `https://api.maptiler.com/maps/019eb88d-92dc-70b4-b9c2-008b7e4a977d/style.json?key=${API_KEY}`,
-      center: [4.9041, 52.3676],
-      zoom: 13,
-    })
+  container: mapContainer.current,
+  style: `https://api.maptiler.com/maps/019eb88d-92dc-70b4-b9c2-008b7e4a977d/style.json?key=${API_KEY}`,
+  center: [4.9041, 52.3676],
+  zoom: 13,
+  attributionControl: false, // Removes the logo/attribution
+})
 
-    map.current.addControl(new maptilersdk.FullscreenControl())
-    map.current.addControl(new maptilersdk.NavigationControl())
-    map.current.addControl(new maptilersdk.GeolocateControl())
+map.current.addControl(new maptilersdk.FullscreenControl())
+map.current.addControl(new maptilersdk.NavigationControl())
+map.current.addControl(new maptilersdk.GeolocateControl())
 
     return () => {
       // Cleanup on unmount if needed
