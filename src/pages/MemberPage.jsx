@@ -268,21 +268,22 @@ const MetalFrame = ({ children }) => (
         top: '-16px',
         left: '50%',
         transform: 'translateX(-50%)',
-        width: '80px',
-        height: '20px',
-        borderRadius: '4px 4px 0 0',
+        width: '100px',
+        height: '24px',
+        borderRadius: '6px 6px 0 0',
         background: '#c5c5c5',
-        boxShadow: '0 -2px 4px rgba(0,0,0,0.2)',
+        boxShadow: '0 -3px 6px rgba(0,0,0,0.2)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        zIndex: 5,
       }}
     >
       {/* Pill-shaped hole */}
       <div
         style={{
-          width: '30px',
-          height: '10px',
+          width: '40px',
+          height: '12px',
           borderRadius: '999px',
           background: '#999',
           boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.3)',
@@ -290,31 +291,31 @@ const MetalFrame = ({ children }) => (
       />
     </div>
 
-    {/* Left side rail - full height */}
+    {/* Left side rail - OUTSIDE, THICK */}
     <div
       style={{
         position: 'absolute',
-        top: '0',
-        left: '3px',
-        width: '6px',
-        height: '100%',
-        borderRadius: '3px',
+        top: '-4px',
+        left: '-14px',
+        width: '14px',
+        height: 'calc(100% + 8px)',
+        borderRadius: '8px',
         background: '#b8b8b8',
-        boxShadow: 'inset 1px 0 1px rgba(0,0,0,0.3), inset -1px 0 1px rgba(255,255,255,0.4)',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
       }}
     />
     
-    {/* Right side rail - full height */}
+    {/* Right side rail - OUTSIDE, THICK */}
     <div
       style={{
         position: 'absolute',
-        top: '0',
-        right: '3px',
-        width: '6px',
-        height: '100%',
-        borderRadius: '3px',
+        top: '-4px',
+        right: '-14px',
+        width: '14px',
+        height: 'calc(100% + 8px)',
+        borderRadius: '8px',
         background: '#b8b8b8',
-        boxShadow: 'inset 1px 0 1px rgba(0,0,0,0.3), inset -1px 0 1px rgba(255,255,255,0.4)',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
       }}
     />
 
