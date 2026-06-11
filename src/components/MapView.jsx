@@ -25,8 +25,7 @@ maptilersdk.config.apiKey = API_KEY
 export default function MapView({ restaurants, selected, onSelect }) {
   const mapContainer = useRef(null)
   const map = useRef(null)
-  const markersRef = useRef([])
-  const markerDataRef = useRef([])
+  const markersRef = useRef(new Map())
   const initializedRef = useRef(false)
 
   // ─── Helper: Create marker element ──────────────────────────────────────
@@ -107,61 +106,6 @@ export default function MapView({ restaurants, selected, onSelect }) {
     return el
   }
 
-  // ─── Render all markers ────────────────────────────────────────────────
-  const renderMarkers = (mapInstance, data) => {
-    if (!mapInstance) return
-
-    // Guard: skip if IDs haven't changed
-    const newIds = (data || [])
-      .filter((r) => r.latitude && r.longitude)
-      .map((r) => r.id)
-      .join(',')
-    const oldIds = markerDataRef.current.map((d) => d.r.id).join(',')
-    if (newIds === oldIds) return
-
-    // Remove old markers
-    markersRef.current.forEach((marker) => marker.remove())
-    markersRef.current = []
-    markerDataRef.current = []
-
-    const valid = (data || []).filter((r) => r.latitude && r.longitude)
-    if (valid.length === 0) return
-
-    const sorted = [...valid].sort(
-      (a, b) => (a.is_sponsored ? 1 : 0) - (b.is_sponsored ? 1 : 0)
-    )
-
-    sorted.forEach((r) => {
-      const el = createMarkerElement(r, false)
-      const marker = new maptilersdk.Marker({ element: el })
-        .setLngLat([r.longitude, r.latitude])
-        .addTo(mapInstance)
-
-      el.addEventListener('click', () => onSelect(r))
-
-      markersRef.current.push(marker)
-      markerDataRef.current.push({ r, marker, element: el })
-    })
-
-    // Fit bounds
-    if (valid.length === 1) {
-      mapInstance.flyTo({
-        center: [valid[0].longitude, valid[0].latitude],
-        zoom: 15,
-        duration: 1000,
-      })
-    } else if (valid.length > 1) {
-      const bounds = valid.reduce(
-        (b, r) => b.extend([r.longitude, r.latitude]),
-        new maptilersdk.LngLatBounds(
-          [valid[0].longitude, valid[0].latitude],
-          [valid[0].longitude, valid[0].latitude]
-        )
-      )
-      mapInstance.fitBounds(bounds, { padding: 40, duration: 1000 })
-    }
-  }
-
   // ─── Initialize map once ──────────────────────────────────────────────
   useEffect(() => {
     if (initializedRef.current || !mapContainer.current) return
@@ -182,32 +126,72 @@ export default function MapView({ restaurants, selected, onSelect }) {
     }
   }, [])
 
-  // ─── Re-render markers when restaurants list changes ──────────────────
+  // ─── Render all markers when restaurants list changes ──────────────────
   useEffect(() => {
     if (!map.current) return
-    renderMarkers(map.current, restaurants)
+
+    // Remove all old markers
+    markersRef.current.forEach((marker) => marker.remove())
+    markersRef.current.clear()
+
+    const valid = (restaurants || []).filter((r) => r.latitude && r.longitude)
+    if (valid.length === 0) return
+
+    const sorted = [...valid].sort(
+      (a, b) => (a.is_sponsored ? 1 : 0) - (b.is_sponsored ? 1 : 0)
+    )
+
+    sorted.forEach((r) => {
+      const el = createMarkerElement(r, false)
+      const marker = new maptilersdk.Marker({ element: el })
+        .setLngLat([r.longitude, r.latitude])
+        .addTo(map.current)
+
+      el.addEventListener('click', () => onSelect(r))
+
+      markersRef.current.set(r.id, marker)
+    })
+
+    // Fit bounds
+    if (valid.length === 1) {
+      map.current.flyTo({
+        center: [valid[0].longitude, valid[0].latitude],
+        zoom: 15,
+        duration: 1000,
+      })
+    } else if (valid.length > 1) {
+      const bounds = valid.reduce(
+        (b, r) => b.extend([r.longitude, r.latitude]),
+        new maptilersdk.LngLatBounds(
+          [valid[0].longitude, valid[0].latitude],
+          [valid[0].longitude, valid[0].latitude]
+        )
+      )
+      map.current.fitBounds(bounds, { padding: 40, duration: 1000 })
+    }
   }, [restaurants])
 
-  // ─── Update ONLY the affected markers when selection changes ──────────
+  // ─── Update marker styling when selection changes ──────────────────────
   useEffect(() => {
-    if (!map.current) return
+    if (!map.current || !restaurants) return
 
-    markerDataRef.current.forEach(({ r, marker, element }) => {
+    restaurants.forEach((r) => {
+      const marker = markersRef.current.get(r.id)
+      if (!marker) return
+
       const isSelected = !!(selected && r.id === selected.id)
-
-      // Remove old element
-      if (element && element.parentNode) {
-        element.parentNode.removeChild(element)
-      }
-
-      // Create new element with updated styling
       const newEl = createMarkerElement(r, isSelected)
-      marker.setElement(newEl)
+
+      // Replace the element in the DOM
+      const oldEl = marker.getElement()
+      if (oldEl && oldEl.parentNode) {
+        oldEl.parentNode.replaceChild(newEl, oldEl)
+      }
 
       // Re-attach click listener
       newEl.addEventListener('click', () => onSelect(r))
     })
-  }, [selected])
+  }, [selected, restaurants])
 
   // ─── Pan to selected spot ──────────────────────────────────────────────
   useEffect(() => {
