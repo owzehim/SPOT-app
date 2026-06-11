@@ -11,6 +11,11 @@ if (typeof window !== 'undefined') {
     .maplibregl-ctrl-top-right { display: none !important; }
     .maplibregl-ctrl-bottom-left { display: none !important; }
     .maplibregl-ctrl-bottom-right { display: none !important; }
+    
+    .custom-marker[data-selected="true"] .marker-circle {
+      border: 3px solid #f97316 !important;
+      box-shadow: 0 3px 12px rgba(249,115,22,0.5) !important;
+    }
   `
   document.head.appendChild(style)
 }
@@ -28,7 +33,6 @@ export default function MapView({ restaurants, selected, onSelect }) {
   const markersRef = useRef(new Map())
   const initializedRef = useRef(false)
   const mapReadyRef = useRef(false)
-  const previousSelectedRef = useRef(null)
 
   // ─── Helper: Create marker element ──────────────────────────────────────
   const createMarkerElement = useCallback((r, isSelected = false) => {
@@ -53,6 +57,8 @@ export default function MapView({ restaurants, selected, onSelect }) {
 
     const el = document.createElement('div')
     el.className = 'custom-marker'
+    el.setAttribute('data-id', r.id)
+    el.setAttribute('data-selected', isSelected ? 'true' : 'false')
     el.style.cssText = `
       display: flex;
       flex-direction: column;
@@ -62,6 +68,7 @@ export default function MapView({ restaurants, selected, onSelect }) {
     `
 
     const markerCircle = document.createElement('div')
+    markerCircle.className = 'marker-circle'
     markerCircle.style.cssText = `
       width: ${size}px;
       height: ${size}px;
@@ -109,51 +116,6 @@ export default function MapView({ restaurants, selected, onSelect }) {
     return el
   }, [])
 
-  // ─── Update only the selected marker styling ──────────────────────────
-  const updateMarkerSelection = useCallback(() => {
-    const previousId = previousSelectedRef.current
-    const currentId = selected?.id
-
-    // Only update if selection actually changed
-    if (previousId === currentId) return
-
-    // Update previous marker (if exists)
-    if (previousId) {
-      const prevData = markersRef.current.get(previousId)
-      if (prevData) {
-        const prevRestaurant = restaurants.find((r) => r.id === previousId)
-        if (prevRestaurant) {
-          const newEl = createMarkerElement(prevRestaurant, false)
-          const oldEl = prevData.marker.getElement()
-          if (oldEl && oldEl.parentNode) {
-            oldEl.parentNode.replaceChild(newEl, oldEl)
-            newEl.addEventListener('click', () => onSelect(prevRestaurant))
-            markersRef.current.set(previousId, { marker: prevData.marker, element: newEl })
-          }
-        }
-      }
-    }
-
-    // Update current marker (if exists)
-    if (currentId) {
-      const currData = markersRef.current.get(currentId)
-      if (currData) {
-        const currRestaurant = restaurants.find((r) => r.id === currentId)
-        if (currRestaurant) {
-          const newEl = createMarkerElement(currRestaurant, true)
-          const oldEl = currData.marker.getElement()
-          if (oldEl && oldEl.parentNode) {
-            oldEl.parentNode.replaceChild(newEl, oldEl)
-            newEl.addEventListener('click', () => onSelect(currRestaurant))
-            markersRef.current.set(currentId, { marker: currData.marker, element: newEl })
-          }
-        }
-      }
-    }
-
-    previousSelectedRef.current = currentId
-  }, [selected, restaurants, createMarkerElement, onSelect])
-
   // ─── Render all markers (only on initial load or restaurant list change) ──
   const renderMarkers = useCallback((data) => {
     if (!map.current || !mapReadyRef.current) return
@@ -197,8 +159,6 @@ export default function MapView({ restaurants, selected, onSelect }) {
       )
       map.current.fitBounds(bounds, { padding: 40, duration: 1000 })
     }
-
-    previousSelectedRef.current = null
   }, [createMarkerElement, onSelect])
 
   // ─── Initialize map once ──────────────────────────────────────────────
@@ -236,12 +196,34 @@ export default function MapView({ restaurants, selected, onSelect }) {
     }
   }, [restaurants, renderMarkers])
 
-  // ─── Update ONLY selection styling (no full re-render) ──────────────────
+  // ─── Update selection styling using data attributes ──────────────────────
   useEffect(() => {
-    if (mapReadyRef.current) {
-      updateMarkerSelection()
+    if (!mapReadyRef.current) return
+
+    // Remove selection from all markers
+    markersRef.current.forEach(({ element }) => {
+      element.setAttribute('data-selected', 'false')
+      const circle = element.querySelector('.marker-circle')
+      if (circle) {
+        circle.style.border = '2px solid #e5e7eb'
+        circle.style.boxShadow = '0 2px 6px rgba(0,0,0,0.15)'
+      }
+    })
+
+    // Add selection to current marker
+    if (selected) {
+      const selectedData = markersRef.current.get(selected.id)
+      if (selectedData) {
+        const { element } = selectedData
+        element.setAttribute('data-selected', 'true')
+        const circle = element.querySelector('.marker-circle')
+        if (circle) {
+          circle.style.border = '3px solid #f97316'
+          circle.style.boxShadow = '0 3px 12px rgba(249,115,22,0.5)'
+        }
+      }
     }
-  }, [selected, updateMarkerSelection])
+  }, [selected])
 
   // ─── Pan to selected spot ──────────────────────────────────────────────
   useEffect(() => {
