@@ -17,10 +17,11 @@ const TAG_ICON_COMPONENTS = {
   CoinVertical,
 }
 
-// ── Read-only star row ────────────────────────────────────────
+// ── Read-only star row ──────────────────────────────────────────
 function StarDisplay({ averageRating }) {
   const formatted = formatAverageRating(averageRating)
   if (!formatted) return null
+
   const { filled, half, empty } = computeStarDisplay(averageRating)
 
   return (
@@ -51,16 +52,16 @@ function StarDisplay({ averageRating }) {
           <Star key={'e' + i} size={12} weight="fill" color="#d1d5db" />
         ))}
       </div>
-
       <span className="text-xs text-amber-500 font-medium">{formatted}</span>
     </div>
   )
 }
 
-// ── Tag bar chart ─────────────────────────────────────────────
+// ── Tag bar chart ───────────────────────────────────────────────
 function TagBarChart({ tagCounts, reviewCount }) {
   const sorted = getSortedTagsForDisplay(tagCounts)
   if (sorted.length === 0) return null
+
   const maxCount = sorted[0].count
 
   return (
@@ -70,10 +71,12 @@ function TagBarChart({ tagCounts, reviewCount }) {
           <p className="text-xs font-semibold text-gray-500">멤버 리뷰</p>
           <span className="text-xs text-gray-400">{reviewCount}개</span>
         </div>
+
         <div className="flex flex-col gap-2.5">
           {sorted.map((tag) => {
             const IconComponent = TAG_ICON_COMPONENTS[tag.icon]
             const pct = maxCount > 0 ? Math.round((tag.count / maxCount) * 100) : 0
+
             return (
               <div key={tag.key} className="flex items-center gap-2">
                 <div className="flex items-center gap-1 w-28 flex-shrink-0">
@@ -82,12 +85,14 @@ function TagBarChart({ tagCounts, reviewCount }) {
                   )}
                   <span className="text-xs text-gray-600 truncate">{tag.label}</span>
                 </div>
+
                 <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-orange-400 rounded-full transition-all duration-500"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
+
                 <span className="text-xs text-gray-400 font-medium w-4 text-right flex-shrink-0">
                   {tag.count}
                 </span>
@@ -100,11 +105,10 @@ function TagBarChart({ tagCounts, reviewCount }) {
   )
 }
 
-// ── Lightbox ──────────────────────────────────────────────────
+// ── Lightbox ────────────────────────────────────────────────────
 function Lightbox({ imgs, startIndex, onClose }) {
   const [index, setIndex] = useState(startIndex)
   const [visible, setVisible] = useState(false)
-
   const touchStartX = useRef(null)
   const touchStartY = useRef(null)
 
@@ -119,6 +123,7 @@ function Lightbox({ imgs, startIndex, onClose }) {
       if (e.key === 'ArrowRight') setIndex((i) => Math.min(i + 1, imgs.length - 1))
       if (e.key === 'ArrowLeft') setIndex((i) => Math.max(i - 1, 0))
     }
+
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [imgs.length])
@@ -135,9 +140,9 @@ function Lightbox({ imgs, startIndex, onClose }) {
 
   const handleTouchEnd = (e) => {
     if (touchStartX.current == null || touchStartY.current == null) return
+
     const dx = e.changedTouches[0].clientX - touchStartX.current
     const dy = e.changedTouches[0].clientY - touchStartY.current
-
     const absDx = Math.abs(dx)
     const absDy = Math.abs(dy)
 
@@ -164,8 +169,12 @@ function Lightbox({ imgs, startIndex, onClose }) {
     <>
       <style>{`
         @keyframes lightboxZoomIn {
-          from { transform: scale(0.9); }
-          to   { transform: scale(1); }
+          from {
+            transform: scale(0.9);
+          }
+          to {
+            transform: scale(1);
+          }
         }
         .lightbox-zoom-enter {
           animation: lightboxZoomIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
@@ -180,7 +189,6 @@ function Lightbox({ imgs, startIndex, onClose }) {
           position: 'fixed',
           inset: 0,
           zIndex: 9999,
-          // 75% transparent background
           background: 'rgba(0, 0, 0, 0.75)',
           display: 'flex',
           alignItems: 'center',
@@ -209,7 +217,10 @@ function Lightbox({ imgs, startIndex, onClose }) {
         {/* Prev button */}
         {index > 0 && (
           <button
-            onClick={(e) => { e.stopPropagation(); setIndex((i) => Math.max(i - 1, 0)) }}
+            onClick={(e) => {
+              e.stopPropagation()
+              setIndex((i) => Math.max(i - 1, 0))
+            }}
             style={{
               position: 'absolute',
               left: 20,
@@ -236,7 +247,10 @@ function Lightbox({ imgs, startIndex, onClose }) {
         {/* Next button */}
         {index < imgs.length - 1 && (
           <button
-            onClick={(e) => { e.stopPropagation(); setIndex((i) => Math.min(i + 1, imgs.length - 1)) }}
+            onClick={(e) => {
+              e.stopPropagation()
+              setIndex((i) => Math.min(i + 1, imgs.length - 1))
+            }}
             style={{
               position: 'absolute',
               right: 20,
@@ -276,7 +290,10 @@ function Lightbox({ imgs, startIndex, onClose }) {
             {imgs.map((_, i) => (
               <div
                 key={i}
-                onClick={(e) => { e.stopPropagation(); setIndex(i) }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIndex(i)
+                }}
                 style={{
                   width: i === index ? 8 : 6,
                   height: i === index ? 8 : 6,
@@ -294,7 +311,7 @@ function Lightbox({ imgs, startIndex, onClose }) {
   )
 }
 
-// ── Thumbnail grid (same on mobile + desktop) ─────────────────
+// ── Thumbnail grid (same on mobile + desktop) ───────────────────
 function ImageThumbnails({ imgs, onTap }) {
   return (
     <div
@@ -308,7 +325,7 @@ function ImageThumbnails({ imgs, onTap }) {
           className="flex-shrink-0 rounded-xl overflow-hidden bg-gray-100"
           style={{
             width: '100px',
-            height: '125px',   // 4:5 ratio
+            height: '125px',
             cursor: 'zoom-in',
           }}
         >
@@ -334,6 +351,8 @@ export function SpotCard({ selected, onClose }) {
   const [isDragging, setIsDragging] = useState(false)
   const [closing, setClosing] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(null)
+  const [isVisible, setIsVisible] = useState(false)
+
   const startYRef = useRef(0)
   const startHeightRef = useRef(0)
   const lastYRef = useRef(0)
@@ -342,21 +361,32 @@ export function SpotCard({ selected, onClose }) {
   const imgs = selected['image_urls'] || []
   const hasImages = imgs.length > 0
 
-  const { summary, loading: summaryLoading } = useStoreReviewSummary(selected?.partnership_id)
+  const { summary, loading: summaryLoading } = useStoreReviewSummary(
+    selected?.partnership_id
+  )
 
-  const { WIN_H, WIN_W } = useMemo(() => ({
-    WIN_H: typeof window !== 'undefined' ? window.innerHeight : 700,
-    WIN_W: typeof window !== 'undefined' ? window.innerWidth : 1024,
-  }), [])
+  const { WIN_H, WIN_W } = useMemo(
+    () => ({
+      WIN_H: typeof window !== 'undefined' ? window.innerHeight : 700,
+      WIN_W: typeof window !== 'undefined' ? window.innerWidth : 1024,
+    }),
+    []
+  )
 
   const isDesktop = WIN_W >= 768
   const MIN_HEIGHT = Math.min(WIN_H * 0.38, 260)
   const MAX_HEIGHT = isDesktop ? 460 : WIN_H * 0.88
 
+  // Trigger animation on mount
   useEffect(() => {
-    setCardHeight(MIN_HEIGHT)
-    setClosing(false)
-  }, [selected])
+    if (selected) {
+      setIsVisible(false)
+      setCardHeight(MIN_HEIGHT)
+      setClosing(false)
+      // Trigger animation on next frame
+      requestAnimationFrame(() => setIsVisible(true))
+    }
+  }, [selected, MIN_HEIGHT])
 
   const triggerClose = () => {
     setClosing(true)
@@ -376,11 +406,17 @@ export function SpotCard({ selected, onClose }) {
 
   const handleTouchMove = (e) => {
     if (!isDragging) return
+
     lastYRef.current = e.touches[0].clientY
     const delta = startYRef.current - e.touches[0].clientY
+
     if (!hasImages && delta > 0) return
+
     if (hasImages) {
-      const newHeight = Math.min(MAX_HEIGHT, Math.max(0, startHeightRef.current + delta))
+      const newHeight = Math.min(
+        MAX_HEIGHT,
+        Math.max(0, startHeightRef.current + delta)
+      )
       setCardHeight(newHeight)
     }
   }
@@ -396,6 +432,7 @@ export function SpotCard({ selected, onClose }) {
       if (delta < -40) triggerClose()
       return
     }
+
     if (delta > 40) {
       snapTo(MAX_HEIGHT)
     } else if (delta < -40) {
@@ -412,27 +449,36 @@ export function SpotCard({ selected, onClose }) {
   const iconSvg = CATEGORY_ICONS[selected.category]
   const hasReviews = summary && summary.review_count > 0
 
-// treat empty / whitespace / HTML-only as empty (no ※)
-const rawTerms = selected.discount_terms ?? ''
-const cleanedTerms = rawTerms
-  .replace(/<[^>]*>/g, '')   // remove HTML tags like <p>, <br>, etc.
-  .replace(/&nbsp;/gi, '')   // remove non-breaking spaces
-  .replace(/\s/g, '')        // remove whitespace
-
-const discountTerms = cleanedTerms ? selected.discount_terms : null
+  // treat empty / whitespace / HTML-only as empty (no ※)
+  const rawTerms = selected.discount_terms ?? ''
+  const cleanedTerms = rawTerms
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/gi, '')
+    .replace(/\s/g, '')
+  const discountTerms = cleanedTerms ? selected.discount_terms : null
 
   const noImageStyle = {
-    transform: closing ? 'translateY(110%)' : 'translateY(0)',
-    transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.32,0,0.67,0)',
+    transform: closing
+      ? 'translateY(110%)'
+      : isVisible
+      ? 'translateY(0)'
+      : 'translateY(110%)',
+    transition: isDragging
+      ? 'none'
+      : 'transform 0.35s cubic-bezier(0.4,0,0.2,1)',
     height: 'auto',
   }
 
   const imageStyle = {
     height: cardHeight + 'px',
-    transform: closing ? 'translateY(110%)' : 'translateY(0)',
+    transform: closing
+      ? 'translateY(110%)'
+      : isVisible
+      ? 'translateY(0)'
+      : 'translateY(110%)',
     transition: isDragging
       ? 'none'
-      : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.32,0,0.67,0)',
+      : 'height 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.35s cubic-bezier(0.4,0,0.2,1)',
   }
 
   return (
@@ -477,71 +523,99 @@ const discountTerms = cleanedTerms ? selected.discount_terms : null
         </div>
 
         <div className="flex-1" style={{ overflowY: 'hidden' }}>
-
           {/* ── Place info ── */}
-<div className="px-4 pt-1 pb-3">
-  {/* Category, price, sponsored badges */}
-  <div className="flex items-center gap-1.5 flex-wrap mb-1">
-    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full flex items-center gap-1">
-      {iconSvg && (
-        <div dangerouslySetInnerHTML={{ __html: iconSvg.replace('fill="currentColor"', 'fill="#f97316"'), }}
-          style={{ width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
-      )}
-      {selected.category || '기타'}
-    </span>
-    {selected.price_range && (
-      <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">
-        {selected.price_range}
-      </span>
-    )}
-    {selected.is_sponsored && (
-      <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">
-        제휴
-      </span>
-    )}
-  </div>
+          <div className="px-4 pt-1 pb-3">
+            {/* Category, price, sponsored badges */}
+            <div className="flex items-center gap-1.5 flex-wrap mb-1">
+              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full flex items-center gap-1">
+                {iconSvg && (
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: iconSvg.replace(
+                        'fill="currentColor"',
+                        'fill="#f97316"'
+                      ),
+                    }}
+                    style={{
+                      width: '14px',
+                      height: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  />
+                )}
+                {selected.category || '기타'}
+              </span>
 
-  {/* Store name */}
-  <p className="font-semibold text-gray-900">{selected.name}</p>
+              {selected.price_range && (
+                <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">
+                  {selected.price_range}
+                </span>
+              )}
 
-  {/* Star review - NOW UNDER THE TITLE */}
-  {hasReviews && (
-    <div className="flex items-center gap-1 mt-1">
-      <StarDisplay averageRating={summary.average_rating} />
-      <span className="text-xs text-gray-400">({summary.review_count})</span>
-    </div>
-  )}
-  {summaryLoading && (
-    <span className="text-xs text-gray-300 mt-1 block">로딩 중...</span>
-  )}
+              {selected.is_sponsored && (
+                <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full">
+                  제휴
+                </span>
+              )}
+            </div>
 
-  {/* Description, address, discount info */}
-  {selected.description && (
-    <RichText text={selected.description} className="text-xs text-gray-500 mt-1 block" />
-  )}
-  {selected.address && (
-    <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-      <MapPin size={12} weight="fill" />
-      {selected.address}
-    </p>
-  )}
-  {selected.discount_info && (
-    <p className="text-xs text-orange-500 mt-1 flex items-center gap-1">
-      <Ticket size={14} weight="fill" color="#FF5252" />
-      <RichText text={selected.discount_info} />
-    </p>
-  )}
-  {discountTerms && (
-    <p className="text-xs text-gray-800 mt-0.5">
-      ※ <RichText text={discountTerms} />
-    </p>
-  )}
-</div>
+            {/* Store name */}
+            <p className="font-semibold text-gray-900">{selected.name}</p>
+
+            {/* Star review - NOW UNDER THE TITLE */}
+            {hasReviews && (
+              <div className="flex items-center gap-1 mt-1">
+                <StarDisplay averageRating={summary.average_rating} />
+                <span className="text-xs text-gray-400">
+                  ({summary.review_count})
+                </span>
+              </div>
+            )}
+
+            {summaryLoading && (
+              <span className="text-xs text-gray-300 mt-1 block">
+                로딩 중...
+              </span>
+            )}
+
+            {/* Description, address, discount info */}
+            {selected.description && (
+              <RichText
+                text={selected.description}
+                className="text-xs text-gray-500 mt-1 block"
+              />
+            )}
+
+            {selected.address && (
+              <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                <MapPin size={12} weight="fill" />
+                {selected.address}
+              </p>
+            )}
+
+            {selected.discount_info && (
+              <p className="text-xs text-orange-500 mt-1 flex items-center gap-1">
+                <Ticket size={14} weight="fill" color="#FF5252" />
+                <RichText text={selected.discount_info} />
+              </p>
+            )}
+
+            {discountTerms && (
+              <p className="text-xs text-gray-800 mt-0.5">
+                ※ <RichText text={discountTerms} />
+              </p>
+            )}
+          </div>
 
           {/* ── Images: same thumbnail grid on mobile + desktop ── */}
           {hasImages && (
             <div className="mb-3">
-              <ImageThumbnails imgs={imgs} onTap={(i) => setLightboxIndex(i)} />
+              <ImageThumbnails
+                imgs={imgs}
+                onTap={(i) => setLightboxIndex(i)}
+              />
             </div>
           )}
 
@@ -557,12 +631,21 @@ const discountTerms = cleanedTerms ? selected.discount_terms : null
           {(selected.review || selected.reviewer_name) && (
             <div className="px-4 pb-4">
               <div className="pt-3 border-t border-gray-100">
-                <p className="text-xs font-semibold text-gray-500 mb-1.5">임원 리뷰</p>
+                <p className="text-xs font-semibold text-gray-500 mb-1.5">
+                  임원 리뷰
+                </p>
+
                 {selected.review && (
-                  <RichText text={selected.review} className="text-xs text-gray-600 block" />
+                  <RichText
+                    text={selected.review}
+                    className="text-xs text-gray-600 block"
+                  />
                 )}
+
                 {selected.reviewer_name && (
-                  <p className="text-xs text-gray-400 mt-0.5">{'— ' + selected.reviewer_name}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {'— ' + selected.reviewer_name}
+                  </p>
                 )}
               </div>
             </div>
@@ -576,7 +659,9 @@ const discountTerms = cleanedTerms ? selected.discount_terms : null
           className="absolute bottom-0 left-0 right-0 pointer-events-none"
           style={{
             height: '72px',
-            background: isMax ? 'transparent' : 'linear-gradient(to bottom, transparent, white)',
+            background: isMax
+              ? 'transparent'
+              : 'linear-gradient(to bottom, transparent, white)',
             zIndex: 10,
           }}
         >
@@ -584,7 +669,9 @@ const discountTerms = cleanedTerms ? selected.discount_terms : null
             <a
               href={
                 'https://www.google.com/maps/search/?api=1&query=' +
-                encodeURIComponent(selected.name + ' ' + (selected.address || ''))
+                encodeURIComponent(
+                  selected.name + ' ' + (selected.address || '')
+                )
               }
               target="_blank"
               rel="noopener noreferrer"
