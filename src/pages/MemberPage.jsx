@@ -255,62 +255,64 @@ function MembershipCard({ member, isValid, onQRScanned }) {
         overflow: 'visible',
       }}
     >
-      {/* Top tab with pill-shaped hole */}
+      {/* Top tab with pill-shaped hole — WIDER */}
       <div
         style={{
           position: 'absolute',
-          top: '-12px',
+          top: '-14px',
           left: '50%',
           transform: 'translateX(-50%)',
-          width: '60px',
-          height: '16px',
+          width: '100px',
+          height: '18px',
           background: '#c5c5c5',
-          borderRadius: '8px 8px 0 0',
+          borderRadius: '10px 10px 0 0',
           boxShadow: '0 -2px 4px rgba(0,0,0,0.15)',
-          zIndex: 5,
+          zIndex: 10,
         }}
       >
         {/* Pill-shaped hole */}
         <div
           style={{
             position: 'absolute',
-            top: '2px',
+            top: '3px',
             left: '50%',
             transform: 'translateX(-50%)',
-            width: '40px',
-            height: '10px',
+            width: '60px',
+            height: '12px',
             background: '#F6F4F1',
-            borderRadius: '5px',
+            borderRadius: '6px',
             boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)',
           }}
         />
       </div>
 
-      {/* Left side rail — positioned INSIDE the card */}
+      {/* Left side rail — positioned OUTSIDE and ON TOP */}
       <div
         style={{
           position: 'absolute',
-          top: '12%',
-          left: '2px',
-          width: '8px',
-          height: '76%',
-          borderRadius: '4px',
+          top: '8%',
+          left: '-10px',
+          width: '10px',
+          height: '84%',
+          borderRadius: '5px',
           background: '#b8b8b8',
-          boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.2)',
+          boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.3)',
+          zIndex: 20,
         }}
       />
 
-      {/* Right side rail — positioned INSIDE the card */}
+      {/* Right side rail — positioned OUTSIDE and ON TOP */}
       <div
         style={{
           position: 'absolute',
-          top: '12%',
-          right: '2px',
-          width: '8px',
-          height: '76%',
-          borderRadius: '4px',
+          top: '8%',
+          right: '-10px',
+          width: '10px',
+          height: '84%',
+          borderRadius: '5px',
           background: '#b8b8b8',
-          boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.2)',
+          boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.3)',
+          zIndex: 20,
         }}
       />
 
@@ -323,6 +325,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           backgroundImage: 'repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 1px, transparent 1px, transparent 2px)',
           opacity: 0.5,
           pointerEvents: 'none',
+          zIndex: 5,
         }}
       />
 
@@ -337,6 +340,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           border: '1px solid #d6d3c0',
           boxSizing: 'border-box',
           overflow: 'hidden',
+          zIndex: 1,
         }}
       >
         {children}
