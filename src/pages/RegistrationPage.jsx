@@ -141,7 +141,7 @@ const translations = {
     foundation: '파운데이션',
     bachelor: '학사',
     master: '석사',
-    alumni: '동문',
+    alumni: '졸업',
   },
 };
 

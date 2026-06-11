@@ -224,6 +224,7 @@ function getPastelColor(seed) {
 }
 
 // ─── Membership Card ─────────────────────────────────────────────────────────
+// ─── Membership Card ───────────────────────────────────────────────────────────
 function MembershipCard({ member, isValid, onQRScanned }) {
   const [flipped, setFlipped] = useState(false)
 
@@ -232,9 +233,9 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const cardH = `calc(${W} * 1.586)`
 
   const fs = {
-    brand:    `calc(${W} * 0.038)`,
-    valid:    `calc(${W} * 0.032)`,
-    name:     `calc(${W} * 0.052)`,
+    brand: `calc(${W} * 0.038)`,
+    valid: `calc(${W} * 0.032)`,
+    name: `calc(${W} * 0.052)`,
     wordmark: `calc(${W} * 0.152)`,
   }
 
@@ -243,166 +244,454 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const avatarSize = `calc(${W} * 0.19)`
   const hasProfileImage = !!member?.profile_image_url
 
-  // Back: 12px outer + 12px inner = 24px padding each side → inner = W - 48px
-  // QRScanner: flex-col [video square (max-w-xs)] + [text ~40px] + gap ~12px
-  // Video fills max-w-xs = min(320px, inner). QR box = 220px centered in video.
-  // The whole QRScanner column is centered in the back card, so the video top
-  // sits at: center - (videoH/2 + textH/2 + gap/2) ≈ center - ~28px
-  // We shift the outline up by that same ~28px offset.
   const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
   const BRACKET = 24
 
-  const cardFront = (
-    <div style={{
-      width: '100%', height: '100%',
-      borderRadius: '16px',
-      background: '#F6F4F1',
-      border: '1px solid #d6d3c0',
-      boxShadow: '0 14px 35px rgba(15,23,42,0.09)',
-      padding: `calc(${W} * 0.07)`,
-      boxSizing: 'border-box',
-      display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-    }}>
-      {/* TOP */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{
-          width: avatarSize, height: avatarSize, borderRadius: '50%',
-          background: hasProfileImage ? 'transparent' : pastelBg,
-          flexShrink: 0, overflow: 'hidden',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', userSelect: 'none',
-        }}>
-          {hasProfileImage ? (
-            <img src={member.profile_image_url} alt="Profile"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-          ) : (
-            <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
-          )}
-        </div>
+  // Metal frame wrapper
+  const MetalFrame = ({ children }) => (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        borderRadius: '26px',
+        padding: '3px',
+        boxSizing: 'border-box',
+        background:
+          'linear-gradient(145deg, #f7f7f7 0%, #d3d3d3 35%, #f2f2f2 70%, #bfbfbf 100%)',
+        boxShadow:
+          '0 18px 40px rgba(15, 23, 42, 0.45), 0 0 0 1px rgba(255,255,255,0.65)',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Left handle */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '-4px',
+          transform: 'translateY(-50%)',
+          width: '12px',
+          height: '46%',
+          borderRadius: '999px',
+          background:
+            'linear-gradient(90deg, #bcbcbc 0%, #f0f0f0 50%, #bababa 100%)',
+          boxShadow: '0 0 0 1px rgba(255,255,255,0.6)',
+        }}
+      />
+      {/* Right handle */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          right: '-4px',
+          transform: 'translateY(-50%)',
+          width: '12px',
+          height: '46%',
+          borderRadius: '999px',
+          background:
+            'linear-gradient(90deg, #bababa 0%, #f0f0f0 50%, #bcbcbc 100%)',
+          boxShadow: '0 0 0 1px rgba(255,255,255,0.6)',
+        }}
+      />
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: `calc(${W} * 0.01)`, textAlign: 'right' }}>
-          <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.brand, fontWeight: 700, color: '#2C2A27', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-            UvA-IN Membership
-          </span>
-          <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.valid, fontWeight: 500, color: '#6b6a5e', letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: `calc(${W} * 0.012)` }}>
-            Valid Until{' '}
-            {member?.membership_valid_until
-              ? new Date(member.membership_valid_until).toLocaleDateString('en-CA')
-              : 'N/A'}
-          </span>
-          <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.name, fontWeight: 800, color: '#f97316', letterSpacing: '0.04em', textTransform: 'uppercase', marginTop: `calc(${W} * 0.008)` }}>
-            {member?.first_name} {member?.last_name}
-          </span>
-        </div>
+      {/* Brushed metal texture overlay */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage:
+            'repeating-linear-gradient(90deg, rgba(255,255,255,0.16) 0px, rgba(255,255,255,0.16) 1px, rgba(255,255,255,0.02) 1px, rgba(255,255,255,0.02) 4px)',
+          opacity: 0.75,
+          mixBlendMode: 'soft-light',
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Inner card surface */}
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '100%',
+          borderRadius: '22px',
+          background: 'linear-gradient(180deg, #fbfbfb 0%, #f3f4f6 100%)',
+          border: '1px solid rgba(255,255,255,0.9)',
+          boxSizing: 'border-box',
+          overflow: 'hidden',
+        }}
+      >
+        {children}
       </div>
+    </div>
+  )
 
-      {/* MIDDLE: QR outline shifted up to match back camera position */}
-      <div style={{
-          flex: 1,
+  const cardFront = (
+    <MetalFrame>
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          padding: `calc(${W} * 0.07)`,
+          boxSizing: 'border-box',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingBottom: '52px',
-        }}>
-          <div style={{ position: 'relative', width: qrOutlineSize, height: qrOutlineSize, flexShrink: 0 }}>
-            {/* Corner brackets */}
-            <span style={{ position: 'absolute', top: 0, left: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.3)', borderLeft: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '4px 0 0 0' }} />
-            <span style={{ position: 'absolute', top: 0, right: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.3)', borderRight: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 4px 0 0' }} />
-            <span style={{ position: 'absolute', bottom: 0, left: 0, width: BRACKET, height: BRACKET, borderBottom: '2.5px solid rgba(44,42,39,0.3)', borderLeft: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 0 0 4px' }} />
-            <span style={{ position: 'absolute', bottom: 0, right: 0, width: BRACKET, height: BRACKET, borderBottom: '2.5px solid rgba(44,42,39,0.3)', borderRight: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 0 4px 0' }} />
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+        }}
+      >
+        {/* TOP */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+          }}
+        >
+          <div
+            style={{
+              width: avatarSize,
+              height: avatarSize,
+              borderRadius: '50%',
+              background: hasProfileImage ? 'transparent' : pastelBg,
+              flexShrink: 0,
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              userSelect: 'none',
+            }}
+          >
+            {hasProfileImage ? (
+              <img
+                src={member.profile_image_url}
+                alt="Profile"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
+                }}
+              />
+            ) : (
+              <UserCircle
+                size="72%"
+                weight="fill"
+                color="rgba(44,42,39,0.55)"
+              />
+            )}
+          </div>
 
-            {/* QrCode icon + 눌러서 Check-IN 하기 centered inside */}
-            <div style={{
-              position: 'absolute', inset: 0,
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center',
-              gap: `calc(${W} * 0.02)`,
-            }}>
-              <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.25)" />
-              <span style={{
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
+              gap: `calc(${W} * 0.01)`,
+              textAlign: 'right',
+            }}
+          >
+            <span
+              style={{
                 fontFamily: '"Handjet", system-ui, sans-serif',
-                fontSize: `calc(${W} * 0.034)`,
-                fontWeight: 600,
-                color: 'rgba(44,42,39,0.4)',
-                letterSpacing: '0.05em',
-              }}>
+                fontSize: fs.brand,
+                fontWeight: 700,
+                color: '#2C2A27',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+              }}
+            >
+              UvA-IN Membership
+            </span>
+            <span
+              style={{
+                fontFamily: '"Handjet", system-ui, sans-serif',
+                fontSize: fs.valid,
+                fontWeight: 500,
+                color: '#6b6a5e',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                marginTop: `calc(${W} * 0.012)`,
+              }}
+            >
+              Valid Until{' '}
+              {member?.membership_valid_until
+                ? new Date(
+                    member.membership_valid_until,
+                  ).toLocaleDateString('en-CA')
+                : 'N/A'}
+            </span>
+            <span
+              style={{
+                fontFamily: '"Handjet", system-ui, sans-serif',
+                fontSize: fs.name,
+                fontWeight: 800,
+                color: '#f97316',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                marginTop: `calc(${W} * 0.008)`,
+              }}
+            >
+              {member?.first_name} {member?.last_name}
+            </span>
+          </div>
+        </div>
+
+        {/* MIDDLE: QR outline */}
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingBottom: '52px',
+          }}
+        >
+          <div
+            style={{
+              position: 'relative',
+              width: qrOutlineSize,
+              height: qrOutlineSize,
+              flexShrink: 0,
+            }}
+          >
+            {/* Corner brackets */}
+            <span
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: BRACKET,
+                height: BRACKET,
+                borderTop: '2.5px solid rgba(44,42,39,0.3)',
+                borderLeft: '2.5px solid rgba(44,42,39,0.3)',
+                borderRadius: '4px 0 0 0',
+              }}
+            />
+            <span
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: BRACKET,
+                height: BRACKET,
+                borderTop: '2.5px solid rgba(44,42,39,0.3)',
+                borderRight: '2.5px solid rgba(44,42,39,0.3)',
+                borderRadius: '0 4px 0 0',
+              }}
+            />
+            <span
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                width: BRACKET,
+                height: BRACKET,
+                borderBottom: '2.5px solid rgba(44,42,39,0.3)',
+                borderLeft: '2.5px solid rgba(44,42,39,0.3)',
+                borderRadius: '0 0 0 4px',
+              }}
+            />
+            <span
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                width: BRACKET,
+                height: BRACKET,
+                borderBottom: '2.5px solid rgba(44,42,39,0.3)',
+                borderRight: '2.5px solid rgba(44,42,39,0.3)',
+                borderRadius: '0 0 4px 0',
+              }}
+            />
+
+            {/* QrCode icon + text */}
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: `calc(${W} * 0.02)`,
+              }}
+            >
+              <QrCode
+                size={`calc(${W} * 0.1)`}
+                weight="bold"
+                color="rgba(44,42,39,0.25)"
+              />
+              <span
+                style={{
+                  fontFamily: '"Handjet", system-ui, sans-serif',
+                  fontSize: `calc(${W} * 0.034)`,
+                  fontWeight: 600,
+                  color: 'rgba(44,42,39,0.4)',
+                  letterSpacing: '0.05em',
+                }}
+              >
                 눌러서 Check-IN 하기
               </span>
             </div>
           </div>
         </div>
 
-      {/* BOTTOM: wordmark */}
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <span style={{
-          fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
-          fontSize: fs.wordmark, fontWeight: 900, color: '#2C2A27',
-          letterSpacing: '-0.01em', lineHeight: 1, textTransform: 'uppercase',
-        }}>
-          UvA-IN
-        </span>
+        {/* BOTTOM: wordmark */}
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <span
+            style={{
+              fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
+              fontSize: fs.wordmark,
+              fontWeight: 900,
+              color: '#2C2A27',
+              letterSpacing: '-0.01em',
+              lineHeight: 1,
+              textTransform: 'uppercase',
+            }}
+          >
+            UvA-IN
+          </span>
+        </div>
       </div>
-    </div>
+    </MetalFrame>
   )
 
-  // ── NON-VALID ─────────────────────────────────────────────────────────────
+  // ── NON-VALID ───────────────────────────────────────────────────────────────
   if (!isValid) {
     return (
-      <div style={{
-        width: cardW, height: cardH, margin: '0 auto', flexShrink: 0,
-        borderRadius: '16px', border: '2px dashed #cbd5b1', background: '#F6F4F1',
-        boxSizing: 'border-box', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        color: '#4b5563', textAlign: 'center', padding: '16px',
-        fontFamily: '"Handjet", system-ui, sans-serif',
-      }}>
-        <span style={{ fontSize: fs.brand, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: '"Alien Block", system-ui, sans-serif', color: '#2C2A27' }}>
-          UvA-IN MEMBERSHIP
-        </span>
-        <span style={{ marginTop: '8px', fontSize: fs.valid, fontWeight: 500 }}>활성화된 멤버십이 없습니다</span>
-        {member?.first_name && (
-          <span style={{ marginTop: '4px', fontSize: fs.valid, color: '#6b7280' }}>
-            {member.first_name} {member.last_name}
-          </span>
-        )}
-        <span style={{ marginTop: '10px', fontSize: `calc(${W} * 0.028)`, color: '#9ca3af' }}>
-          멤버십 갱신은 임원에게 문의해주세요
-        </span>
+      <div
+        style={{
+          width: cardW,
+          height: cardH,
+          margin: '0 auto',
+          flexShrink: 0,
+        }}
+      >
+        <MetalFrame>
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#4b5563',
+              textAlign: 'center',
+              padding: '16px',
+              fontFamily: '"Handjet", system-ui, sans-serif',
+            }}
+          >
+            <span
+              style={{
+                fontSize: fs.brand,
+                fontWeight: 600,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                fontFamily: '"Alien Block", system-ui, sans-serif',
+                color: '#2C2A27',
+              }}
+            >
+              UvA-IN MEMBERSHIP
+            </span>
+            <span
+              style={{
+                marginTop: '8px',
+                fontSize: fs.valid,
+                fontWeight: 500,
+              }}
+            >
+              활성화된 멤버십이 없습니다
+            </span>
+            {member?.first_name && (
+              <span
+                style={{
+                  marginTop: '4px',
+                  fontSize: fs.valid,
+                  color: '#6b7280',
+                }}
+              >
+                {member.first_name} {member.last_name}
+              </span>
+            )}
+            <span
+              style={{
+                marginTop: '10px',
+                fontSize: `calc(${W} * 0.028)`,
+                color: '#9ca3af',
+              }}
+            >
+              멤버십 갱신은 임원에게 문의해주세요
+            </span>
+          </div>
+        </MetalFrame>
       </div>
     )
   }
 
-  // ── VALID: flip card ──────────────────────────────────────────────────────
+  // ── VALID: flip card ────────────────────────────────────────────────────────
   return (
     <div
-      style={{ width: cardW, height: cardH, margin: '0 auto', perspective: '1200px', flexShrink: 0, cursor: 'pointer' }}
+      style={{
+        width: cardW,
+        height: cardH,
+        margin: '0 auto',
+        perspective: '1200px',
+        flexShrink: 0,
+        cursor: 'pointer',
+      }}
       onClick={() => setFlipped((f) => !f)}
     >
-      <div style={{
-        width: '100%', height: '100%', position: 'relative',
-        transformStyle: 'preserve-3d',
-        transition: 'transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)',
-        transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-      }}>
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+          transformStyle: 'preserve-3d',
+          transition: 'transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)',
+          transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+        }}
+      >
         {/* FRONT */}
-        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', padding: '12px', boxSizing: 'border-box' }}>
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backfaceVisibility: 'hidden',
+            padding: '12px',
+            boxSizing: 'border-box',
+          }}
+        >
           {cardFront}
         </div>
 
         {/* BACK */}
-        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', padding: '12px', boxSizing: 'border-box' }}>
-          <div style={{
-            width: '100%',
-            height: '100%',
-            background: '#F6F4F1',
-            border: '1px solid #d6d3c0',
-            borderRadius: '16px',
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backfaceVisibility: 'hidden',
+            transform: 'rotateY(180deg)',
+            padding: '12px',
             boxSizing: 'border-box',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            {flipped && <QRScanner onScan={onQRScanned} />}
-          </div>
+          }}
+        >
+          <MetalFrame>
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                background: '#F6F4F1',
+                borderRadius: '22px',
+                boxSizing: 'border-box',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {flipped && <QRScanner onScan={onQRScanned} />}
+            </div>
+          </MetalFrame>
         </div>
       </div>
     </div>
