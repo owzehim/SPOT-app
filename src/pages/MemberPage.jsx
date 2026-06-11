@@ -876,8 +876,8 @@ function EventsTab({ events }) {
   const W = 'calc(100vw - 32px)'
   const fs = {
     day: `calc(${W} * 0.06)`,      // Small day text
-    date: `calc(${W} * 0.34)`,     // Extra large date numbers
-    month: `calc(${W} * 0.34)`,    // Same size as date number
+    date: `calc(${W} * 0.24)`,     // Extra large date numbers
+    month: `calc(${W} * 0.24)`,    // Same size as date number
     title: `calc(${W} * 0.042)`,   // Event title
     location: `calc(${W} * 0.036)`, // Location text
   }
@@ -891,7 +891,7 @@ function EventsTab({ events }) {
             <div className="flex gap-8 items-start">
               {/* LEFT SIDE - DATE */}
               {formatDate(newestEvent.event_date) && (
-                <div className="flex-shrink-0 flex flex-col items-start justify-start leading-none pl-4">
+                <div className="flex-shrink-0 flex flex-col items-start justify-start leading-none pl-2">
                   <span
                     style={{
                       fontFamily: '"Handjet", system-ui, sans-serif',
