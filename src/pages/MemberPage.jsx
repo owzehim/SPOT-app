@@ -233,11 +233,12 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const cardH = `calc(${W} * 1.586)`
 
   const fs = {
-    brand:    `calc(${W} * 0.038)`,
-    valid:    `calc(${W} * 0.032)`,
-    name:     `calc(${W} * 0.052)`,
-    wordmark: `calc(${W} * 0.152)`,
-  }
+  day: `calc(${W} * 0.08)`,       // bigger day text
+  date: `calc(${W} * 0.24)`,      // MUCH bigger date
+  month: `calc(${W} * 0.24)`,     // same size as date
+  title: `calc(${W} * 0.042)`,
+  location: `calc(${W} * 0.036)`,
+}
 
   const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
   const pastelBg = getPastelColor(avatarSeed)
@@ -890,7 +891,7 @@ function EventsTab({ events }) {
             <div className="flex gap-8 items-start">
               {/* LEFT SIDE - DATE */}
               {formatDate(newestEvent.event_date) && (
-                <div className="flex-shrink-0 flex flex-col items-start justify-start leading-none pl-2">
+                <div className="flex-shrink-0 flex flex-col items-start justify-start leading-none pl-10">
                   <span
                     style={{
                       fontFamily: '"Handjet", system-ui, sans-serif',
