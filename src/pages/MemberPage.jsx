@@ -297,29 +297,39 @@ function MembershipCard({ member, isValid, onQRScanned }) {
 
       {/* MIDDLE: QR outline shifted up to match back camera position */}
       <div style={{
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        // Shift up ~28px to account for the text + gap below the video on the back
-        paddingBottom: '28px',
-      }}>
-        <div style={{ position: 'relative', width: qrOutlineSize, height: qrOutlineSize, flexShrink: 0 }}>
-          {/* Corner brackets */}
-          <span style={{ position: 'absolute', top: 0, left: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.3)', borderLeft: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '4px 0 0 0' }} />
-          <span style={{ position: 'absolute', top: 0, right: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.3)', borderRight: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 4px 0 0' }} />
-          <span style={{ position: 'absolute', bottom: 0, left: 0, width: BRACKET, height: BRACKET, borderBottom: '2.5px solid rgba(44,42,39,0.3)', borderLeft: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 0 0 4px' }} />
-          <span style={{ position: 'absolute', bottom: 0, right: 0, width: BRACKET, height: BRACKET, borderBottom: '2.5px solid rgba(44,42,39,0.3)', borderRight: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 0 4px 0' }} />
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingBottom: '52px',
+        }}>
+          <div style={{ position: 'relative', width: qrOutlineSize, height: qrOutlineSize, flexShrink: 0 }}>
+            {/* Corner brackets */}
+            <span style={{ position: 'absolute', top: 0, left: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.3)', borderLeft: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '4px 0 0 0' }} />
+            <span style={{ position: 'absolute', top: 0, right: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.3)', borderRight: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 4px 0 0' }} />
+            <span style={{ position: 'absolute', bottom: 0, left: 0, width: BRACKET, height: BRACKET, borderBottom: '2.5px solid rgba(44,42,39,0.3)', borderLeft: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 0 0 4px' }} />
+            <span style={{ position: 'absolute', bottom: 0, right: 0, width: BRACKET, height: BRACKET, borderBottom: '2.5px solid rgba(44,42,39,0.3)', borderRight: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 0 4px 0' }} />
 
-          {/* QrCode icon centered inside */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.25)" />
+            {/* QrCode icon + 눌러서 Check-IN 하기 centered inside */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              gap: `calc(${W} * 0.02)`,
+            }}>
+              <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.25)" />
+              <span style={{
+                fontFamily: '"Handjet", system-ui, sans-serif',
+                fontSize: `calc(${W} * 0.034)`,
+                fontWeight: 600,
+                color: 'rgba(44,42,39,0.4)',
+                letterSpacing: '0.05em',
+              }}>
+                눌러서 Check-IN 하기
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* BOTTOM: wordmark */}
       <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -355,7 +365,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           </span>
         )}
         <span style={{ marginTop: '10px', fontSize: `calc(${W} * 0.028)`, color: '#9ca3af' }}>
-          멤버십 갱신은 운영진에게 문의해주세요
+          멤버십 갱신은 임원에게 문의해주세요
         </span>
       </div>
     )
@@ -765,26 +775,21 @@ function QRTab({ member, isValid }) {
           onQRScanned={handleQRScanned}
         />
 
-        {/* Guide text (only visible when not lifted) */}
+         {/* Guide text — only 위로 올려서 이번 달 활동 보기 */}
         <div
           style={{
             width: '100%',
             display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-end',
+            justifyContent: 'flex-end',
             marginTop: '10px',
-            gap: '2px',
             paddingRight: '4px',
             opacity: lifted ? 0 : 1,
             transition: 'opacity 0.25s ease',
           }}
         >
           <span style={{ fontSize: fs.guide, color: '#f97316', fontWeight: 500 }}>
-  눌러서 Check-IN 하기
-</span>
-<span style={{ fontSize: fs.guide, color: '#f97316', fontWeight: 500 }}>
-  위로 올려서 이번 달 활동 보기
-</span>
+            위로 올려서 이번 달 활동 보기
+          </span>
         </div>
       </div>
     </div>
