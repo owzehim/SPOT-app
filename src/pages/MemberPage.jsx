@@ -290,28 +290,28 @@ const MetalFrame = ({ children }) => (
       />
     </div>
 
-    {/* Left side rail - indented inward */}
+    {/* Left side rail - full height */}
     <div
       style={{
         position: 'absolute',
-        top: '15%',
+        top: '0',
         left: '3px',
         width: '6px',
-        height: '70%',
+        height: '100%',
         borderRadius: '3px',
         background: '#b8b8b8',
         boxShadow: 'inset 1px 0 1px rgba(0,0,0,0.3), inset -1px 0 1px rgba(255,255,255,0.4)',
       }}
     />
     
-    {/* Right side rail - indented inward */}
+    {/* Right side rail - full height */}
     <div
       style={{
         position: 'absolute',
-        top: '15%',
+        top: '0',
         right: '3px',
         width: '6px',
-        height: '70%',
+        height: '100%',
         borderRadius: '3px',
         background: '#b8b8b8',
         boxShadow: 'inset 1px 0 1px rgba(0,0,0,0.3), inset -1px 0 1px rgba(255,255,255,0.4)',
