@@ -266,7 +266,13 @@ function getPastelColor(seed) {
 }
 
 // ─── Membership Card ─────────────────────────────────────────────────────────
-function MembershipCard({ member, isValid, onQRScanned, disabled = false }) {
+function MembershipCard({
+  member,
+  isValid,
+  onQRScanned,
+  disabled = false,
+  onFlipChange,
+}) {
   const [flipped, setFlipped] = useState(false)
 
   const W = 'calc(100vw - 32px)'
@@ -287,6 +293,10 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false }) {
 
   const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
   const BRACKET = 24
+
+  useEffect(() => {
+    if (onFlipChange) onFlipChange(flipped)
+  }, [flipped, onFlipChange])
 
   const cardFront = (
     <div
@@ -553,7 +563,9 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false }) {
           활성화된 멤버십이 없습니다
         </span>
         {member?.first_name && (
-          <span style={{ marginTop: '4px', fontSize: fs.valid, color: '#6b7280' }}>
+          <span
+            style={{ marginTop: '4px', fontSize: fs.valid, color: '#6b7280' }}
+          >
             {member.first_name} {member.last_name}
           </span>
         )}
@@ -578,10 +590,10 @@ function MembershipCard({ member, isValid, onQRScanned, disabled = false }) {
         margin: '0 auto',
         perspective: '1200px',
         flexShrink: 0,
-        cursor: disabled ? 'default' : 'pointer',   // ← CHANGED
+        cursor: disabled ? 'default' : 'pointer',
       }}
       onClick={() => {
-        if (disabled || !isValid) return        // ← CHANGED
+        if (disabled || !isValid) return
         setFlipped((f) => !f)
       }}
     >
@@ -643,11 +655,12 @@ function QRTab({ member, isValid, onLiftChange }) {
   const navigate = useNavigate()
 
   const [lifted, setLifted] = useState(false)
+  const [cardFlipped, setCardFlipped] = useState(false) // NEW
   const cardLayerRef = useRef(null)
   const activityRef = useRef(null)
   const touchStartY = useRef(null)
   const liftedRef = useRef(false)
-
+  
   const [state, setState] = useState('scanning')
   const [storeName, setStoreName] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
@@ -663,52 +676,54 @@ function QRTab({ member, isValid, onLiftChange }) {
     }
   }
 
-  // Swipe → auto snap (no tracking during move)
-  const handleTouchStart = (e) => {
-    touchStartY.current = e.touches[0].clientY
-    if (cardLayerRef.current) {
-      cardLayerRef.current.style.transition = 'none'
-    }
+const handleTouchStart = (e) => {
+  if (cardFlipped) return
+  touchStartY.current = e.touches[0].clientY
+  if (cardLayerRef.current) {
+    cardLayerRef.current.style.transition = 'none'
+  }
+}
+
+const handleTouchMove = (e) => {
+  if (cardFlipped) return
+  if (touchStartY.current == null) return
+  const dy = touchStartY.current - e.touches[0].clientY
+
+  // Prevent scroll when clearly vertical swipe
+  if (Math.abs(dy) > 10) {
+    e.preventDefault()
+  }
+}
+
+const handleTouchEnd = (e) => {
+  if (cardFlipped) return
+  if (touchStartY.current == null) return
+
+  const dy = touchStartY.current - e.changedTouches[0].clientY
+  const max = getMaxLift()
+  const SWIPE_THRESHOLD = 40
+
+  let nextLifted = liftedRef.current
+
+  // swipe up → lift
+  if (dy > SWIPE_THRESHOLD) {
+    nextLifted = true
+  }
+  // swipe down → lower
+  else if (dy < -SWIPE_THRESHOLD) {
+    nextLifted = false
   }
 
-  const handleTouchMove = (e) => {
-    if (touchStartY.current == null) return
-    const dy = touchStartY.current - e.touches[0].clientY
-
-    // Prevent scroll when clearly vertical swipe
-    if (Math.abs(dy) > 10) {
-      e.preventDefault()
-    }
+  if (cardLayerRef.current) {
+    cardLayerRef.current.style.transition =
+      'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
   }
 
-  const handleTouchEnd = (e) => {
-    if (touchStartY.current == null) return
-
-    const dy = touchStartY.current - e.changedTouches[0].clientY
-    const max = getMaxLift()
-    const SWIPE_THRESHOLD = 40
-
-    let nextLifted = liftedRef.current
-
-    // swipe up → lift
-    if (dy > SWIPE_THRESHOLD) {
-      nextLifted = true
-    }
-    // swipe down → lower
-    else if (dy < -SWIPE_THRESHOLD) {
-      nextLifted = false
-    }
-
-    if (cardLayerRef.current) {
-      cardLayerRef.current.style.transition =
-        'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
-    }
-
-    setTranslate(nextLifted ? max : 0)
-    liftedRef.current = nextLifted
-    setLifted(nextLifted)
-    touchStartY.current = null
-  }
+  setTranslate(nextLifted ? max : 0)
+  liftedRef.current = nextLifted
+  setLifted(nextLifted)
+  touchStartY.current = null
+}
 
   // Sync lifted state with DOM and parent
   useEffect(() => {
@@ -1019,14 +1034,14 @@ function QRTab({ member, isValid, onLiftChange }) {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Disable flipping when lifted */}
         <MembershipCard
-          member={member}
-          isValid={isValid}
-          onQRScanned={handleQRScanned}
-          disabled={lifted}
-        />
-        <div
+  member={member}
+  isValid={isValid}
+  onQRScanned={handleQRScanned}
+  disabled={lifted}
+  onFlipChange={setCardFlipped}
+/>
+<div
   style={{
     width: '100%',
     display: 'flex',
@@ -1035,16 +1050,18 @@ function QRTab({ member, isValid, onLiftChange }) {
     paddingTop: '6px',
   }}
 >
-  <span
-    style={{
-      fontSize: fs.guide,
-      color: 'rgba(44,42,39,0.35)',
-      fontWeight: 500,
-      transition: 'color 0.25s ease',
-    }}
-  >
-    {lifted ? '내려서 Check-IN 하기' : '위로 올려서 이번 달 활동 보기'}
-  </span>
+  {!cardFlipped && (
+    <span
+      style={{
+        fontSize: fs.guide,
+        color: 'rgba(44,42,39,0.35)',
+        fontWeight: 500,
+        transition: 'color 0.25s ease',
+      }}
+    >
+      {lifted ? '내려서 Check-IN 하기' : '위로 올려서 이번 달 활동 보기'}
+    </span>
+  )}
 </div>
       </div>
 
