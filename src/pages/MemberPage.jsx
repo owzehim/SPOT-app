@@ -24,7 +24,7 @@ export default function MemberPage() {
   const [tabKey, setTabKey] = useState(0)
   const [events, setEvents] = useState([])
   const [restaurants, setRestaurants] = useState([])
-  const [headerHidden, setHeaderHidden] = useState(false)
+  const [qrCardLifted, setQrCardLifted] = useState(false)
   const navigate = useNavigate()
 
   // ── Review prompt hook ───────────────────────────────
@@ -113,13 +113,8 @@ export default function MemberPage() {
   const handleTabChange = (key) => {
     setActiveTab(key)
     setTabKey((prev) => prev + 1)
-
-    if (key === 'map') {
-      // SPOT tab: header always hidden
-      setHeaderHidden(true)
-    } else {
-      // MY / EVENTS: header visible by default; QRTab may hide it later
-      setHeaderHidden(false)
+    if (key !== 'qr') {
+      setQrCardLifted(false)
     }
   }
 
@@ -138,7 +133,7 @@ export default function MemberPage() {
 
   return (
     <div
-      className="flex flex-col bg-white overflow-hidden"
+      className="relative flex flex-col bg-white overflow-hidden"
       style={{ height: '100dvh' }}
     >
       {/* Review modal */}
@@ -158,8 +153,8 @@ export default function MemberPage() {
         onSkip={skipReview}
       />
 
-      {/* 헤더 (hidden on SPOT, or when MY card is lifted) */}
-      {activeTab !== 'map' && !headerHidden && (
+      {/* Header: only on EVENTS tab */}
+      {activeTab === 'events' && (
         <div
           className="bg-white px-4 py-2 flex items-center justify-between flex-shrink-0"
           style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}
@@ -177,7 +172,6 @@ export default function MemberPage() {
                 관리자
               </button>
             )}
-
             <button
               onClick={() => navigate('/settings')}
               className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
@@ -189,14 +183,29 @@ export default function MemberPage() {
         </div>
       )}
 
-      {/* 컨텐츠 */}
+      {/* Floating settings button for MY tab (no header) */}
+      {activeTab === 'qr' && (
+        <button
+          onClick={() => navigate('/settings')}
+          className={
+            'absolute right-4 rounded-full border border-gray-200 bg-white p-2 text-gray-500 transition-opacity duration-200 ' +
+            (qrCardLifted ? 'opacity-0 pointer-events-none' : 'opacity-100')
+          }
+          style={{ top: 'calc(env(safe-area-inset-top) + 8px)' }}
+          aria-label="Settings"
+        >
+          <Gear size={18} weight="bold" />
+        </button>
+      )}
+
+      {/* Content */}
       <div className="flex-1 overflow-hidden">
         <div key={tabKey} className="h-full">
           {activeTab === 'qr' && (
             <QRTab
               member={member}
               isValid={isValid}
-              onLiftChange={(lifted) => setHeaderHidden(lifted)}
+              onLiftChange={(lifted) => setQrCardLifted(lifted)}
             />
           )}
           {activeTab === 'events' && <EventsTab events={events} />}
@@ -204,7 +213,7 @@ export default function MemberPage() {
         </div>
       </div>
 
-      {/* 하단 탭 (no border line) */}
+      {/* Bottom tab bar */}
       <div
         className="bg-white flex flex-shrink-0"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
@@ -262,10 +271,10 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const cardH = `calc(${W} * 1.586)`
 
   const fs = {
-    brand: `calc(${W} * 0.038)`, // “UvA-IN Membership”
-    valid: `calc(${W} * 0.032)`, // “Valid Until …”
-    name: `calc(${W} * 0.052)`, // Member name
-    wordmark: `calc(${W} * 0.18)`, // BIG UvA-IN at bottom of card
+    brand: `calc(${W} * 0.038)`,
+    valid: `calc(${W} * 0.032)`,
+    name: `calc(${W} * 0.052)`,
+    wordmark: `calc(${W} * 0.18)`,
   }
 
   const avatarSeed = `${member?.first_name || ''}${member?.last_name || ''}`
@@ -273,12 +282,6 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const avatarSize = `calc(${W} * 0.19)`
   const hasProfileImage = !!member?.profile_image_url
 
-  // Back: 12px outer + 12px inner = 24px padding each side → inner = W - 48px
-  // QRScanner: flex-col [video square (max-w-xs)] + [text ~40px] + gap ~12px
-  // Video fills max-w-xs = min(320px, inner). QR box = 220px centered in video.
-  // The whole QRScanner column is centered in the back card, so the video top
-  // sits at: center - (videoH/2 + textH/2 + gap/2) ≈ center - ~28px
-  // We shift the outline up by that same ~28px offset.
   const qrOutlineSize = `calc((${W} - 48px) * 0.6875)`
   const BRACKET = 24
 
@@ -391,7 +394,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
         </div>
       </div>
 
-      {/* MIDDLE: QR outline shifted up to match back camera position */}
+      {/* MIDDLE */}
       <div
         style={{
           flex: 1,
@@ -409,7 +412,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
             flexShrink: 0,
           }}
         >
-          {/* Corner brackets */}
+          {/* Corners */}
           <span
             style={{
               position: 'absolute',
@@ -459,7 +462,6 @@ function MembershipCard({ member, isValid, onQRScanned }) {
             }}
           />
 
-          {/* QrCode icon + 눌러서 Check-IN 하기 centered inside */}
           <div
             style={{
               position: 'absolute',
@@ -487,7 +489,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
         </div>
       </div>
 
-      {/* BOTTOM: wordmark */}
+      {/* BOTTOM */}
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <span
           style={{
@@ -506,7 +508,6 @@ function MembershipCard({ member, isValid, onQRScanned }) {
     </div>
   )
 
-  // ── NON-VALID ─────────────────────────────────────────────────────────────
   if (!isValid) {
     return (
       <div
@@ -562,7 +563,6 @@ function MembershipCard({ member, isValid, onQRScanned }) {
     )
   }
 
-  // ── VALID: flip card ──────────────────────────────────────────────────────
   return (
     <div
       style={{
@@ -585,7 +585,6 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
-        {/* FRONT */}
         <div
           style={{
             position: 'absolute',
@@ -598,7 +597,6 @@ function MembershipCard({ member, isValid, onQRScanned }) {
           {cardFront}
         </div>
 
-        {/* BACK */}
         <div
           style={{
             position: 'absolute',
@@ -634,7 +632,6 @@ function MembershipCard({ member, isValid, onQRScanned }) {
 function QRTab({ member, isValid, onLiftChange }) {
   const navigate = useNavigate()
 
-  // Slide-up card behaviour (used only when isValid === true)
   const [lifted, setLifted] = useState(false)
   const cardLayerRef = useRef(null)
   const activityRef = useRef(null)
@@ -642,8 +639,7 @@ function QRTab({ member, isValid, onLiftChange }) {
   const currentOffset = useRef(0)
   const liftedRef = useRef(false)
 
-  // Check-in state – used only when isValid === true
-  const [state, setState] = useState('scanning') // 'scanning' | 'loading' | 'success' | 'error'
+  const [state, setState] = useState('scanning')
   const [storeName, setStoreName] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
   const [checkinMember, setCheckinMember] = useState(null)
@@ -697,13 +693,9 @@ function QRTab({ member, isValid, onLiftChange }) {
         'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
     }
     setTranslate(lifted ? getMaxLift() : 0)
-
-    if (onLiftChange) {
-      onLiftChange(lifted)
-    }
+    if (onLiftChange) onLiftChange(lifted)
   }, [lifted, onLiftChange])
 
-  // Helpers
   const formatScanTime = (date) => {
     if (!date) return ''
     const d = new Date(date)
@@ -812,7 +804,6 @@ function QRTab({ member, isValid, onLiftChange }) {
     guide: `calc(${W} * 0.032)`,
   }
 
-  // ── NON-VALID MEMBERSHIP ──────────────────────────────────────────────────
   if (!isValid) {
     if (onLiftChange) onLiftChange(false)
     return (
@@ -822,7 +813,6 @@ function QRTab({ member, isValid, onLiftChange }) {
     )
   }
 
-  // ── LOADING ───────────────────────────────────────────────────────────────
   if (state === 'loading') {
     if (onLiftChange) onLiftChange(false)
     return (
@@ -835,7 +825,6 @@ function QRTab({ member, isValid, onLiftChange }) {
     )
   }
 
-  // ── SUCCESS ───────────────────────────────────────────────────────────────
   if (state === 'success') {
     if (onLiftChange) onLiftChange(false)
     return (
@@ -929,7 +918,6 @@ function QRTab({ member, isValid, onLiftChange }) {
     )
   }
 
-  // ── ERROR ─────────────────────────────────────────────────────────────────
   if (state === 'error') {
     if (onLiftChange) onLiftChange(false)
     return (
@@ -957,10 +945,9 @@ function QRTab({ member, isValid, onLiftChange }) {
     )
   }
 
-  // ── SCANNING ─────────────────────────────────────────────────────────────
+  // SCANNING
   return (
     <div style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
-      {/* Activity stats — sits behind at the bottom */}
       <div
         ref={activityRef}
         style={{
@@ -975,7 +962,6 @@ function QRTab({ member, isValid, onLiftChange }) {
         {isValid && <ActivityStatsCard userId={member?.user_id} />}
       </div>
 
-      {/* Card layer — swipeable */}
       <div
         ref={cardLayerRef}
         style={{
@@ -1002,8 +988,6 @@ function QRTab({ member, isValid, onLiftChange }) {
           isValid={isValid}
           onQRScanned={handleQRScanned}
         />
-
-        {/* Guide text — follows card, right below it */}
         <div
           style={{
             width: '100%',
@@ -1190,7 +1174,6 @@ function EventsTab({ events }) {
           <div>
             {imgs.length > 0 && (
               <div className="px-4">
-                {/* Mobile swiper (touch) */}
                 <div
                   className="md:hidden"
                   onTouchStart={(e) => {
@@ -1209,7 +1192,7 @@ function EventsTab({ events }) {
                 >
                   <div
                     className="relative rounded-2xl overflow-hidden bg-gray-100"
-                    style={{ aspectRatio: '1/1' }} // 1:1 BOX
+                    style={{ aspectRatio: '1/1' }}
                   >
                     <div
                       className="flex h-full"
@@ -1257,11 +1240,10 @@ function EventsTab({ events }) {
                   </div>
                 </div>
 
-                {/* Desktop controls */}
                 <div className="hidden md:block">
                   <div
                     className="relative rounded-2xl overflow-hidden bg-gray-100"
-                    style={{ aspectRatio: '1/1' }} // 1:1 BOX
+                    style={{ aspectRatio: '1/1' }}
                   >
                     <div
                       className="flex h-full"
@@ -1294,7 +1276,9 @@ function EventsTab({ events }) {
                       <>
                         {currentSlide > 0 && (
                           <NavBtn
-                            onClick={() => setSlide(ev.id, currentSlide - 1)}
+                            onClick={() =>
+                              setSlide(ev.id, currentSlide - 1)
+                            }
                             style={{
                               position: 'absolute',
                               left: '10px',
@@ -1308,7 +1292,9 @@ function EventsTab({ events }) {
 
                         {currentSlide < imgs.length - 1 && (
                           <NavBtn
-                            onClick={() => setSlide(ev.id, currentSlide + 1)}
+                            onClick={() =>
+                              setSlide(ev.id, currentSlide + 1)
+                            }
                             style={{
                               position: 'absolute',
                               right: '10px',
@@ -1386,7 +1372,6 @@ function EventsTab({ events }) {
     )
   }
 
-  // ---- NEWEST / OTHER / PAST SPLIT + TOP SECTION ----
   const now = new Date()
   const upcomingEvents = events.filter(
     (ev) => ev.event_date && new Date(ev.event_date) >= now,
@@ -1428,11 +1413,9 @@ function EventsTab({ events }) {
   return (
     <div className="h-full overflow-y-auto">
       <div className="px-4 py-6 max-w-md mx-auto">
-        {/* TOP SECTION - NEWEST EVENT (NO BOX, NO DIVIDER) */}
         {newestEvent && (
           <div className="mb-8 pb-6">
             <div className="flex gap-8 items-start">
-              {/* LEFT SIDE - DATE */}
               {formatTopDate(newestEvent.event_date) && (
                 <div className="flex-shrink-0 flex flex-col items-start justify-start leading-none pl-2">
                   <span
@@ -1448,7 +1431,6 @@ function EventsTab({ events }) {
                   >
                     {formatTopDate(newestEvent.event_date).dayName}
                   </span>
-
                   <span
                     style={{
                       fontFamily: '"Handjet", system-ui, sans-serif',
@@ -1462,7 +1444,6 @@ function EventsTab({ events }) {
                   >
                     {formatTopDate(newestEvent.event_date).dateNum}
                   </span>
-
                   <span
                     style={{
                       fontFamily: '"Handjet", system-ui, sans-serif',
@@ -1480,7 +1461,6 @@ function EventsTab({ events }) {
                 </div>
               )}
 
-              {/* RIGHT SIDE - TITLE & LOCATION */}
               <div className="flex-1 flex flex-col justify-start pr-2">
                 <h3
                   style={{
@@ -1512,7 +1492,6 @@ function EventsTab({ events }) {
           </div>
         )}
 
-        {/* MIDDLE SECTION - OTHER UPCOMING */}
         {otherUpcomingEvents.length > 0 && (
           <div className="mb-8">
             {(() => {
@@ -1540,7 +1519,6 @@ function EventsTab({ events }) {
           </div>
         )}
 
-        {/* BOTTOM SECTION - PAST EVENTS (dropdown) */}
         {pastEvents.length > 0 && (
           <div className="mt-6">
             <button
@@ -1587,7 +1565,6 @@ function EventsTab({ events }) {
           </div>
         )}
 
-        {/* EMPTY STATE */}
         {!newestEvent &&
           otherUpcomingEvents.length === 0 &&
           pastEvents.length === 0 && (
@@ -1616,10 +1593,10 @@ function MapTab({ restaurants }) {
 
   return (
     <div className="h-full flex flex-col">
-      {/* 카테고리 바 – acts as header on SPOT */}
+      {/* Category slider with extra “puffer” */}
       <div
-        className="bg-white px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}
+        className="bg-white px-3 py-3 flex gap-2 overflow-x-auto flex-shrink-0"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
         {MAP_CATEGORIES.map((cat) => {
           const isActive = activeCategory === cat
@@ -1656,7 +1633,6 @@ function MapTab({ restaurants }) {
         })}
       </div>
 
-      {/* 지도 */}
       <div className="flex-1 relative overflow-hidden">
         <MapView
           restaurants={filtered}
