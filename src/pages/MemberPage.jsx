@@ -757,7 +757,7 @@ function QRTab({ member, isValid }) {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'flex-start',   // start from top instead of center
-          padding: '32px 16px 0',         // push down a bit from very top
+          padding: '20px 16px 0',         // push down a bit from very top
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
