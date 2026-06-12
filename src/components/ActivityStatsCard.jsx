@@ -15,7 +15,7 @@ export default function ActivityStatsCard({ userId }) {
         style={{
           width: W,
           margin: '0 auto',
-          background: '#2C2A27',
+          background: '#000000',
           borderRadius: '16px',
           padding: '20px 24px',
           boxSizing: 'border-box',
@@ -76,21 +76,44 @@ export default function ActivityStatsCard({ userId }) {
 
 function StatRow({ icon: Icon, label, value, unit, highlight = false }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '14px' }}>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        fontSize: '14px',
+      }}
+    >
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <Icon size={15} color="rgba(246,244,241,0.6)" />
-        <span style={{ color: 'rgba(246,244,241,0.7)', fontFamily: '"Handjet", system-ui, sans-serif', letterSpacing: '0.03em' }}>
+        <span
+          style={{
+            color: 'rgba(246,244,241,0.7)',
+            fontFamily: '"Handjet", system-ui, sans-serif',
+            letterSpacing: '0.03em',
+          }}
+        >
           {label}
         </span>
       </div>
-      <span style={{
-        fontWeight: 700,
-        fontFamily: '"Handjet", system-ui, sans-serif',
-        letterSpacing: '0.04em',
-        color: highlight ? '#f97316' : '#F6F4F1',
-      }}>
+      <span
+        style={{
+          fontWeight: 700,
+          fontFamily: '"Handjet", system-ui, sans-serif',
+          letterSpacing: '0.04em',
+          color: highlight ? '#f97316' : '#F6F4F1',
+        }}
+      >
         {value}{' '}
-        <span style={{ fontWeight: 400, color: 'rgba(246,244,241,0.4)' }}>{unit}</span>
+        <span
+          style={{
+            fontWeight: 400,
+            fontFamily: '"Handjet", system-ui, sans-serif',
+            color: 'rgba(246,244,241,0.4)',
+          }}
+        >
+          {unit}
+        </span>
       </span>
     </div>
   )
