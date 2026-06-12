@@ -405,21 +405,22 @@ export function SpotCard({ selected, onClose }) {
   }
 
   const handleTouchMove = (e) => {
-    if (!isDragging) return
+  if (!isDragging) return
 
-    lastYRef.current = e.touches[0].clientY
-    const delta = startYRef.current - e.touches[0].clientY
+  lastYRef.current = e.touches[0].clientY
+  const delta = startYRef.current - e.touches[0].clientY
 
-    if (!hasImages && delta > 0) return
-
-    if (hasImages) {
-      const newHeight = Math.min(
-        MAX_HEIGHT,
-        Math.max(0, startHeightRef.current + delta)
-      )
-      setCardHeight(newHeight)
-    }
+  // Prevent scroll when clearly vertical swipe (like membership card)
+  if (Math.abs(delta) > 10) {
+    e.preventDefault()
   }
+
+  // NOTE:
+  // We no longer update cardHeight here.
+  // We just detect the gesture, and in handleTouchEnd
+  // we snap to MIN_HEIGHT, MAX_HEIGHT or close,
+  // same style as the membership card.
+}
 
   const handleTouchEnd = () => {
     setIsDragging(false)
