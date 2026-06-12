@@ -980,7 +980,7 @@ function QRTab({ member, isValid, onLiftChange }) {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'flex-start',
-          padding: '40px 16px 0',
+          padding: '50px 16px 0',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -1599,7 +1599,7 @@ function MapTab({ restaurants }) {
       {/* Category slider with extra “puffer” */}
       <div
         className="bg-white px-3 py-3 flex gap-2 overflow-x-auto flex-shrink-0"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 20px)' }}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 14px)' }}
       >
         {MAP_CATEGORIES.map((cat) => {
           const isActive = activeCategory === cat
