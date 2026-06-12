@@ -1528,47 +1528,25 @@ function EventsTab({ events }) {
         {nextEvent && (
   <div className="mb-8 pb-6">
     <div className="flex items-stretch">
-      {/* LEFT: day + time + date + month */}
+      {/* LEFT: day + date + month (no time) */}
       {formatTopDate(nextEvent.event_date) && (
         <div className="flex-shrink-0 flex flex-col items-start justify-center leading-none pl-2 pr-3">
-          {/* Top row: THU (left) + time (right) */}
-          <div
+          {/* THU */}
+          <span
             style={{
-              display: 'flex',
-              alignItems: 'baseline',
-              width: '100%',
+              fontFamily: '"Handjet", system-ui, sans-serif',
+              fontSize: fs.day,
+              fontWeight: 500,
+              color: '#9ca3af',
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase',
+              lineHeight: 0.85,
             }}
           >
-            <span
-              style={{
-                fontFamily: '"Handjet", system-ui, sans-serif',
-                fontSize: fs.day,
-                fontWeight: 500,
-                color: '#9ca3af',
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase',
-                lineHeight: 0.85,
-              }}
-            >
-              {formatTopDate(nextEvent.event_date).dayName}
-            </span>
+            {formatTopDate(nextEvent.event_date).dayName}
+          </span>
 
-            <span
-              style={{
-                fontFamily: '"Handjet", system-ui, sans-serif',
-                fontSize: fs.day,        // same size as day
-                fontWeight: 500,
-                color: '#9ca3af',        // same color as day
-                letterSpacing: '0.05em', // same spacing as day
-                lineHeight: 0.85,
-                marginLeft: 'auto',      // push time to the right side of this row
-              }}
-            >
-              {formatTopTime(nextEvent.event_date)}
-            </span>
-          </div>
-
-          {/* Middle: 04.02 */}
+          {/* 04.02 */}
           <span
             style={{
               fontFamily: '"Handjet", system-ui, sans-serif',
@@ -1583,7 +1561,7 @@ function EventsTab({ events }) {
             {formatTopDate(nextEvent.event_date).dateNum}
           </span>
 
-          {/* Bottom: FEB */}
+          {/* FEB */}
           <span
             style={{
               fontFamily: '"Handjet", system-ui, sans-serif',
@@ -1601,11 +1579,7 @@ function EventsTab({ events }) {
         </div>
       )}
 
-      {/* Optional: keep or remove this vertical line.
-         Currently kept per your earlier design. */}
-      <div className="w-px bg-gray-200 mx-2" />
-
-      {/* Right area removed entirely */}
+      {/* Right area removed; vertical line removed too */}
     </div>
   </div>
 )}
