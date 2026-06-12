@@ -993,21 +993,6 @@ function QRTab({ member, isValid, onLiftChange }) {
         {isValid && (
           <div className="relative">
             <ActivityStatsCard userId={member?.user_id} />
-            {lifted && (
-              <div
-                className="pointer-events-none"
-                style={{
-                  position: 'absolute',
-                  top: -40,
-                  left: 0,
-                  right: 0,
-                  height: 140, // long fade over the box
-                  background:
-                    'linear-gradient(to bottom, #ffffff, rgba(255,255,255,0))',
-                  zIndex: 2,
-                }}
-              />
-            )}
           </div>
         )}
       </div>
