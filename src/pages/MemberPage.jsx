@@ -500,7 +500,7 @@ function MembershipCard({
                 letterSpacing: '0.05em',
               }}
             >
-              눌러서 Check-IN 하기
+              탭 해서 Check-IN 하기
             </span>
           </div>
         </div>
@@ -1465,16 +1465,21 @@ function EventsTab({ events }) {
     )
   }
 
-  const now = new Date()
-  const upcomingEvents = events.filter(
-    (ev) => ev.event_date && new Date(ev.event_date) >= now,
-  )
-  const pastEvents = events.filter(
-    (ev) => ev.event_date && new Date(ev.event_date) < now,
-  )
+    const now = new Date()
 
-  const newestEvent = upcomingEvents[0] || null
-  const otherUpcomingEvents = newestEvent ? upcomingEvents.slice(1) : upcomingEvents
+  // Explicitly sort upcoming events by date ascending
+  const upcomingEvents = events
+    .filter((ev) => ev.event_date && new Date(ev.event_date) >= now)
+    .sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
+
+  // (Optional) sort past events by date descending (latest past first)
+  const pastEvents = events
+    .filter((ev) => ev.event_date && new Date(ev.event_date) < now)
+    .sort((a, b) => new Date(b.event_date) - new Date(a.event_date))
+
+  // "Most upcoming" = the future event closest to now
+  const nextEvent = upcomingEvents[0] || null
+  const otherUpcomingEvents = nextEvent ? upcomingEvents.slice(1) : upcomingEvents
 
   const formatTopDate = (dateStr) => {
     if (!dateStr) return null
@@ -1506,84 +1511,84 @@ function EventsTab({ events }) {
   return (
     <div className="h-full overflow-y-auto">
       <div className="px-4 py-6 max-w-md mx-auto">
-        {newestEvent && (
-          <div className="mb-8 pb-6">
-            <div className="flex gap-8 items-start">
-              {formatTopDate(newestEvent.event_date) && (
-                <div className="flex-shrink-0 flex flex-col items-start justify-start leading-none pl-2">
-                  <span
-                    style={{
-                      fontFamily: '"Handjet", system-ui, sans-serif',
-                      fontSize: fs.day,
-                      fontWeight: 500,
-                      color: '#9ca3af',
-                      letterSpacing: '0.05em',
-                      textTransform: 'uppercase',
-                      lineHeight: 0.85,
-                    }}
-                  >
-                    {formatTopDate(newestEvent.event_date).dayName}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: '"Handjet", system-ui, sans-serif',
-                      fontSize: fs.date,
-                      fontWeight: 800,
-                      color: '#1f2937',
-                      letterSpacing: '0.02em',
-                      lineHeight: 0.85,
-                      marginTop: '2px',
-                    }}
-                  >
-                    {formatTopDate(newestEvent.event_date).dateNum}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: '"Handjet", system-ui, sans-serif',
-                      fontSize: fs.month,
-                      fontWeight: 800,
-                      color: '#1f2937',
-                      letterSpacing: '0.04em',
-                      textTransform: 'uppercase',
-                      lineHeight: 0.85,
-                      marginTop: '2px',
-                    }}
-                  >
-                    {formatTopDate(newestEvent.event_date).monthName}
-                  </span>
-                </div>
-              )}
+        {nextEvent && (
+  <div className="mb-8 pb-6">
+    <div className="flex gap-8 items-start">
+      {formatTopDate(nextEvent.event_date) && (
+        <div className="flex-shrink-0 flex flex-col items-start justify-start leading-none pl-2">
+          <span
+            style={{
+              fontFamily: '"Handjet", system-ui, sans-serif',
+              fontSize: fs.day,
+              fontWeight: 500,
+              color: '#9ca3af',
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase',
+              lineHeight: 0.85,
+            }}
+          >
+            {formatTopDate(nextEvent.event_date).dayName}
+          </span>
+          <span
+            style={{
+              fontFamily: '"Handjet", system-ui, sans-serif',
+              fontSize: fs.date,
+              fontWeight: 800,
+              color: '#1f2937',
+              letterSpacing: '0.02em',
+              lineHeight: 0.85,
+              marginTop: '2px',
+            }}
+          >
+            {formatTopDate(nextEvent.event_date).dateNum}
+          </span>
+          <span
+            style={{
+              fontFamily: '"Handjet", system-ui, sans-serif',
+              fontSize: fs.month,
+              fontWeight: 800,
+              color: '#1f2937',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              lineHeight: 0.85,
+              marginTop: '2px',
+            }}
+          >
+            {formatTopDate(nextEvent.event_date).monthName}
+          </span>
+        </div>
+      )}
 
-              <div className="flex-1 flex flex-col justify-start pr-2">
-                <h3
-                  style={{
-                    fontFamily: '"Noto Sans KR", system-ui, sans-serif',
-                    fontSize: fs.title,
-                    fontWeight: 600,
-                    color: '#1f2937',
-                    margin: 0,
-                  }}
-                >
-                  {newestEvent.title}
-                </h3>
+      <div className="flex-1 flex flex-col justify-start pr-2">
+        <h3
+          style={{
+            fontFamily: '"Noto Sans KR", system-ui, sans-serif',
+            fontSize: fs.title,
+            fontWeight: 600,
+            color: '#1f2937',
+            margin: 0,
+          }}
+        >
+          {nextEvent.title}
+        </h3>
 
-                {newestEvent.location && (
-                  <p
-                    style={{
-                      fontFamily: '"Noto Sans KR", system-ui, sans-serif',
-                      fontSize: fs.location,
-                      fontWeight: 400,
-                      color: '#6b7280',
-                      margin: '4px 0 0 0',
-                    }}
-                  >
-                    {newestEvent.location}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+        {nextEvent.location && (
+          <p
+            style={{
+              fontFamily: '"Noto Sans KR", system-ui, sans-serif',
+              fontSize: fs.location,
+              fontWeight: 400,
+              color: '#6b7280',
+              margin: '4px 0 0 0',
+            }}
+          >
+            {nextEvent.location}
+          </p>
         )}
+      </div>
+    </div>
+  </div>
+)}
 
         {otherUpcomingEvents.length > 0 && (
           <div className="mb-8">
@@ -1658,9 +1663,9 @@ function EventsTab({ events }) {
           </div>
         )}
 
-        {!newestEvent &&
-          otherUpcomingEvents.length === 0 &&
-          pastEvents.length === 0 && (
+        {!nextEvent &&
+  otherUpcomingEvents.length === 0 &&
+  pastEvents.length === 0 && (
             <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
               <p className="text-2xl mb-2">📅</p>
               <p className="text-gray-500 text-sm">예정된 이벤트가 없어요</p>
