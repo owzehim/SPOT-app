@@ -1528,7 +1528,7 @@ function EventsTab({ events }) {
         {nextEvent && (
   <div className="mb-8 pb-6">
     <div className="flex items-stretch">
-      {/* LEFT: Date (same as before) */}
+      {/* LEFT: Date (unchanged) */}
       {formatTopDate(nextEvent.event_date) && (
         <div className="flex-shrink-0 flex flex-col items-start justify-center leading-none pl-2 pr-3">
           <span
@@ -1577,17 +1577,17 @@ function EventsTab({ events }) {
       {/* MIDDLE: Thin vertical line */}
       <div className="w-px bg-gray-200 mx-2" />
 
-      {/* RIGHT: top = title + location (orange), bottom = time */}
+      {/* RIGHT: top = title + location, bottom = time */}
       <div className="flex-1 flex flex-col justify-between pl-3 pr-2">
-        {/* Top area: event title + location, both orange, Noto Sans KR */}
+        {/* Top right: title + location (both orange, stacked) */}
         <div className="flex flex-col">
           <span
             style={{
               fontFamily: '"Noto Sans KR", system-ui, sans-serif',
-              fontSize: fs.title,
-              fontWeight: 600,
+              fontSize: fs.date,         // big: similar to 04.02
+              fontWeight: 700,
               color: '#f97316',
-              lineHeight: 1.2,
+              lineHeight: 1.05,
             }}
           >
             {nextEvent.title}
@@ -1597,11 +1597,11 @@ function EventsTab({ events }) {
             <span
               style={{
                 fontFamily: '"Noto Sans KR", system-ui, sans-serif',
-                fontSize: fs.location,
+                fontSize: fs.day,        // slightly smaller, like THU
                 fontWeight: 500,
                 color: '#f97316',
                 marginTop: '4px',
-                lineHeight: 1.2,
+                lineHeight: 1.1,
               }}
             >
               {nextEvent.location}
@@ -1609,12 +1609,12 @@ function EventsTab({ events }) {
           )}
         </div>
 
-        {/* Bottom area: time in Handjet, 00:00 AM/PM */}
+        {/* Bottom right: time (Handjet, same size as month) */}
         <div className="mt-4">
           <span
             style={{
               fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: `calc(${W} * 0.06)`,
+              fontSize: fs.month,       // same as month on the left
               fontWeight: 600,
               color: '#111827',
               letterSpacing: '0.08em',
