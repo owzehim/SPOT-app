@@ -639,7 +639,6 @@ function QRTab({ member, isValid, onLiftChange }) {
   const cardLayerRef = useRef(null)
   const activityRef = useRef(null)
   const touchStartY = useRef(null)
-  const currentOffset = useRef(0)
   const liftedRef = useRef(false)
 
   const [state, setState] = useState('scanning')
@@ -657,39 +656,55 @@ function QRTab({ member, isValid, onLiftChange }) {
     }
   }
 
+  // NEW: “auto-snap” swipe – no tracking during move
   const handleTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY
+    // Remove transition while detecting swipe
     if (cardLayerRef.current) {
       cardLayerRef.current.style.transition = 'none'
     }
-    touchStartY.current = e.touches[0].clientY
-    currentOffset.current = liftedRef.current ? getMaxLift() : 0
   }
 
   const handleTouchMove = (e) => {
-    if (touchStartY.current === null) return
+    if (touchStartY.current == null) return
     const dy = touchStartY.current - e.touches[0].clientY
-    const raw = currentOffset.current + dy
-    const clamped = Math.max(0, Math.min(raw, getMaxLift()))
-    setTranslate(clamped)
+
+    // Optional: block scroll when clearly vertical swipe
+    if (Math.abs(dy) > 10) {
+      e.preventDefault()
+    }
   }
 
   const handleTouchEnd = (e) => {
+    if (touchStartY.current == null) return
+
     const dy = touchStartY.current - e.changedTouches[0].clientY
-    const raw = currentOffset.current + dy
     const max = getMaxLift()
-    const shouldLift = raw > max * 0.3
+    const SWIPE_THRESHOLD = 40 // px
+
+    let nextLifted = liftedRef.current
+
+    // swipe up → lift
+    if (dy > SWIPE_THRESHOLD) {
+      nextLifted = true
+    }
+    // swipe down → lower
+    else if (dy < -SWIPE_THRESHOLD) {
+      nextLifted = false
+    }
 
     if (cardLayerRef.current) {
       cardLayerRef.current.style.transition =
         'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
     }
 
-    setTranslate(shouldLift ? max : 0)
-    liftedRef.current = shouldLift
-    setLifted(shouldLift)
+    setTranslate(nextLifted ? max : 0)
+    liftedRef.current = nextLifted
+    setLifted(nextLifted)
     touchStartY.current = null
   }
 
+  // Keep DOM position in sync with lifted state + notify parent
   useEffect(() => {
     if (cardLayerRef.current) {
       cardLayerRef.current.style.transition =
@@ -729,6 +744,8 @@ function QRTab({ member, isValid, onLiftChange }) {
     setErrorMsg('')
     setCheckinMember(null)
     setScanTime(null)
+    setLifted(false)
+    liftedRef.current = false
     if (onLiftChange) onLiftChange(false)
   }
 
@@ -772,7 +789,9 @@ function QRTab({ member, isValid, onLiftChange }) {
 
       const { data: memberRow, error: memberError } = await supabase
         .from('members')
-        .select('first_name, last_name, student_number, "University", membership_valid_until')
+        .select(
+          'first_name, last_name, student_number, "University", membership_valid_until',
+        )
         .eq('user_id', user.id)
         .single()
 
