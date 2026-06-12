@@ -188,7 +188,7 @@ export default function MemberPage() {
   <button
     onClick={() => navigate('/settings')}
     className={
-      'absolute right-4 rounded-full border border-gray-200 bg-white p-2 text-gray-500 transition-opacity duration-200 ' +
+        'absolute right-4 rounded-full bg-white p-2 text-gray-500 transition-opacity duration-200 ' +
       (qrCardLifted ? 'opacity-0 pointer-events-none' : 'opacity-100')
     }
     style={{
@@ -197,7 +197,7 @@ export default function MemberPage() {
     }}
     aria-label="Settings"
   >
-    <Gear size={18} weight="bold" />
+    <Gear size={20} weight="bold" />
   </button>
 )}
 
@@ -980,7 +980,7 @@ function QRTab({ member, isValid, onLiftChange }) {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'flex-start',
-          padding: '20px 16px 0',
+          padding: '40px 16px 0',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -1599,7 +1599,7 @@ function MapTab({ restaurants }) {
       {/* Category slider with extra “puffer” */}
       <div
         className="bg-white px-3 py-3 flex gap-2 overflow-x-auto flex-shrink-0"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 20px)' }}
       >
         {MAP_CATEGORIES.map((cat) => {
           const isActive = activeCategory === cat
