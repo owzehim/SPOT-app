@@ -266,7 +266,7 @@ function getPastelColor(seed) {
 }
 
 // ─── Membership Card ─────────────────────────────────────────────────────────
-function MembershipCard({ member, isValid, onQRScanned }) {
+function MembershipCard({ member, isValid, onQRScanned, disabled = false }) {
   const [flipped, setFlipped] = useState(false)
 
   const W = 'calc(100vw - 32px)'
@@ -476,7 +476,11 @@ function MembershipCard({ member, isValid, onQRScanned }) {
               gap: `calc(${W} * 0.02)`,
             }}
           >
-            <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.25)" />
+            <QrCode
+              size={`calc(${W} * 0.1)`}
+              weight="bold"
+              color="rgba(44,42,39,0.25)"
+            />
             <span
               style={{
                 fontFamily: '"Handjet", system-ui, sans-serif',
@@ -574,9 +578,12 @@ function MembershipCard({ member, isValid, onQRScanned }) {
         margin: '0 auto',
         perspective: '1200px',
         flexShrink: 0,
-        cursor: 'pointer',
+        cursor: disabled ? 'default' : 'pointer',   // ← CHANGED
       }}
-      onClick={() => setFlipped((f) => !f)}
+      onClick={() => {
+        if (disabled || !isValid) return        // ← CHANGED
+        setFlipped((f) => !f)
+      }}
     >
       <div
         style={{
