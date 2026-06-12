@@ -3,7 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import MapView from '../components/MapView'
 import { SpotCard, RichText } from '../components/SpotCard'
-import { MAP_CATEGORIES, CATEGORY_ICONS_WHITE, CATEGORY_ICONS_ORANGE } from '../lib/mapCategories'
+import {
+  MAP_CATEGORIES,
+  CATEGORY_ICONS_WHITE,
+  CATEGORY_ICONS_ORANGE,
+} from '../lib/mapCategories'
 import { QrCode, Calendar, MapPin, Gear, UserCircle } from '@phosphor-icons/react'
 import { useReviewPrompt } from '../hooks/useReviewPrompt'
 import ReviewModal from '../components/ReviewModal'
@@ -20,6 +24,7 @@ export default function MemberPage() {
   const [tabKey, setTabKey] = useState(0)
   const [events, setEvents] = useState([])
   const [restaurants, setRestaurants] = useState([])
+  const [headerHidden, setHeaderHidden] = useState(false)
   const navigate = useNavigate()
 
   // ── Review prompt hook ───────────────────────────────
@@ -108,6 +113,14 @@ export default function MemberPage() {
   const handleTabChange = (key) => {
     setActiveTab(key)
     setTabKey((prev) => prev + 1)
+
+    if (key === 'map') {
+      // SPOT tab: header always hidden
+      setHeaderHidden(true)
+    } else {
+      // MY / EVENTS: header visible by default; QRTab may hide it later
+      setHeaderHidden(false)
+    }
   }
 
   if (loading) {
@@ -145,45 +158,53 @@ export default function MemberPage() {
         onSkip={skipReview}
       />
 
-      {/* 헤더 */}
-            <div
-  className="bg-white px-4 py-3 flex items-center justify-between flex-shrink-0"
-  style={{ paddingTop: 'calc(env(safe-area-inset-top) + 4px)' }}
->
-  {/* <h1 className="font-bold text-gray-900">UvA-IN</h1> */}
-  <div className="w-[60px]" />
-  <div className="flex gap-2 items-center">
-    {isAdmin && (
-      <button
-        onClick={() => {
-          window.location.href = '/admin'
-        }}
-        className="text-sm text-white font-medium px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
-      >
-        관리자
-      </button>
-    )}
+      {/* 헤더 (hidden on SPOT, or when MY card is lifted) */}
+      {activeTab !== 'map' && !headerHidden && (
+        <div
+          className="bg-white px-4 py-2 flex items-center justify-between flex-shrink-0"
+          style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}
+        >
+          {/* <h1 className="font-bold text-gray-900">UvA-IN</h1> */}
+          <div className="w-[60px]" />
+          <div className="flex gap-2 items-center">
+            {isAdmin && (
+              <button
+                onClick={() => {
+                  window.location.href = '/admin'
+                }}
+                className="text-sm text-white font-medium px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700"
+              >
+                관리자
+              </button>
+            )}
 
-    <button
-      onClick={() => navigate('/settings')}
-      className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
-      aria-label="Settings"
-    >
-      <Gear size={20} weight="bold" />
-    </button>
-  </div>
-</div>
+            <button
+              onClick={() => navigate('/settings')}
+              className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
+              aria-label="Settings"
+            >
+              <Gear size={20} weight="bold" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 컨텐츠 */}
       <div className="flex-1 overflow-hidden">
         <div key={tabKey} className="h-full">
-          {activeTab === 'qr' && <QRTab member={member} isValid={isValid} />}
+          {activeTab === 'qr' && (
+            <QRTab
+              member={member}
+              isValid={isValid}
+              onLiftChange={(lifted) => setHeaderHidden(lifted)}
+            />
+          )}
           {activeTab === 'events' && <EventsTab events={events} />}
           {activeTab === 'map' && <MapTab restaurants={restaurants} />}
         </div>
       </div>
 
-      {/* 하단 탭 */}
+      {/* 하단 탭 (no border line) */}
       <div
         className="bg-white flex flex-shrink-0"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
@@ -215,8 +236,14 @@ export default function MemberPage() {
 
 // ─── Pastel avatar colors ────────────────────────────────────────────────────
 const PASTEL_COLORS = [
-  '#FFB3B3', '#FFD9A0', '#FFF3A0', '#B3F0C2',
-  '#A8D8FF', '#C5B3FF', '#FFB3E6', '#B3F0EE',
+  '#FFB3B3',
+  '#FFD9A0',
+  '#FFF3A0',
+  '#B3F0C2',
+  '#A8D8FF',
+  '#C5B3FF',
+  '#FFB3E6',
+  '#B3F0EE',
 ]
 
 function getPastelColor(seed) {
@@ -234,10 +261,10 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const cardW = W
   const cardH = `calc(${W} * 1.586)`
 
-    const fs = {
-    brand: `calc(${W} * 0.038)`,   // “UvA-IN Membership”
-    valid: `calc(${W} * 0.032)`,   // “Valid Until …”
-    name:  `calc(${W} * 0.052)`,   // Member name
+  const fs = {
+    brand: `calc(${W} * 0.038)`, // “UvA-IN Membership”
+    valid: `calc(${W} * 0.032)`, // “Valid Until …”
+    name: `calc(${W} * 0.052)`, // Member name
     wordmark: `calc(${W} * 0.18)`, // BIG UvA-IN at bottom of card
   }
 
@@ -256,91 +283,223 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   const BRACKET = 24
 
   const cardFront = (
-    <div style={{
-      width: '100%', height: '100%',
-      borderRadius: '16px',
-      background: '#F6F4F1',
-      border: '1px solid #d6d3c0',
-      boxShadow: '0 14px 35px rgba(15,23,42,0.09)',
-      padding: `calc(${W} * 0.07)`,
-      boxSizing: 'border-box',
-      display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-    }}>
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        borderRadius: '16px',
+        background: '#F6F4F1',
+        border: '1px solid #d6d3c0',
+        boxShadow: '0 14px 35px rgba(15,23,42,0.09)',
+        padding: `calc(${W} * 0.07)`,
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+      }}
+    >
       {/* TOP */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{
-          width: avatarSize, height: avatarSize, borderRadius: '50%',
-          background: hasProfileImage ? 'transparent' : pastelBg,
-          flexShrink: 0, overflow: 'hidden',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', userSelect: 'none',
-        }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+        }}
+      >
+        <div
+          style={{
+            width: avatarSize,
+            height: avatarSize,
+            borderRadius: '50%',
+            background: hasProfileImage ? 'transparent' : pastelBg,
+            flexShrink: 0,
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            userSelect: 'none',
+          }}
+        >
           {hasProfileImage ? (
-            <img src={member.profile_image_url} alt="Profile"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <img
+              src={member.profile_image_url}
+              alt="Profile"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
           ) : (
             <UserCircle size="72%" weight="fill" color="rgba(44,42,39,0.55)" />
           )}
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: `calc(${W} * 0.01)`, textAlign: 'right' }}>
-          <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.brand, fontWeight: 700, color: '#2C2A27', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: `calc(${W} * 0.01)`,
+            textAlign: 'right',
+          }}
+        >
+          <span
+            style={{
+              fontFamily: '"Handjet", system-ui, sans-serif',
+              fontSize: fs.brand,
+              fontWeight: 700,
+              color: '#2C2A27',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+            }}
+          >
             UvA-IN Membership
           </span>
-          <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.valid, fontWeight: 500, color: '#6b6a5e', letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: `calc(${W} * 0.012)` }}>
+          <span
+            style={{
+              fontFamily: '"Handjet", system-ui, sans-serif',
+              fontSize: fs.valid,
+              fontWeight: 500,
+              color: '#6b6a5e',
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              marginTop: `calc(${W} * 0.012)`,
+            }}
+          >
             Valid Until{' '}
             {member?.membership_valid_until
-              ? new Date(member.membership_valid_until).toLocaleDateString('en-CA')
+              ? new Date(member.membership_valid_until).toLocaleDateString(
+                  'en-CA',
+                )
               : 'N/A'}
           </span>
-          <span style={{ fontFamily: '"Handjet", system-ui, sans-serif', fontSize: fs.name, fontWeight: 800, color: '#f97316', letterSpacing: '0.04em', textTransform: 'uppercase', marginTop: `calc(${W} * 0.008)` }}>
+          <span
+            style={{
+              fontFamily: '"Handjet", system-ui, sans-serif',
+              fontSize: fs.name,
+              fontWeight: 800,
+              color: '#f97316',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              marginTop: `calc(${W} * 0.008)`,
+            }}
+          >
             {member?.first_name} {member?.last_name}
           </span>
         </div>
       </div>
 
       {/* MIDDLE: QR outline shifted up to match back camera position */}
-      <div style={{
+      <div
+        style={{
           flex: 1,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           paddingBottom: '52px',
-        }}>
-          <div style={{ position: 'relative', width: qrOutlineSize, height: qrOutlineSize, flexShrink: 0 }}>
-            {/* Corner brackets */}
-            <span style={{ position: 'absolute', top: 0, left: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.3)', borderLeft: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '4px 0 0 0' }} />
-            <span style={{ position: 'absolute', top: 0, right: 0, width: BRACKET, height: BRACKET, borderTop: '2.5px solid rgba(44,42,39,0.3)', borderRight: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 4px 0 0' }} />
-            <span style={{ position: 'absolute', bottom: 0, left: 0, width: BRACKET, height: BRACKET, borderBottom: '2.5px solid rgba(44,42,39,0.3)', borderLeft: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 0 0 4px' }} />
-            <span style={{ position: 'absolute', bottom: 0, right: 0, width: BRACKET, height: BRACKET, borderBottom: '2.5px solid rgba(44,42,39,0.3)', borderRight: '2.5px solid rgba(44,42,39,0.3)', borderRadius: '0 0 4px 0' }} />
+        }}
+      >
+        <div
+          style={{
+            position: 'relative',
+            width: qrOutlineSize,
+            height: qrOutlineSize,
+            flexShrink: 0,
+          }}
+        >
+          {/* Corner brackets */}
+          <span
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: BRACKET,
+              height: BRACKET,
+              borderTop: '2.5px solid rgba(44,42,39,0.3)',
+              borderLeft: '2.5px solid rgba(44,42,39,0.3)',
+              borderRadius: '4px 0 0 0',
+            }}
+          />
+          <span
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: BRACKET,
+              height: BRACKET,
+              borderTop: '2.5px solid rgba(44,42,39,0.3)',
+              borderRight: '2.5px solid rgba(44,42,39,0.3)',
+              borderRadius: '0 4px 0 0',
+            }}
+          />
+          <span
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              width: BRACKET,
+              height: BRACKET,
+              borderBottom: '2.5px solid rgba(44,42,39,0.3)',
+              borderLeft: '2.5px solid rgba(44,42,39,0.3)',
+              borderRadius: '0 0 0 4px',
+            }}
+          />
+          <span
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              right: 0,
+              width: BRACKET,
+              height: BRACKET,
+              borderBottom: '2.5px solid rgba(44,42,39,0.3)',
+              borderRight: '2.5px solid rgba(44,42,39,0.3)',
+              borderRadius: '0 0 4px 0',
+            }}
+          />
 
-            {/* QrCode icon + 눌러서 Check-IN 하기 centered inside */}
-            <div style={{
-              position: 'absolute', inset: 0,
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center',
+          {/* QrCode icon + 눌러서 Check-IN 하기 centered inside */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
               gap: `calc(${W} * 0.02)`,
-            }}>
-              <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.25)" />
-              <span style={{
+            }}
+          >
+            <QrCode size={`calc(${W} * 0.1)`} weight="bold" color="rgba(44,42,39,0.25)" />
+            <span
+              style={{
                 fontFamily: '"Handjet", system-ui, sans-serif',
                 fontSize: `calc(${W} * 0.034)`,
                 fontWeight: 600,
                 color: 'rgba(44,42,39,0.4)',
                 letterSpacing: '0.05em',
-              }}>
-                눌러서 Check-IN 하기
-              </span>
-            </div>
+              }}
+            >
+              눌러서 Check-IN 하기
+            </span>
           </div>
         </div>
+      </div>
 
       {/* BOTTOM: wordmark */}
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <span style={{
-          fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
-          fontSize: fs.wordmark, fontWeight: 900, color: '#2C2A27',
-          letterSpacing: '-0.01em', lineHeight: 1, textTransform: 'uppercase',
-        }}>
+        <span
+          style={{
+            fontFamily: '"Alien Block", "Arial Black", Impact, sans-serif',
+            fontSize: fs.wordmark,
+            fontWeight: 900,
+            color: '#2C2A27',
+            letterSpacing: '-0.01em',
+            lineHeight: 1,
+            textTransform: 'uppercase',
+          }}
+        >
           UvA-IN
         </span>
       </div>
@@ -350,24 +509,53 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   // ── NON-VALID ─────────────────────────────────────────────────────────────
   if (!isValid) {
     return (
-      <div style={{
-        width: cardW, height: cardH, margin: '0 auto', flexShrink: 0,
-        borderRadius: '16px', border: '2px dashed #cbd5b1', background: '#F6F4F1',
-        boxSizing: 'border-box', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        color: '#4b5563', textAlign: 'center', padding: '16px',
-        fontFamily: '"Handjet", system-ui, sans-serif',
-      }}>
-        <span style={{ fontSize: fs.brand, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: '"Alien Block", system-ui, sans-serif', color: '#2C2A27' }}>
+      <div
+        style={{
+          width: cardW,
+          height: cardH,
+          margin: '0 auto',
+          flexShrink: 0,
+          borderRadius: '16px',
+          border: '2px dashed #cbd5b1',
+          background: '#F6F4F1',
+          boxSizing: 'border-box',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#4b5563',
+          textAlign: 'center',
+          padding: '16px',
+          fontFamily: '"Handjet", system-ui, sans-serif',
+        }}
+      >
+        <span
+          style={{
+            fontSize: fs.brand,
+            fontWeight: 600,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            fontFamily: '"Alien Block", system-ui, sans-serif',
+            color: '#2C2A27',
+          }}
+        >
           UvA-IN MEMBERSHIP
         </span>
-        <span style={{ marginTop: '8px', fontSize: fs.valid, fontWeight: 500 }}>활성화된 멤버십이 없습니다</span>
+        <span style={{ marginTop: '8px', fontSize: fs.valid, fontWeight: 500 }}>
+          활성화된 멤버십이 없습니다
+        </span>
         {member?.first_name && (
           <span style={{ marginTop: '4px', fontSize: fs.valid, color: '#6b7280' }}>
             {member.first_name} {member.last_name}
           </span>
         )}
-        <span style={{ marginTop: '10px', fontSize: `calc(${W} * 0.028)`, color: '#9ca3af' }}>
+        <span
+          style={{
+            marginTop: '10px',
+            fontSize: `calc(${W} * 0.028)`,
+            color: '#9ca3af',
+          }}
+        >
           멤버십 갱신은 임원에게 문의해주세요
         </span>
       </div>
@@ -377,33 +565,63 @@ function MembershipCard({ member, isValid, onQRScanned }) {
   // ── VALID: flip card ──────────────────────────────────────────────────────
   return (
     <div
-      style={{ width: cardW, height: cardH, margin: '0 auto', perspective: '1200px', flexShrink: 0, cursor: 'pointer' }}
+      style={{
+        width: cardW,
+        height: cardH,
+        margin: '0 auto',
+        perspective: '1200px',
+        flexShrink: 0,
+        cursor: 'pointer',
+      }}
       onClick={() => setFlipped((f) => !f)}
     >
-      <div style={{
-        width: '100%', height: '100%', position: 'relative',
-        transformStyle: 'preserve-3d',
-        transition: 'transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)',
-        transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-      }}>
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+          transformStyle: 'preserve-3d',
+          transition: 'transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)',
+          transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+        }}
+      >
         {/* FRONT */}
-        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', padding: '12px', boxSizing: 'border-box' }}>
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backfaceVisibility: 'hidden',
+            padding: '12px',
+            boxSizing: 'border-box',
+          }}
+        >
           {cardFront}
         </div>
 
         {/* BACK */}
-        <div style={{ position: 'absolute', inset: 0, backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', padding: '12px', boxSizing: 'border-box' }}>
-          <div style={{
-            width: '100%',
-            height: '100%',
-            background: '#F6F4F1',
-            border: '1px solid #d6d3c0',
-            borderRadius: '16px',
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backfaceVisibility: 'hidden',
+            transform: 'rotateY(180deg)',
+            padding: '12px',
             boxSizing: 'border-box',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              background: '#F6F4F1',
+              border: '1px solid #d6d3c0',
+              borderRadius: '16px',
+              boxSizing: 'border-box',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             {flipped && <QRScanner onScan={onQRScanned} />}
           </div>
         </div>
@@ -413,7 +631,7 @@ function MembershipCard({ member, isValid, onQRScanned }) {
 }
 
 // ─── QR Tab ───────────────────────────────────────────────────────────────────
-function QRTab({ member, isValid }) {
+function QRTab({ member, isValid, onLiftChange }) {
   const navigate = useNavigate()
 
   // Slide-up card behaviour (used only when isValid === true)
@@ -479,7 +697,11 @@ function QRTab({ member, isValid }) {
         'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)'
     }
     setTranslate(lifted ? getMaxLift() : 0)
-  }, [lifted])
+
+    if (onLiftChange) {
+      onLiftChange(lifted)
+    }
+  }, [lifted, onLiftChange])
 
   // Helpers
   const formatScanTime = (date) => {
@@ -512,6 +734,7 @@ function QRTab({ member, isValid }) {
     setErrorMsg('')
     setCheckinMember(null)
     setScanTime(null)
+    if (onLiftChange) onLiftChange(false)
   }
 
   const handleQRScanned = async (rawValue) => {
@@ -572,7 +795,7 @@ function QRTab({ member, isValid }) {
       } else {
         setState('error')
         setErrorMsg(
-          result.message || 'Check-In을 기록할 수 없습니다. 다시 시도해주세요.'
+          result.message || 'Check-In을 기록할 수 없습니다. 다시 시도해주세요.',
         )
       }
     } catch (err) {
@@ -591,6 +814,7 @@ function QRTab({ member, isValid }) {
 
   // ── NON-VALID MEMBERSHIP ──────────────────────────────────────────────────
   if (!isValid) {
+    if (onLiftChange) onLiftChange(false)
     return (
       <div className="h-full flex flex-col items-center justify-center px-4 py-6">
         <MembershipCard member={member} isValid={false} />
@@ -600,6 +824,7 @@ function QRTab({ member, isValid }) {
 
   // ── LOADING ───────────────────────────────────────────────────────────────
   if (state === 'loading') {
+    if (onLiftChange) onLiftChange(false)
     return (
       <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4">
         <div className="flex flex-col items-center gap-4 mt-20">
@@ -612,6 +837,7 @@ function QRTab({ member, isValid }) {
 
   // ── SUCCESS ───────────────────────────────────────────────────────────────
   if (state === 'success') {
+    if (onLiftChange) onLiftChange(false)
     return (
       <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4 relative">
         <>
@@ -705,6 +931,7 @@ function QRTab({ member, isValid }) {
 
   // ── ERROR ─────────────────────────────────────────────────────────────────
   if (state === 'error') {
+    if (onLiftChange) onLiftChange(false)
     return (
       <div className="flex-1 overflow-y-auto flex flex-col items-center px-4 py-6 gap-4">
         <div className="flex flex-col items-center gap-4 mt-10 text-center max-w-xs">
@@ -730,20 +957,26 @@ function QRTab({ member, isValid }) {
     )
   }
 
- // ── SCANNING ─────────────────────────────────────────────────────────────
+  // ── SCANNING ─────────────────────────────────────────────────────────────
   return (
     <div style={{ position: 'relative', height: '100%', overflow: 'hidden' }}>
-
       {/* Activity stats — sits behind at the bottom */}
       <div
         ref={activityRef}
-        style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 16px 16px', zIndex: 1 }}
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          padding: '0 16px 16px',
+          zIndex: 1,
+        }}
       >
         {isValid && <ActivityStatsCard userId={member?.user_id} />}
       </div>
 
       {/* Card layer — swipeable */}
-            <div
+      <div
         ref={cardLayerRef}
         style={{
           position: 'absolute',
@@ -757,8 +990,8 @@ function QRTab({ member, isValid }) {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'flex-start',   // start from top instead of center
-          padding: '20px 16px 0',         // push down a bit from very top
+          justifyContent: 'flex-start',
+          padding: '20px 16px 0',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -782,7 +1015,13 @@ function QRTab({ member, isValid }) {
             transition: 'opacity 0.25s ease',
           }}
         >
-          <span style={{ fontSize: fs.guide, color: 'rgba(44,42,39,0.35)', fontWeight: 500 }}>
+          <span
+            style={{
+              fontSize: fs.guide,
+              color: 'rgba(44,42,39,0.35)',
+              fontWeight: 500,
+            }}
+          >
             위로 올려서 이번 달 활동 보기
           </span>
         </div>
@@ -792,7 +1031,6 @@ function QRTab({ member, isValid }) {
 }
 
 // ─── Nav Button ───────────────────────────────────────────────────────────────
-
 function NavBtn({ onClick, children, style = {} }) {
   return (
     <button
@@ -1019,7 +1257,7 @@ function EventsTab({ events }) {
                   </div>
                 </div>
 
-                {/* Desktop controls (same behavior as original) */}
+                {/* Desktop controls */}
                 <div className="hidden md:block">
                   <div
                     className="relative rounded-2xl overflow-hidden bg-gray-100"
@@ -1056,9 +1294,7 @@ function EventsTab({ events }) {
                       <>
                         {currentSlide > 0 && (
                           <NavBtn
-                            onClick={() =>
-                              setSlide(ev.id, currentSlide - 1)
-                            }
+                            onClick={() => setSlide(ev.id, currentSlide - 1)}
                             style={{
                               position: 'absolute',
                               left: '10px',
@@ -1072,9 +1308,7 @@ function EventsTab({ events }) {
 
                         {currentSlide < imgs.length - 1 && (
                           <NavBtn
-                            onClick={() =>
-                              setSlide(ev.id, currentSlide + 1)
-                            }
+                            onClick={() => setSlide(ev.id, currentSlide + 1)}
                             style={{
                               position: 'absolute',
                               right: '10px',
@@ -1133,7 +1367,6 @@ function EventsTab({ events }) {
                     rel="noopener noreferrer"
                     className="flex-1 text-xs bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-center flex items-center justify-center gap-1.5 transition-colors"
                   >
-                    {/* same Instagram SVG as before */}
                     <svg
                       width="14"
                       height="14"
@@ -1154,7 +1387,6 @@ function EventsTab({ events }) {
   }
 
   // ---- NEWEST / OTHER / PAST SPLIT + TOP SECTION ----
-
   const now = new Date()
   const upcomingEvents = events.filter(
     (ev) => ev.event_date && new Date(ev.event_date) >= now,
@@ -1164,9 +1396,7 @@ function EventsTab({ events }) {
   )
 
   const newestEvent = upcomingEvents[0] || null
-  const otherUpcomingEvents = newestEvent
-    ? upcomingEvents.slice(1)
-    : upcomingEvents
+  const otherUpcomingEvents = newestEvent ? upcomingEvents.slice(1) : upcomingEvents
 
   const formatTopDate = (dateStr) => {
     if (!dateStr) return null
@@ -1198,7 +1428,7 @@ function EventsTab({ events }) {
   return (
     <div className="h-full overflow-y-auto">
       <div className="px-4 py-6 max-w-md mx-auto">
-        {/* TOP SECTION - NEWEST EVENT (NO BOX) */}
+        {/* TOP SECTION - NEWEST EVENT (NO BOX, NO DIVIDER) */}
         {newestEvent && (
           <div className="mb-8 pb-6">
             <div className="flex gap-8 items-start">
@@ -1282,7 +1512,7 @@ function EventsTab({ events }) {
           </div>
         )}
 
-        {/* MIDDLE SECTION - OTHER UPCOMING (WITH ORIGINAL CARDS) */}
+        {/* MIDDLE SECTION - OTHER UPCOMING */}
         {otherUpcomingEvents.length > 0 && (
           <div className="mb-8">
             {(() => {
@@ -1310,7 +1540,7 @@ function EventsTab({ events }) {
           </div>
         )}
 
-        {/* BOTTOM SECTION - PAST EVENTS (ORIGINAL DROPDOWN) */}
+        {/* BOTTOM SECTION - PAST EVENTS (dropdown) */}
         {pastEvents.length > 0 && (
           <div className="mt-6">
             <button
@@ -1372,7 +1602,6 @@ function EventsTab({ events }) {
 }
 
 // ─── Map Tab ──────────────────────────────────────────────────────────────────
-
 function MapTab({ restaurants }) {
   const [selected, setSelected] = useState(null)
   const [activeCategory, setActiveCategory] = useState('전체')
@@ -1387,8 +1616,11 @@ function MapTab({ restaurants }) {
 
   return (
     <div className="h-full flex flex-col">
-      {/* 카테고리 바 */}
-      <div className="bg-white border-b border-gray-100 px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0">
+      {/* 카테고리 바 – acts as header on SPOT */}
+      <div
+        className="bg-white px-3 py-2 flex gap-2 overflow-x-auto flex-shrink-0"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}
+      >
         {MAP_CATEGORIES.map((cat) => {
           const isActive = activeCategory === cat
           const iconSvg = isActive
