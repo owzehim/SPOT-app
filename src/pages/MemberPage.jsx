@@ -148,7 +148,7 @@ export default function MemberPage() {
       {/* 헤더 */}
             <div
   className="bg-white border-b border-gray-100 px-4 py-2 flex items-center justify-between flex-shrink-0"
-  style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }}
+  style={{ paddingTop: 'calc(env(safe-area-inset-top) + 4px)' }}
 >
   {/* <h1 className="font-bold text-gray-900">UvA-IN</h1> */}
   <div className="w-[60px]" />
