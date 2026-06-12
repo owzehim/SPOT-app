@@ -185,7 +185,7 @@ export default function MemberPage() {
 
       {/* 하단 탭 */}
       <div
-        className="bg-white border-t border-gray-100 flex flex-shrink-0"
+        className="bg-white flex flex-shrink-0"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
       >
         {[
@@ -1200,7 +1200,7 @@ function EventsTab({ events }) {
       <div className="px-4 py-6 max-w-md mx-auto">
         {/* TOP SECTION - NEWEST EVENT (NO BOX) */}
         {newestEvent && (
-          <div className="mb-8 pb-6 border-b border-gray-100">
+          <div className="mb-8 pb-6">
             <div className="flex gap-8 items-start">
               {/* LEFT SIDE - DATE */}
               {formatTopDate(newestEvent.event_date) && (
