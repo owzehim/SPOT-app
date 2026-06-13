@@ -1528,7 +1528,7 @@ function EventsTab({ events }) {
         {nextEvent && (
   <div className="mb-8 pb-6">
     <div className="flex items-stretch">
-      {/* LEFT: day + date + month (no time) */}
+      {/* LEFT: day + date + month */}
       {formatTopDate(nextEvent.event_date) && (
         <div className="flex-shrink-0 flex flex-col items-start justify-center leading-none pl-2 pr-3">
           {/* THU */}
@@ -1579,7 +1579,68 @@ function EventsTab({ events }) {
         </div>
       )}
 
-      {/* Right area removed; vertical line removed too */}
+      {/* RIGHT: rectangular box with time, title, location */}
+      <div className="flex-1 flex items-center pr-3">
+        <div
+          style={{
+            borderRadius: '12px',
+            border: '1px solid #e5e7eb',
+            backgroundColor: '#f9fafb',
+            padding: '8px 10px',
+            width: '100%',
+            boxSizing: 'border-box',
+          }}
+        >
+          {/* 1) Time (Handjet, bold) */}
+          {nextEvent.event_date && (
+            <div>
+              <span
+                style={{
+                  fontFamily: '"Handjet", system-ui, sans-serif',
+                  fontSize: `calc(${W} * 0.04)`,
+                  fontWeight: 700,
+                  color: '#111827',
+                  letterSpacing: '0.04em',
+                }}
+              >
+                {formatTopTime(nextEvent.event_date)}
+              </span>
+            </div>
+          )}
+
+          {/* 2) Event name (Noto Sans Korean) */}
+          <div style={{ marginTop: '4px' }}>
+            <span
+              style={{
+                fontFamily: '"Noto Sans KR", system-ui, sans-serif',
+                fontSize: `calc(${W} * 0.038)`,
+                fontWeight: 600,
+                color: '#1f2937',
+                lineHeight: 1.2,
+              }}
+            >
+              {nextEvent.title}
+            </span>
+          </div>
+
+          {/* 3) Location (Handjet, bold) */}
+          {nextEvent.location && (
+            <div style={{ marginTop: '2px' }}>
+              <span
+                style={{
+                  fontFamily: '"Handjet", system-ui, sans-serif',
+                  fontSize: `calc(${W} * 0.032)`,
+                  fontWeight: 700,
+                  color: '#4b5563',
+                  letterSpacing: '0.04em',
+                }}
+              >
+                {nextEvent.location}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   </div>
 )}
