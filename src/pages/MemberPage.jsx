@@ -1590,13 +1590,13 @@ function EventsTab({ events }) {
                 padding: '8px 10px',
                 boxSizing: 'border-box',
                 // keep a gap to the right edge; width tuned to be roughly square
-                width: '45%',
+                width: '140px',
                 maxWidth: '140px',
-                minWidth: '110px',
+                minWidth: '140px',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
-                height: '100%', // match height of the date+month column
+                height: '140px', // match height of the date+month column
               }}
             >
               {/* 1) Time (Handjet, bold) */}
