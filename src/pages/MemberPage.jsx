@@ -1527,9 +1527,10 @@ function EventsTab({ events }) {
       <div className="px-4 py-6 max-w-md mx-auto">
         {nextEvent && (
   <div className="mb-8 pb-6">
-    <div className="px-2 pr-3 max-w-md mx-auto">
+    <div className="px-2">
       <div className="flex flex-col">
-        {/* Top line: weekday (THU) */}
+
+        {/* THU */}
         {formatTopDate(nextEvent.event_date) && (
           <span
             style={{
@@ -1546,9 +1547,10 @@ function EventsTab({ events }) {
           </span>
         )}
 
-        {/* Second row: LEFT = date+month, RIGHT = square-ish box */}
+        {/* Second row: date+month LEFT, box RIGHT */}
         <div className="flex items-stretch mt-2">
-          {/* LEFT: date (04.02) + month (FEB) */}
+
+          {/* LEFT: 04.02 + FEB */}
           {formatTopDate(nextEvent.event_date) && (
             <div className="flex flex-col items-start justify-center">
               <span
@@ -1580,26 +1582,26 @@ function EventsTab({ events }) {
             </div>
           )}
 
-          {/* RIGHT: square-ish box with time, title, location */}
-          <div className="flex-1 flex justify-end items-stretch">
+          {/* RIGHT: wide box stretching to screen edge */}
+          <div
+            className="flex-1 flex items-stretch"
+            style={{ paddingLeft: '16px', paddingRight: '4px' }}
+          >
             <div
               style={{
                 borderRadius: '12px',
                 border: '1px solid #e5e7eb',
-                backgroundColor: '#ffffff', // same color as background
-                padding: '8px 10px',
+                backgroundColor: '#ffffff',
+                padding: '12px 14px',
                 boxSizing: 'border-box',
-                // keep a gap to the right edge; width tuned to be roughly square
-                width: '140px',
-                maxWidth: '140px',
-                minWidth: '140px',
+                width: '100%',
+                height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
-                height: '140px', // match height of the date+month column
               }}
             >
-              {/* 1) Time (Handjet, bold) */}
+              {/* 1) Time */}
               {nextEvent.event_date && (
                 <div>
                   <span
@@ -1616,7 +1618,7 @@ function EventsTab({ events }) {
                 </div>
               )}
 
-              {/* 2) Event name (Noto Sans Korean) */}
+              {/* 2) Event name */}
               <div style={{ marginTop: '4px' }}>
                 <span
                   style={{
@@ -1631,7 +1633,7 @@ function EventsTab({ events }) {
                 </span>
               </div>
 
-              {/* 3) Location (Handjet, bold) */}
+              {/* 3) Location */}
               {nextEvent.location && (
                 <div style={{ marginTop: '2px' }}>
                   <span
@@ -1649,6 +1651,7 @@ function EventsTab({ events }) {
               )}
             </div>
           </div>
+
         </div>
       </div>
     </div>
