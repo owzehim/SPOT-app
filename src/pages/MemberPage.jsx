@@ -1527,11 +1527,10 @@ function EventsTab({ events }) {
       <div className="px-4 py-6 max-w-md mx-auto">
         {nextEvent && (
   <div className="mb-8 pb-6">
-    <div className="flex items-stretch">
-      {/* LEFT: day + date + month */}
+    <div className="flex items-start">
       {formatTopDate(nextEvent.event_date) && (
-        <div className="flex-shrink-0 flex flex-col items-start justify-center leading-none pl-2 pr-3">
-          {/* THU */}
+        <div className="flex flex-col items-start leading-none pl-2">
+          {/* Top: THU */}
           <span
             style={{
               fontFamily: '"Handjet", system-ui, sans-serif',
@@ -1546,106 +1545,119 @@ function EventsTab({ events }) {
             {formatTopDate(nextEvent.event_date).dayName}
           </span>
 
-          {/* 04.02 */}
-          <span
+          {/* Below THU: dates (left) + square box (right) */}
+          <div
             style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.date,
-              fontWeight: 800,
-              color: '#1f2937',
-              letterSpacing: '0.02em',
-              lineHeight: 0.85,
-              marginTop: '2px',
+              marginTop: '6px',
+              display: 'flex',
+              alignItems: 'stretch',
+              gap: 8,
             }}
           >
-            {formatTopDate(nextEvent.event_date).dateNum}
-          </span>
-
-          {/* FEB */}
-          <span
-            style={{
-              fontFamily: '"Handjet", system-ui, sans-serif',
-              fontSize: fs.month,
-              fontWeight: 800,
-              color: '#1f2937',
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-              lineHeight: 0.85,
-              marginTop: '2px',
-            }}
-          >
-            {formatTopDate(nextEvent.event_date).monthName}
-          </span>
-        </div>
-      )}
-
-            {/* RIGHT: rectangular box with time, title, location */}
-      <div className="flex-1 flex justify-end items-stretch pr-3">
-        <div
-          style={{
-            borderRadius: '12px',
-            border: '1px solid #e5e7eb',
-            backgroundColor: '#ffffff',   // same as background, no grey fill
-            padding: '8px 10px',
-            width: '70%',                 // narrower box
-            maxWidth: '230px',            // cap width so it doesn’t get too wide
-            boxSizing: 'border-box',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',     // vertically center text inside
-            height: '100%',               // match height of left side
-          }}
-        >
-          {/* 1) Time (Handjet, bold) */}
-          {nextEvent.event_date && (
-            <div>
-              <span
-                style={{
-                  fontFamily: '"Handjet", system-ui, sans-serif',
-                  fontSize: `calc(${W} * 0.04)`,
-                  fontWeight: 700,
-                  color: '#111827',
-                  letterSpacing: '0.04em',
-                }}
-              >
-                {formatTopTime(nextEvent.event_date)}
-              </span>
-            </div>
-          )}
-
-          {/* 2) Event name (Noto Sans Korean) */}
-          <div style={{ marginTop: '4px' }}>
-            <span
+            {/* LEFT: 04.02 + FEB */}
+            <div
               style={{
-                fontFamily: '"Noto Sans KR", system-ui, sans-serif',
-                fontSize: `calc(${W} * 0.038)`,
-                fontWeight: 600,
-                color: '#1f2937',
-                lineHeight: 1.2,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                paddingRight: '2px',
               }}
             >
-              {nextEvent.title}
-            </span>
-          </div>
-
-          {/* 3) Location (Handjet, bold) */}
-          {nextEvent.location && (
-            <div style={{ marginTop: '2px' }}>
+              {/* 04.02 */}
               <span
                 style={{
                   fontFamily: '"Handjet", system-ui, sans-serif',
-                  fontSize: `calc(${W} * 0.032)`,
-                  fontWeight: 700,
-                  color: '#4b5563',
-                  letterSpacing: '0.04em',
+                  fontSize: fs.date,
+                  fontWeight: 800,
+                  color: '#1f2937',
+                  letterSpacing: '0.02em',
+                  lineHeight: 0.85,
                 }}
               >
-                {nextEvent.location}
+                {formatTopDate(nextEvent.event_date).dateNum}
+              </span>
+
+              {/* FEB */}
+              <span
+                style={{
+                  fontFamily: '"Handjet", system-ui, sans-serif',
+                  fontSize: fs.month,
+                  fontWeight: 800,
+                  color: '#1f2937',
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                  lineHeight: 0.85,
+                  marginTop: '4px',
+                }}
+              >
+                {formatTopDate(nextEvent.event_date).monthName}
               </span>
             </div>
-          )}
+
+            {/* RIGHT: square box – same height as date+month, width expands left */}
+            <div
+              style={{
+                flexShrink: 0,
+                height: '100%',            // match height of date+month column
+                aspectRatio: '1 / 1',      // make it square
+                borderRadius: '12px',
+                border: '1px solid #e5e7eb',
+                backgroundColor: '#ffffff', // same as background
+                padding: '8px 8px',
+                boxSizing: 'border-box',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+              }}
+            >
+              {/* 1) Time (Handjet, bold) */}
+              {nextEvent.event_date && (
+                <span
+                  style={{
+                    fontFamily: '"Handjet", system-ui, sans-serif',
+                    fontSize: `calc(${W} * 0.032)`,
+                    fontWeight: 700,
+                    color: '#111827',
+                    letterSpacing: '0.04em',
+                  }}
+                >
+                  {formatTopTime(nextEvent.event_date)}
+                </span>
+              )}
+
+              {/* 2) Event name (Noto Sans KR) */}
+              <span
+                style={{
+                  fontFamily: '"Noto Sans KR", system-ui, sans-serif',
+                  fontSize: `calc(${W} * 0.028)`,
+                  fontWeight: 600,
+                  color: '#1f2937',
+                  lineHeight: 1.2,
+                  marginTop: '2px',
+                }}
+              >
+                {nextEvent.title}
+              </span>
+
+              {/* 3) Location (Handjet, bold) */}
+              {nextEvent.location && (
+                <span
+                  style={{
+                    fontFamily: '"Handjet", system-ui, sans-serif',
+                    fontSize: `calc(${W} * 0.026)`,
+                    fontWeight: 700,
+                    color: '#4b5563',
+                    letterSpacing: '0.04em',
+                    marginTop: '2px',
+                  }}
+                >
+                  {nextEvent.location}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   </div>
 )}
